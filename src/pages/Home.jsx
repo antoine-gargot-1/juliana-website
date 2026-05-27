@@ -29,14 +29,14 @@ export function Home() {
           />
         </div>
         <div className="hero-corner">
-          <div className="mark">musica</div>
+          <div className="mark">music</div>
           <span>Los Angeles &middot; Online &amp; In-Person</span>
         </div>
         <div className="hero-content" ref={heroContentRef}>
           <div className="hero-text">
             <div className="hero-eyebrow reveal">
               <span className="line" />
-              <span className="eyebrow">Hola — soy Juliana</span>
+              <span className="eyebrow">Hi — I'm Juliana</span>
             </div>
             <h1>
               <span className="reveal-up">
@@ -73,7 +73,7 @@ export function Home() {
         <div className="wrap">
           <div className="intro">
             <div className="intro-image ken">
-              <img src="/img/juliana-aytu.jpg" alt="Juliana Beltran portrait" />
+              <img src="/img/juliana-couch-casual.jpg" alt="Juliana Beltran" />
             </div>
             <div className="intro-text">
               <p className="lead reveal">
@@ -112,7 +112,7 @@ export function Home() {
 
       {/* Listen — Spotify */}
       <section className="listen">
-        <div className="float-script">canciones</div>
+        <div className="float-script">songs</div>
         <div className="wrap">
           <div className="listen-grid">
             <div>
@@ -125,19 +125,20 @@ export function Home() {
               </p>
               <ul className="release-list reveal" style={{ '--rd': '320ms' }}>
                 <li>
-                  <span className="yr">2025</span>
-                  <span className="ttl">New single <em>&middot; in progress</em></span>
+                  <a href="https://open.spotify.com/playlist/37i9dQZF1DWWoDbniQLBJY" target="_blank" rel="noopener noreferrer" style={{ display: 'contents' }}>
+                    <span className="ttl">Featured in <em>&middot; Acusticas</em></span>
+                    <span className="tag">Playlist</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="https://open.spotify.com/playlist/6yYA6aUGp8qUTgQWWYkPkP" target="_blank" rel="noopener noreferrer" style={{ display: 'contents' }}>
+                    <span className="ttl">Featured in <em>&middot; Crying Myself to Sleep Sad Song</em></span>
+                    <span className="tag">Playlist</span>
+                  </a>
+                </li>
+                <li>
+                  <span className="ttl">New music</span>
                   <span className="tag">Coming soon</span>
-                </li>
-                <li>
-                  <span className="yr">2024</span>
-                  <span className="ttl">Touring vocals <em>&middot; Amanda Miguel</em></span>
-                  <span className="tag">Live</span>
-                </li>
-                <li>
-                  <span className="yr">Always</span>
-                  <span className="ttl">Originals &amp; collaborations</span>
-                  <span className="tag">Streaming</span>
                 </li>
               </ul>
               <a
@@ -190,9 +191,8 @@ export function Home() {
                 <span className="it">tour.</span> Lessons feel honest because I'm doing the work too.
               </p>
               <ul className="credits reveal" style={{ marginTop: 36, '--rd': '280ms' }}>
-                {CREDITS.slice(0, 4).map((c, i) => (
+                {CREDITS.map((c, i) => (
                   <li key={i}>
-                    <span className="yr">{c.yr}</span>
                     <span className="what">
                       {c.what}
                       <em>{c.em}</em>
@@ -209,14 +209,12 @@ export function Home() {
       <section className="block" style={{ paddingTop: 80, paddingBottom: 60 }}>
         <div className="wrap">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 20, marginBottom: 10 }}>
-            <span className="eyebrow reveal">— Selected work &middot; 2024 — 2026</span>
+            <span className="eyebrow reveal">— Selected work</span>
           </div>
           <div className="press-strip reveal">
-            <span>Amanda Miguel <em style={{ fontStyle: 'normal', color: 'var(--muted)', fontSize: 13, marginLeft: 8 }}>&middot; touring vocalist</em></span>
-            <span>Latin GRAMMY Sessions</span>
+            <span>Amanda Miguel</span>
             <span>Hotel Cafe &middot; LA</span>
             <span>Spotify Editorial</span>
-            <span>NPR Tiny Sessions</span>
           </div>
         </div>
       </section>
@@ -241,7 +239,7 @@ export function Home() {
 
       {/* CTA */}
       <section className="cta">
-        <div className="eyebrow reveal" style={{ marginBottom: 30 }}>— Cuando quieras</div>
+        <div className="eyebrow reveal" style={{ marginBottom: 30 }}>— Whenever you're ready</div>
         <h2 className="reveal" style={{ '--rd': '120ms' }}>
           Come <span className="it">sing.</span>
         </h2>

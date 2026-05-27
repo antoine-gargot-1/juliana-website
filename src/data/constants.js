@@ -62,9 +62,8 @@ export const FAQS = [
 ];
 
 export const CREDITS = [
-  { yr: 'Now', what: 'Recording artist & vocal coach', em: 'Los Angeles, CA' },
-  { yr: '2024', what: 'Touring vocalist for Amanda Miguel', em: 'International Latin tour' },
-  { yr: 'Past', what: 'Original releases across streaming platforms', em: 'Singles, EPs, collaborations' },
-  { yr: 'Past', what: 'Studio session work', em: 'Pop · Latin Pop · Singer-Songwriter' },
-  { yr: 'Always', what: 'Coaching singers from ages 5 to 70+', em: 'Beginners through pro artists' },
+  { what: 'Recording artist & vocal coach', em: 'Los Angeles, CA' },
+  { what: 'Touring vocalist for Amanda Miguel', em: 'International Latin tour' },
+  { what: 'Original releases across streaming platforms', em: 'Singles, EPs, collaborations' },
+  { what: 'Coaching singers from ages 5 to 70+', em: 'Beginners through pro artists' },
 ];

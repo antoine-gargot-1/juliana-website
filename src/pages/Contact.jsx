@@ -38,7 +38,7 @@ export function Contact() {
     return (
       <div className="page-fade">
         <div className="wrap" style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '120px 0' }}>
-          <div className="script" style={{ fontSize: 96, color: 'var(--accent)', lineHeight: 1, marginBottom: 30 }}>Gracias&hellip;</div>
+          <div className="script" style={{ fontSize: 96, color: 'var(--accent)', lineHeight: 1, marginBottom: 30 }}>Thank you&hellip;</div>
           <h2 style={{ fontFamily: 'var(--display)', fontWeight: 400, fontSize: 'clamp(36px, 5vw, 64px)', margin: '0 0 20px' }}>
             Your note is on its way.
           </h2>

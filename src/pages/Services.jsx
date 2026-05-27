@@ -9,7 +9,7 @@ export function Services() {
     <div className="page-fade">
       <div className="wrap">
         <section className="svc-page-hero">
-          <div className="eyebrow">A studio menu &middot; Updated 2026</div>
+          <div className="eyebrow">A studio menu</div>
           <h1>Lessons &amp; <span className="it">coaching.</span></h1>
           <p style={{ fontFamily: 'var(--serif)', fontSize: 20, lineHeight: 1.55, color: 'var(--ink-soft)', maxWidth: 640, marginTop: 24, fontWeight: 300 }}>
             Every session is personalized. Mix and match disciplines, or focus on one craft deeply — the structure shifts with your goals.
