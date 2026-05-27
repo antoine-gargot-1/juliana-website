@@ -88,7 +88,7 @@ export function ArtistHome() {
                   <li key={p.name}>
                     <a href={p.url} target="_blank" rel="noopener noreferrer">
                       <span className="playlist-name">{p.name}</span>
-                      <span className="playlist-arrow">&nearr;</span>
+                      <span className="playlist-arrow">↗</span>
                     </a>
                   </li>
                 ))}

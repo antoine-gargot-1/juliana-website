@@ -147,7 +147,7 @@ export function Home() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Open in Spotify <span className="arrow">&nearr;</span>
+                Open in Spotify <span className="arrow">↗</span>
               </a>
             </div>
             <div className="spotify-wrap reveal" style={{ '--rd': '180ms' }}>

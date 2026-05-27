@@ -33,7 +33,7 @@ export function Music() {
               {PLAYLISTS.map((p) => (
                 <div key={p.name} className="reveal" style={{ marginBottom: 20 }}>
                   <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 300 }}>
-                    {p.name} &nearr;
+                    {p.name} ↗
                   </a>
                   <div className="spotify-wrap" style={{ marginTop: 12, borderRadius: 8 }}>
                     <iframe

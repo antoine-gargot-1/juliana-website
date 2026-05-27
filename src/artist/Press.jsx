@@ -86,7 +86,7 @@ export function Press() {
                     <div style={{ fontFamily: 'var(--display)', fontSize: 'clamp(20px, 2.2vw, 28px)', fontWeight: 400, lineHeight: 1.1, marginBottom: 8 }}>{a.title}</div>
                     <p style={{ fontFamily: 'var(--serif)', fontSize: 15, color: 'var(--ink-soft)', fontWeight: 300, margin: 0, lineHeight: 1.5 }}>{a.excerpt}</p>
                   </div>
-                  <div className="article-arrow">&nearr;</div>
+                  <div className="article-arrow">↗</div>
                 </a>
               ))}
             </div>

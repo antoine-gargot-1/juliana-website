@@ -33,7 +33,7 @@ export function Live() {
                       </div>
                       <div className="show-action">
                         {show.tickets ? (
-                          <a href={show.tickets} target="_blank" rel="noopener noreferrer" className="btn">Tickets &nearr;</a>
+                          <a href={show.tickets} target="_blank" rel="noopener noreferrer" className="btn">Tickets ↗</a>
                         ) : (
                           <span className="eyebrow">Details coming</span>
                         )}
