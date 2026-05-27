@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
-import { FAQS } from '../data/constants';
+import { FAQS } from './constants';
 
 export function FAQ() {
   const [open, setOpen] = useState(0);
@@ -39,7 +39,7 @@ export function FAQ() {
         <section className="cta">
           <h2>Still <span className="it">curious?</span></h2>
           <p>Send me a note — happy to answer anything before you book.</p>
-          <Link className="btn btn--solid" to="/contact">
+          <Link className="btn btn--solid" to="/coach/contact">
             Get in touch <span className="arrow">&rarr;</span>
           </Link>
         </section>

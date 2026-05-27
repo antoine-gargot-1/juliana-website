@@ -81,7 +81,7 @@ export function About() {
         <section className="cta">
           <h2 className="reveal">Let's <span className="it">make</span> something.</h2>
           <p className="reveal" style={{ '--rd': '120ms' }}>Lessons are personalized — built around your goals, your interests, and where you are right now.</p>
-          <Link className="btn btn--solid reveal" style={{ '--rd': '240ms' }} to="/contact">
+          <Link className="btn btn--solid reveal" style={{ '--rd': '240ms' }} to="/coach/contact">
             Start the conversation <span className="arrow">&rarr;</span>
           </Link>
         </section>

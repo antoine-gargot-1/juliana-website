@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const links = [
-  ['/', 'Home'],
-  ['/about', 'About'],
-  ['/services', 'Services'],
-  ['/faq', 'FAQ'],
-  ['/contact', 'Contact'],
+  ['/artist', 'Home'],
+  ['/artist/music', 'Music'],
+  ['/artist/live', 'Live'],
+  ['/artist/press', 'Press'],
+  ['/artist/booking', 'Booking'],
 ];
 
-export function Nav() {
+export function ArtistNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  const navigate = useNavigate();
+  const isHome = location.pathname === '/artist';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -28,11 +29,16 @@ export function Nav() {
 
   const isScrolled = !isHome || scrolled;
 
+  const switchToCoach = () => {
+    localStorage.setItem('juliana-mode', 'coach');
+    navigate('/coach');
+  };
+
   return (
     <>
-      <nav className={`nav ${isScrolled ? 'is-scrolled' : ''}`}>
+      <nav className={`nav artist-nav ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="nav-inner">
-          <Link className="brand" to="/">
+          <Link className="brand" to="/artist">
             Juliana <span className="dot">&middot;</span> Beltran
           </Link>
           <div className="nav-links">
@@ -45,9 +51,12 @@ export function Nav() {
                 {label}
               </Link>
             ))}
+            <button className="nav-link" onClick={switchToCoach} style={{ opacity: 0.5 }}>
+              Lessons &rarr;
+            </button>
           </div>
-          <Link className="nav-cta" to="/contact">
-            Book a Lesson
+          <Link className="nav-cta" to="/artist/booking">
+            Book Now
           </Link>
           <button
             className={`nav-hamburger ${menuOpen ? 'open' : ''}`}
@@ -71,6 +80,9 @@ export function Nav() {
             {label}
           </Link>
         ))}
+        <button onClick={switchToCoach} style={{ fontFamily: 'var(--display)', fontSize: 36, color: 'var(--gold)' }}>
+          Lessons &rarr;
+        </button>
       </div>
     </>
   );

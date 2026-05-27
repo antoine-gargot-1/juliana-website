@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
-import { SERVICES } from '../data/constants';
+import { SERVICES } from './constants';
 
 export function Services() {
   useReveal();
@@ -39,7 +39,7 @@ export function Services() {
         <section className="cta" style={{ paddingTop: 100 }}>
           <h2>Not sure where to <span className="it">start?</span></h2>
           <p>Book a free 15-minute consultation. We'll talk through your goals and shape a path that fits.</p>
-          <Link className="btn btn--solid" to="/contact">
+          <Link className="btn btn--solid" to="/coach/contact">
             Free consultation <span className="arrow">&rarr;</span>
           </Link>
         </section>

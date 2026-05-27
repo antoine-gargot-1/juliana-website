@@ -15,10 +15,10 @@ export function Footer() {
         <div>
           <h4>Studio</h4>
           <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/about">About</Link></li>
-            <li><Link to="/services">Services</Link></li>
-            <li><Link to="/faq">FAQ</Link></li>
+            <li><Link to="/coach">Home</Link></li>
+            <li><Link to="/coach/about">About</Link></li>
+            <li><Link to="/coach/services">Services</Link></li>
+            <li><Link to="/coach/faq">FAQ</Link></li>
           </ul>
         </div>
         <div>
@@ -35,7 +35,7 @@ export function Footer() {
             <li><a href="https://open.spotify.com/artist/5NfNMKwOPzCw9S1s3OMS6z" target="_blank" rel="noopener noreferrer">Spotify</a></li>
             <li><a href="https://www.youtube.com/@juliana.beltran" target="_blank" rel="noopener noreferrer">YouTube</a></li>
             <li><a href="https://www.instagram.com/juliana.beltran/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-            <li><span>Apple Music</span></li>
+            <li><a href="https://music.apple.com/uy/artist/juliana-beltr%C3%A1n/1212882399" target="_blank" rel="noopener noreferrer">Apple Music</a></li>
           </ul>
         </div>
       </div>

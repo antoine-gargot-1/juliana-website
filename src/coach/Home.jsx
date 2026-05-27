@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useReveal } from '../hooks/useReveal';
 import { useParallax } from '../hooks/useParallax';
 import { Marquee } from '../components/Marquee';
-import { SERVICES, TESTIMONIALS, CREDITS } from '../data/constants';
+import { SERVICES, TESTIMONIALS, CREDITS } from './constants';
 
 export function Home() {
   const [ti, setTi] = useState(0);
@@ -50,10 +50,10 @@ export function Home() {
               Voice, guitar, piano &amp; songwriting lessons in Los Angeles — for anyone learning to sing their own song.
             </p>
             <div className="hero-ctas reveal" style={{ '--rd': '580ms' }}>
-              <Link className="btn btn--solid" to="/contact">
+              <Link className="btn btn--solid" to="/coach/contact">
                 Book a lesson <span className="arrow">&rarr;</span>
               </Link>
-              <Link className="btn btn--ghost" to="/contact">
+              <Link className="btn btn--ghost" to="/coach/contact">
                 Say hi
               </Link>
             </div>
@@ -99,7 +99,7 @@ export function Home() {
             <ul className="teach-list">
               {SERVICES.slice(0, 5).map((s, i) => (
                 <li key={s.n} className="reveal" style={{ '--rd': `${i * 80}ms` }}>
-                  <Link to="/services" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <Link to="/coach/services" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                     <span className="teach-name">{s.name}</span>
                     <span className="teach-arrow">&rarr;</span>
                   </Link>
@@ -246,7 +246,7 @@ export function Home() {
         <p className="reveal" style={{ '--rd': '240ms' }}>
           First step is a free consult. We'll talk through your goals — no pressure, no script.
         </p>
-        <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} to="/contact">
+        <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} to="/coach/contact">
           Book a lesson <span className="arrow">&rarr;</span>
         </Link>
       </section>
