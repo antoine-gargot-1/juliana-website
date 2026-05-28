@@ -44,10 +44,11 @@ export const SERVICES = [
 ];
 
 export const TESTIMONIALS = [
-  { quote: '“Juliana creates such a safe and encouraging environment. I’ve grown so much vocally and creatively.”', name: 'Sofia M.' },
-  { quote: '“I finally feel confident singing in front of people.”', name: 'Daniel R.' },
-  { quote: '“She helped me not only improve my technique — but believe in myself as an artist.”', name: 'Amelia K.' },
-  { quote: '“Lessons feel inspiring, creative, and personalized every single week.”', name: 'Mateo G.' },
+  { quote: '"Juliana is extremely knowledgeable in her craft and is also patient. Makes things fun to learn."', name: 'Quortnee' },
+  { quote: '"Excellent instruction. Juliana is quite patient and knows how to clarify your goals to help you achieve them. She shares exercises and notes to keep improving rather than solely focusing on what needs to be eliminated."', name: 'Luis' },
+  { quote: '"Juliana is awesome. She is super talented and has a deep understanding of not only music theory but how to teach others. I feel very comfortable and have noticed significant improvements in both skill and confidence."', name: 'Rajaat' },
+  { quote: '"Juliana is a wonderful tutor! She is such a sweet and kind tutor. She\'s also very knowledgeable and patient! I\'ve learned so much with her. I would recommend her 100%!"', name: 'Jessica' },
+  { quote: '"What is the most important quality of a teacher? True love for the subject. Juliana loves music and various forms of it, including the forms in different people. Every lesson is a journey to the music world."', name: 'Andrey' },
 ];
 
 export const FAQS = [

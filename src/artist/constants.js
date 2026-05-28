@@ -24,55 +24,95 @@ export const PLAYLISTS = [
 ];
 
 export const PRESS_QUOTES = [
-  { quote: 'I am here, pursuing my dream and making music that comes from my soul.', source: 'Voyage LA Magazine' },
-  { quote: 'I believe in authenticity, showing up as myself and being raw and honest.', source: 'Authority Magazine' },
-  { quote: 'Her sound is fresh, young, and sensual, with a Latin pop feel.', source: 'Hollywood Partnership' },
+  { quote: 'The song is powerful because it doesn\'t go overboard, it just has raw emotion.', source: 'Soaplife Magazine' },
+  { quote: 'The track leans into emotional vulnerability, allowing each lyric to land with clarity.', source: 'Flex Music Blog' },
+  { quote: 'It\'s honest, raw, and very true to this day.', source: 'Caesar Live N Loud' },
 ];
 
 export const PRESS_ARTICLES = [
   {
-    title: 'Rising Stars: Meet Juliana Beltran of Mid City, Los Angeles',
-    source: 'Voyage LA Magazine',
-    date: 'Dec 2024',
-    url: 'https://voyagela.com/interview/rising-stars-meet-juliana-beltran-of-mid-city-los-angeles/',
-    excerpt: 'Profile of Juliana\'s artistic journey, the challenges of the entertainment industry, and her commitment to honest songwriting.',
+    title: 'Juliana Beltran — Delusional',
+    source: 'FEMMUSIC',
+    date: 'Apr 2026',
+    url: 'https://femmusic.com/2026/04/16/juliana-beltran-delusional/',
+    excerpt: 'Review of "Delusional" — intimate vocals and stripped-back instrumentation exploring heartbreak.',
+  },
+  {
+    title: 'Juliana Beltran Drops New Single \'Delusional\'',
+    source: 'Caesar Live N Loud',
+    date: 'Apr 2026',
+    url: 'https://www.caesarlivenloud.com/2026/04/juliana-beltran-drops-new-single-delusional.html',
+    excerpt: 'It\'s honest, raw, and very true to this day. The first song where she plays guitar live in the studio.',
+  },
+  {
+    title: 'Juliana Beltran unveils heartbreaking new single \'Delusional\'',
+    source: 'Flex Music Blog',
+    date: 'Apr 2026',
+    url: 'https://www.flexmusicblog.com/post/juliana-beltr%C3%A1n-unveils-heartbreaking-new-single-delusional',
+    excerpt: 'The track leans into emotional vulnerability, allowing each lyric to land with clarity.',
+  },
+  {
+    title: 'Juliana Beltran Shares The New Single "Delusional"',
+    source: 'Fierce & Fabulous Revolution',
+    date: 'Apr 2026',
+    url: 'https://fiercefabulousrevolution.com/2026/04/16/release-juliana-beltran-shares-the-new-single-delusional/',
+    excerpt: 'The sad realization that a relationship is ending and has no future, yet you linger on the delusion of a hopeless idea.',
+  },
+  {
+    title: 'Juliana Beltran sings about heartbreak',
+    source: 'Soaplife Magazine',
+    date: 'Apr 2026',
+    url: 'https://www.soaplifemagazine.com/2026/04/juliana-beltran-sings-about-heartbreak.html',
+    excerpt: 'The song is powerful because it doesn\'t go overboard, it just has raw emotion.',
+  },
+  {
+    title: 'Delusional lingers like a beautiful goodbye',
+    source: 'Jammerzine',
+    date: 'Apr 2026',
+    url: 'https://jammerzine.com/juliana-beltran-delusional-lingers-like-a-beautiful-goodbye',
+    excerpt: 'A beautifully restrained ballad that lingers long after the last note.',
+  },
+  {
+    title: 'Track of the day: Juliana Beltran — Delusional',
+    source: 'LOUD WOMEN',
+    date: 'Apr 2026',
+    url: 'https://loudwomen.org/2026/04/16/track-of-the-day-juliana-beltran-shares-new-single-delusional/',
+    excerpt: 'The ballad of the EP — a sad realization that a relationship is ending, yet you linger on the delusion.',
   },
   {
     title: 'The Five Things You Need To Shine In The Music Industry',
     source: 'Authority Magazine',
     date: 'Apr 2026',
     url: 'https://medium.com/authority-magazine/juliana-beltr%C3%A1n-on-the-five-things-you-need-to-shine-in-the-music-industry-94081d084559',
-    excerpt: 'Interview covering five essential lessons for succeeding in music — authenticity, self-care, and building genuine connections.',
+    excerpt: 'Interview on authenticity, self-care, and building genuine connections with audiences.',
   },
   {
-    title: 'Juliana Beltran — Delusional',
-    source: 'FEMMUSIC Magazine',
-    date: 'Apr 2026',
-    url: 'https://femmusic.com/2026/04/16/juliana-beltran-delusional/',
-    excerpt: 'Review of "Delusional" — intimate vocals and stripped-back instrumentation exploring heartbreak.',
-  },
-  {
-    title: 'Juliana Beltran Is Feeling A Little Delusional',
-    source: 'Tinnitist',
-    date: 'Apr 2026',
-    url: 'https://tinnitist.com/2026/04/17/juliana-beltran-is-feeling-a-little-delusional/',
-    excerpt: 'Feature on the "Delusional" single and Juliana\'s evolving artistry.',
+    title: 'Rising Stars: Meet Juliana Beltran',
+    source: 'Voyage LA',
+    date: 'Dec 2024',
+    url: 'https://voyagela.com/interview/rising-stars-meet-juliana-beltran-of-mid-city-los-angeles/',
+    excerpt: 'Profile of Juliana\'s artistic journey and her commitment to honest songwriting.',
   },
   {
     title: 'Rising Voices: Latina Songwriters at Hotel Cafe',
     source: 'Hollywood Partnership',
     date: 'Mar 2025',
     url: 'https://hollywoodpartnership.com/do/rising-voices-latina-songwriters',
-    excerpt: 'Showcase of five Latina songwriters blending Latin and contemporary styles. Debut EP produced by Grammy-winning Juan Galeano.',
+    excerpt: 'Showcase of five Latina songwriters. Debut EP produced by Grammy-winning Juan Galeano.',
   },
 ];
 
+export const UPCOMING_SHOWS = [
+  { date: '2026-09-01', venue: 'Harvard and Stone', city: 'Los Angeles, CA', note: null, tickets: null },
+];
+
 export const PAST_SHOWS = [
+  { date: '2026-04-15', venue: 'The Palm and The Pine', city: 'Los Angeles, CA', note: null },
+  { date: '2026-03-15', venue: 'Hotel Cafe', city: 'Hollywood, CA', note: null },
+  { date: '2025-04-15', venue: 'The Virgil', city: 'Los Angeles, CA', note: null },
   { date: '2025-03-08', venue: 'Hotel Cafe', city: 'Hollywood, CA', note: 'Rising Voices: Latina Songwriters' },
   { date: '2024-02-08', venue: 'The Bourbon Room', city: 'Los Angeles, CA', note: null },
 ];
-
-export const UPCOMING_SHOWS = [];
 
 export const NOTABLE_VENUES = [
   'Amanda Miguel World Tour',
