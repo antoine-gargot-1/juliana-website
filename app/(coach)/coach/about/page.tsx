@@ -4,7 +4,6 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
-import { personSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 const BACKGROUND = [
@@ -169,7 +168,6 @@ export default function AboutPage() {
 
       <JsonLd
         data={[
-          personSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Coaching', path: '/coach' },

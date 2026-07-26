@@ -77,7 +77,9 @@ export function CoachFooter() {
         </div>
       </div>
       <div className="foot-base">
-        <div>&copy; {new Date().getFullYear()} Juliana Beltran Music</div>
+        {/* Year is baked in at build time; suppress the hydration diff on
+            the one day of the year a stale static page could disagree. */}
+        <div suppressHydrationWarning>&copy; {new Date().getFullYear()} Juliana Beltran Music</div>
         <div>Made with care in Los Angeles</div>
       </div>
     </footer>

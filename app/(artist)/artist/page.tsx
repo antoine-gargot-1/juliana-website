@@ -7,7 +7,7 @@ import { ParallaxHero } from '@/components/ParallaxHero';
 import { Reveal } from '@/components/Reveal';
 import { ShowRow } from '@/components/artist/ShowRow';
 import { PLAYLISTS, PRESS_QUOTES, STATS, partitionShows } from '@/lib/content';
-import { eventListSchema, musicGroupSchema, personSchema } from '@/lib/schema';
+import { eventListSchema, musicGroupSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
@@ -236,7 +236,6 @@ export default function ArtistHomePage() {
       <JsonLd
         data={[
           musicGroupSchema(),
-          personSchema(),
           eventListSchema(upcoming.length > 0 ? upcoming : past.slice(0, 3)),
           breadcrumbList([
             { name: 'Home', path: '/' },

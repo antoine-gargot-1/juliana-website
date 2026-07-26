@@ -12,7 +12,7 @@ import {
   STATS,
   monthYear,
 } from '@/lib/content';
-import { musicGroupSchema, personSchema } from '@/lib/schema';
+import { musicGroupSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
@@ -281,7 +281,6 @@ export default function PressPage() {
       <JsonLd
         data={[
           musicGroupSchema(),
-          personSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Artist', path: '/artist' },
