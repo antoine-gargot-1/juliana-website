@@ -1,16 +1,53 @@
-# React + Vite
+# juliana-beltran.com
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Next.js (App Router) site for Juliana Beltran — the artist side (live dates,
+music, press kit, event booking) and the coaching studio (lessons, FAQ, studio
+inquiry). Every route is statically generated; there is no client-only
+rendering fallback.
 
-Currently, two official plugins are available:
+Canonical origin: `https://www.juliana-beltran.com`. The apex 308-redirects to
+`www` via `vercel.json`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Commands
 
-## React Compiler
+```bash
+npm run dev     # next dev
+npm run build   # next build — must pass with zero errors
+npm start       # serve the production build locally
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Layout
 
-## Expanding the ESLint configuration
+```
+app/
+  layout.tsx                     root: fonts, styles.css, metadataBase, analytics,
+                                 sitewide Person + WebSite JSON-LD
+  page.tsx                       /  — crawlable landing page + client-side
+                                 localStorage redirect for returning visitors
+  (artist)/                      artist nav + footer
+    artist/…                     /artist, /music, /live, /live/[slug], /press, /booking
+    live-music-for-events-los-angeles/
+  (coach)/                       coach nav + footer
+    coach/…                      /coach, /about, /services, /faq, /contact,
+                                 /voice-lessons-los-angeles
+  sitemap.ts  robots.ts          generated, www host
+  styles.css                     the original global stylesheet, unchanged
+  fonts.ts / fonts.css           next/font families mapped onto the design tokens
+components/                      server by default; "use client" only where a
+                                 browser API is needed
+content/*.json                   all copy-level data, ISO dates
+lib/site.ts                      canonical host, socials, share image
+lib/content.ts                   typed loaders + date derivation
+lib/seo.ts                       per-route metadata helper + breadcrumbs
+lib/schema.ts                    JSON-LD builders
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Content
+
+Editing `content/shows.json` is enough to add a live date: it produces the row
+on `/artist` and `/artist/live`, its own page at `/artist/live/<slug>`, a
+`MusicEvent` JSON-LD block, and a sitemap entry. Upcoming vs. past is derived
+from the ISO `end` datetime, never from which list a row sits in.
+
+`content/artist.json` documents why the Spotify stat reads "9K+ monthly
+listeners" — read the `_comment` there before changing it.
