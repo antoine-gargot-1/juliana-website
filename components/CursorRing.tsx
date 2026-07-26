@@ -1,14 +1,26 @@
-import { useRef, useEffect } from 'react';
+'use client';
+
+import { useEffect, useRef } from 'react';
 
 export function CursorRing() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let raf = 0, x = 0, y = 0, tx = 0, ty = 0;
-    const move = (e) => { tx = e.clientX; ty = e.clientY; el.style.opacity = '1'; };
-    const leave = () => { el.style.opacity = '0'; };
+    let raf = 0;
+    let x = 0;
+    let y = 0;
+    let tx = 0;
+    let ty = 0;
+    const move = (e: PointerEvent) => {
+      tx = e.clientX;
+      ty = e.clientY;
+      el.style.opacity = '1';
+    };
+    const leave = () => {
+      el.style.opacity = '0';
+    };
     const tick = () => {
       x += (tx - x) * 0.18;
       y += (ty - y) * 0.18;

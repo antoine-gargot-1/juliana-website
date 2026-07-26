@@ -1,6 +1,11 @@
-import { useEffect } from 'react';
+'use client';
 
-export function useParallax(heroBgRef, heroContentRef) {
+import { useEffect, type RefObject } from 'react';
+
+export function useParallax(
+  heroBgRef: RefObject<HTMLElement | null>,
+  heroContentRef: RefObject<HTMLElement | null>,
+) {
   useEffect(() => {
     let raf = 0;
     const tick = () => {

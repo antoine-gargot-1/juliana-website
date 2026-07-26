@@ -1,6 +1,13 @@
+'use client';
+
 import { useEffect } from 'react';
 
-export function useReveal() {
+/**
+ * Scroll-reveal driver. Ported unchanged from the Vite build: it queries the
+ * document for `.reveal` / `.reveal-clip` / `.reveal-up` and adds `.in` as they
+ * enter the viewport, with a 1.5s safety net so nothing stays invisible.
+ */
+export function useReveal(deps: unknown[] = []) {
   useEffect(() => {
     const els = document.querySelectorAll('.reveal, .reveal-clip, .reveal-up');
     const io = new IntersectionObserver(
@@ -26,5 +33,6 @@ export function useReveal() {
       io.disconnect();
       clearTimeout(timeout);
     };
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }

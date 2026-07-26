@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+'use client';
 
-const links = [
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+
+const links: [string, string][] = [
   ['/coach', 'Home'],
   ['/coach/about', 'About'],
   ['/coach/services', 'Services'],
@@ -9,12 +12,12 @@ const links = [
   ['/coach/contact', 'Contact'],
 ];
 
-export function Nav() {
+export function CoachNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isHome = location.pathname === '/coach';
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === '/coach';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -25,28 +28,28 @@ export function Nav() {
 
   useEffect(() => {
     setMenuOpen(false);
-  }, [location]);
+  }, [pathname]);
 
   const isScrolled = !isHome || scrolled;
 
   const switchToArtist = () => {
     localStorage.setItem('juliana-mode', 'artist');
-    navigate('/artist');
+    router.push('/artist');
   };
 
   return (
     <>
       <nav className={`nav ${isScrolled ? 'is-scrolled' : ''}`}>
         <div className="nav-inner">
-          <Link className="brand" to="/coach">
+          <Link className="brand" href="/coach">
             Juliana <span className="dot">&middot;</span> Beltran
           </Link>
           <div className="nav-links">
             {links.map(([path, label]) => (
               <Link
                 key={path}
-                className={`nav-link ${location.pathname === path ? 'active' : ''}`}
-                to={path}
+                className={`nav-link ${pathname === path ? 'active' : ''}`}
+                href={path}
               >
                 {label}
               </Link>
@@ -55,7 +58,7 @@ export function Nav() {
               Artist &rarr;
             </button>
           </div>
-          <Link className="nav-cta" to="/coach/contact">
+          <Link className="nav-cta" href="/coach/contact">
             Book a Lesson
           </Link>
           <button
@@ -73,14 +76,17 @@ export function Nav() {
         {links.map(([path, label]) => (
           <Link
             key={path}
-            className={location.pathname === path ? 'active' : ''}
-            to={path}
+            className={pathname === path ? 'active' : ''}
+            href={path}
             onClick={() => setMenuOpen(false)}
           >
             {label}
           </Link>
         ))}
-        <button onClick={switchToArtist} style={{ fontFamily: 'var(--display)', fontSize: 36, color: 'var(--accent)' }}>
+        <button
+          onClick={switchToArtist}
+          style={{ fontFamily: 'var(--display)', fontSize: 36, color: 'var(--accent)' }}
+        >
           Artist &rarr;
         </button>
       </div>
