@@ -1,9 +1,10 @@
 {
   "_note": "Video content for /artist/live-video and the EPK. `uploadDate` is ISO 8601 (YYYY-MM-DD) and `durationSeconds` is an integer; both are converted at render time (to a human label, and to an ISO 8601 duration like PT3M58S for VideoObject JSON-LD) so the data stays machine-readable. Every field here was read off the live YouTube watch pages on 2026-07-26 — do not hand-edit durations or IDs without re-checking, because a wrong `duration` in VideoObject is a structured-data error Google will flag.",
-  "_ordering": "TWO SEPARATE JOBS — do not collapse them. (1) DISPLAY ORDER is pure recency: lib/content.ts sorts every list by `uploadDate` descending, so the newest upload leads the listing regardless of where it sits in this array. The array below is kept newest-first as well, purely so the file reads the way the page renders; array position itself is never load-bearing. (2) `bookingLiveVideoSlug` is an EDITORIAL PIN, not a sort result. It is the video a talent buyer is sent to from a booking email, and it must be a genuine full-song live performance — a buyer needs to see her perform live, so pinning a studio/official video there would defeat the entire purpose of the link. The build enforces `kind: \"live-session\"` on it (see lib/content.ts). If a newer full-song LIVE capture appears, repoint this slug; do NOT repoint it at a music video just because a music video is newer.",
+  "_ordering": "TWO SEPARATE JOBS — do not collapse them. (1) DISPLAY ORDER is pure recency: lib/content.ts sorts every list by `uploadDate` descending, so the newest upload leads the listing regardless of where it sits in this array. The array below is kept newest-first as well, purely so the file reads the way the page renders; array position itself is never load-bearing. (2) `bookingLiveVideoSlug` is an EDITORIAL PIN, not a sort result. It is the video a talent buyer is sent to from a booking email, and it must be genuine live-performance footage — a buyer needs to see her perform live, so pinning a studio/official video there would defeat the entire purpose of the link. The build enforces a live `kind` on it (`live-show` or `live-session`; see LIVE_KINDS in lib/content.ts) and still hard-rejects `music-video`. If a stronger LIVE capture appears, repoint this slug; do NOT repoint it at a music video just because a music video is newer.",
+  "_kinds": "`live-show` = a full set in front of an audience at a real room (what a talent buyer actually wants: proof she can hold a room for an hour). `live-session` = a single song captured live with the band, no audience. `music-video` = studio/official production, NOT live, permanently ineligible for the booking pin. Both live kinds are eligible for the pin; between them prefer the full show, because \"can she carry a night\" is the question a buyer is asking.",
   "_thumbnails": "YouTube only generates maxresdefault.jpg (1280x720) for some uploads; the 2018 live sessions for `mapa-ni-reloj` and `lejos` only have sddefault.jpg (640x480, 4:3 with letterbox bars). Both are rendered into a 16/9 frame with object-fit:cover, which crops the bars. Verified availability per-ID before choosing the URL — a 404 poster would break the click-to-load facade.",
   "_todo": "UNVERIFIED CANDIDATE — deliberately not added. Juliana rated this video highly and wants it considered: Google Drive file ID 12wRDGZGvWabQgRuWUPsqwUQC135nztUd (https://drive.google.com/file/d/12wRDGZGvWabQgRuWUPsqwUQC135nztUd/view). The file is private — an unauthenticated fetch on 2026-07-26 hit a Google sign-in wall and leaked only the filename `IMG_2678.MOV`, so nothing about the content could be confirmed. Before it can be listed here, somebody with access must establish: whether it is a genuine full-song LIVE performance or a clip/studio piece, its real title, its exact duration, and a public hosting URL — this schema assumes a YouTube ID and an i.ytimg.com poster, and a Drive file cannot be embedded through the existing click-to-load facade. If it turns out to be a newer full-song live performance, it is the obvious candidate for `bookingLiveVideoSlug`. Do not invent an entry from the filename.",
-  "bookingLiveVideoSlug": "quedate-a-mi-lado-live-session",
+  "bookingLiveVideoSlug": "hotel-cafe-full-show",
   "videos": [
     {
       "slug": "ay-tu-official-video",
@@ -33,6 +34,38 @@
       "thumbnailHeight": 720,
       "description": "Official music video for \"Delusional\" — the ballad reviewed by FEMMUSIC, LOUD WOMEN, Jammerzine and Soaplife Magazine, and the first song Juliana played guitar live on in the studio.",
       "credits": null
+    },
+    {
+      "slug": "hotel-cafe-full-show",
+      "youtubeId": "IT4oic0GKn8",
+      "title": "Live at Hotel Café",
+      "subtitle": "Full Show",
+      "kind": "live-show",
+      "uploadDate": "2023-06-28",
+      "durationSeconds": 2839,
+      "thumbnail": "https://i.ytimg.com/vi/IT4oic0GKn8/maxresdefault.jpg",
+      "thumbnailWidth": 1280,
+      "thumbnailHeight": 720,
+      "inLanguage": ["en", "es"],
+      "description": "Juliana Beltran's complete 47-minute headline set at Hotel Café in Los Angeles, filmed in 4K with a live four-piece band. Ten songs — seven of her own, plus covers of Yebba, Ariana Grande and Tom Misch — performed in front of a room, unedited and in sequence.",
+      "credits": "Juliana Beltrán (lead vocals), Ishav Singh (guitar), Leo Moneymaker (bass), Alex Niles (keys), Matt Ralph (drums). Filmed at Hotel Café, Los Angeles.",
+      "bookingPitch": "A complete 47-minute headline set at Hotel Café, Los Angeles — ten songs, live band, real room, no edit. If you are deciding whether she can carry a night, this is the whole answer in one link.",
+      "_comment": "BOOKING PIN (`bookingLiveVideoSlug`). Replaced the 2018 `quedate-a-mi-lado-live-session` on 2026-07-26. Why: a talent buyer's actual question is \"can she hold a room for an hour\", and a single 3:58 studio-floor live session cannot answer it. This is a full set in front of an audience at a real LA room that buyers know, it doubles as proof of the Hotel Café booking listed in her live history, it is five years more recent, and it is 4K horizontal. Both candidates are horizontal full-band live footage, so this wins on every axis. All fields read off the live watch page on 2026-07-26: lengthSeconds 2839 (PT47M19S), uploadDate 2023-06-28, 3840x2160, maxresdefault.jpg present (HTTP 200).",
+      "_risk": "THIRD-PARTY CHANNEL — this is the single biggest liability on the page. The upload lives on the bassist's channel, Leo Moneymaker (@leomoneymaker323, UCQNyZB1DF4oNCkUiFleKVFA), NOT on Juliana's. She cannot edit it, cannot stop it being set to private, and cannot stop it being deleted; if it goes, the booking pin, the EPK hero, the artist home player and four VideoObject/Clip blocks all break at once, silently, in production. MITIGATION, in order: (1) ask Leo to leave it public and not to change the visibility — cheapest and most likely to work; (2) get the master re-uploaded to Juliana's own channel and repoint this entry's `youtubeId`, `thumbnail` and `slug` at the copy she controls, which is the only real fix; (3) until then, keep a local archive of the file so re-upload is possible without him. This risk is accepted deliberately — it is the best booking asset that exists today, and shipping it beats holding the pin on 2018 footage.",
+      "_setlist": "Timestamps transcribed from the uploader's description, which is written in MM:SS:FF (frames), not HH:MM:SS — `04:53:07` is 4m53s, not 4h53m. Converted to plain seconds here. NOTE a correction for whoever wrote the booking fact sheet: `&t=775` (12:55) is described there as landing on \"Delusional\", but it does not — 12:55 is the last 24 seconds of \"Feel Right\". Delusional starts at 799s (13:19). Both are originals, so the intent survives, but the number was wrong.",
+      "setlist": [
+        { "at": 0, "title": "Distance", "cover": "Yebba" },
+        { "at": 293, "title": "No Digas Que No", "cover": null },
+        { "at": 532, "title": "Feel Right", "cover": null },
+        { "at": 799, "title": "Delusional", "cover": null },
+        { "at": 1167, "title": "I Don't Know How To Tell You", "cover": null },
+        { "at": 1481, "title": "Si Estamos Solo Los Dos", "cover": null },
+        { "at": 1675, "title": "Jason's Song", "cover": "Ariana Grande" },
+        { "at": 1997, "title": "It Runs Through Me", "cover": "Tom Misch" },
+        { "at": 2303, "title": "Think About", "cover": null },
+        { "at": 2541, "title": "Dying To See You", "cover": null }
+      ],
+      "_startTime": "The on-page player starts at 0, deliberately. The booking fact sheet in the outreach repo links `&t=775` to skip the opening cover, which is the right call for a cold email where you get one shot at a few seconds of attention. On this page it is the wrong call: the asset's whole selling point is that it is a FULL SHOW, the duration badge says 47:19, and dropping a buyer into the middle of a song with no context undercuts exactly the thing that makes this better than the 2018 session. The opener is also a Yebba cover — one of the most vocally demanding things in the set — so the first 30 seconds are not a weak spot to hide. Instead of hard-coding one offset, the setlist above is rendered as clickable chapters (see components/artist/VideoFacade.tsx): every track is a real deep link, so a buyer who only wants an original can jump straight to Delusional at 13:19 rather than being sent 24 seconds short of it. The offsets are also emitted as schema.org Clip parts for Google key-moments."
     },
     {
       "slug": "hasta-que-te-encontre-live-session",
@@ -75,7 +108,7 @@
       "thumbnailHeight": 720,
       "description": "Juliana Beltran performs her original song \"Quédate a Mi Lado\" live with a full band — drums, guitar, keys and bass — in a single-take live session produced by Juan Galeano Toro. Full song, live vocal, no overdubs.",
       "credits": "Written by Juliana Beltran. Produced by Juan Galeano Toro. Ale Giuliani (drums), Jose Castillo (guitar), Miguel Rico (keys), Jaime Rubio (bass).",
-      "_comment": "BOOKING PIN (`bookingLiveVideoSlug`) — the one a talent buyer should watch, deliberately surfaced above the chronological listing rather than sorted into it. It is the longest of the four live sessions (3:58), a complete song rather than a clip, a live vocal over a live four-piece band, and it has the strongest audio of the set. It is also the only 2018 live session with a 1280x720 thumbnail, which matters both for the facade poster and for VideoObject rich-result eligibility. Caveat for whoever maintains this: it was filmed in 2018 and is Spanish-language, and two 2026 official videos are now newer. Recency is handled by the display sort — it is not a reason to move this pin. Only a newer full-song LIVE capture should replace it."
+      "_comment": "FORMER BOOKING PIN — held the pin until 2026-07-26, when `hotel-cafe-full-show` replaced it. Still the strongest of the four 2018 live sessions (longest at 3:58, complete song, live vocal over a live four-piece band, best audio, and the only one of the 2018 set with a 1280x720 thumbnail), so it stays in the listing and is the obvious fallback if the Hotel Café upload ever disappears off the bassist's channel — see the `_risk` note on that entry. It lost the pin on substance, not on recency: it is one song on a studio floor with no audience, and a buyer needs to see her hold a room."
     },
     {
       "slug": "mapa-ni-reloj-live-session",

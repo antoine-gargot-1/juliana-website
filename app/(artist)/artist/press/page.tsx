@@ -46,7 +46,13 @@ export default function PressPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
           <div className="epk-video">
             <div className="reveal">
-              <VideoFacade video={BOOKING_LIVE_VIDEO} placement="epk" primary posterPriority />
+              <VideoFacade
+                video={BOOKING_LIVE_VIDEO}
+                placement="epk"
+                primary
+                posterPriority
+                showSetlist
+              />
             </div>
             <div className="reveal" style={{ '--rd': '140ms' }}>
               {/* The booking pin, not the newest upload — see the `_ordering`
@@ -66,8 +72,8 @@ export default function PressPage() {
                   margin: '0 0 22px',
                 }}
               >
-                {videoLength(BOOKING_LIVE_VIDEO)} of live performance &mdash; a complete song, one
-                take, live vocal over a live four-piece band. No overdubs, no edit.
+                {BOOKING_LIVE_VIDEO.bookingPitch ??
+                  `${videoLength(BOOKING_LIVE_VIDEO)} of live performance — live vocal over a live band. No overdubs, no edit.`}
               </p>
               <Link className="btn btn--ghost" href="/artist/live-video">
                 All live video <span className="arrow">&rarr;</span>

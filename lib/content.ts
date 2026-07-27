@@ -40,7 +40,25 @@ export type Show = {
   place: Place;
 };
 
-export type VideoKind = 'live-session' | 'music-video';
+/**
+ * `live-show`    — a full set in front of an audience at a real venue.
+ * `live-session` — one song captured live with the band, no audience.
+ * `music-video`  — studio/official production. Not live footage.
+ */
+export type VideoKind = 'live-show' | 'live-session' | 'music-video';
+
+/**
+ * The kinds that are genuine live-performance footage, and therefore the only
+ * kinds allowed to hold the booking pin. Deliberately a whitelist rather than
+ * `kind !== 'music-video'`: a new non-live kind added later should fail the
+ * guard by default instead of quietly qualifying.
+ */
+export const LIVE_KINDS: readonly VideoKind[] = ['live-show', 'live-session'];
+
+export const isLiveFootage = (video: Video) => LIVE_KINDS.includes(video.kind);
+
+/** One song within a longer set, at `at` seconds in. `cover` names the original artist. */
+export type SetlistTrack = { at: number; title: string; cover: string | null };
 
 export type Video = {
   slug: string;
@@ -56,6 +74,12 @@ export type Video = {
   thumbnailHeight: number;
   description: string;
   credits: string | null;
+  /** BCP-47 tag(s) for VideoObject. Defaults to Spanish where absent. */
+  inLanguage?: string | string[];
+  /** Booking blurb shown next to the pin. Keeps the sales copy with the data. */
+  bookingPitch?: string;
+  /** Chapters for a multi-song set — rendered as deep links and as Clip markup. */
+  setlist?: SetlistTrack[];
 };
 
 export type Service = {
@@ -107,8 +131,37 @@ export const ARTIST_BIO = artistJson.bio as string;
 /** ISO YYYY-MM-DD strings sort correctly as plain strings. Newest first. */
 const byNewest = (a: Video, b: Video) => b.uploadDate.localeCompare(a.uploadDate);
 
+/**
+ * Field-by-field pick rather than a cast.
+ *
+ * `Video` is handed straight to <VideoFacade>, a client component, so whatever
+ * this returns is serialised verbatim into the RSC flight payload and is
+ * readable in page source. The JSON rows carry `_comment` / `_risk` /
+ * `_setlist` / `_startTime` maintainer notes — internal editorial reasoning,
+ * including who does and does not control a given upload — which has no
+ * business being published on an EPK that talent buyers read. A cast would ship
+ * all of it; this drops every key that is not part of the contract.
+ */
+const toVideo = (raw: (typeof videosJson.videos)[number]): Video => ({
+  slug: raw.slug,
+  youtubeId: raw.youtubeId,
+  title: raw.title,
+  subtitle: raw.subtitle,
+  kind: raw.kind as VideoKind,
+  uploadDate: raw.uploadDate,
+  durationSeconds: raw.durationSeconds,
+  thumbnail: raw.thumbnail,
+  thumbnailWidth: raw.thumbnailWidth,
+  thumbnailHeight: raw.thumbnailHeight,
+  description: raw.description,
+  credits: raw.credits,
+  ...('inLanguage' in raw ? { inLanguage: raw.inLanguage } : {}),
+  ...('bookingPitch' in raw ? { bookingPitch: raw.bookingPitch } : {}),
+  ...('setlist' in raw ? { setlist: raw.setlist as SetlistTrack[] } : {}),
+});
+
 /** Every video, newest upload first. */
-export const ALL_VIDEOS = [...(videosJson.videos as Video[])].sort(byNewest);
+export const ALL_VIDEOS = videosJson.videos.map(toVideo).sort(byNewest);
 
 /**
  * The live performance a talent buyer should watch — the target of the EPK and
@@ -128,20 +181,20 @@ export const BOOKING_LIVE_VIDEO: Video = (() => {
       `content/videos.json: bookingLiveVideoSlug "${slug}" matches no video slug.`,
     );
   }
-  if (found.kind !== 'live-session') {
+  if (!isLiveFootage(found)) {
     throw new Error(
       `content/videos.json: bookingLiveVideoSlug "${slug}" is kind "${found.kind}". ` +
-        'It must be a "live-session" — a talent buyer follows this link to see her ' +
-        'perform live, so an official/studio video cannot serve as the booking video. ' +
-        'If you were trying to surface the newest upload, note that the listing is ' +
-        'already sorted newest-first; leave this pin on live footage.',
+        `It must be one of ${LIVE_KINDS.join(' | ')} — a talent buyer follows this ` +
+        'link to see her perform live, so an official/studio video cannot serve as ' +
+        'the booking video. If you were trying to surface the newest upload, note ' +
+        'that the listing is already sorted newest-first; leave this pin on live footage.',
     );
   }
   return found;
 })();
 
 /** Every live performance, newest first — including the booking pin. */
-export const LIVE_VIDEOS = ALL_VIDEOS.filter((v) => v.kind === 'live-session');
+export const LIVE_VIDEOS = ALL_VIDEOS.filter(isLiveFootage);
 
 /** Live performances other than the booking pin (which is shown separately). */
 export const OTHER_LIVE_VIDEOS = LIVE_VIDEOS.filter((v) => v.slug !== BOOKING_LIVE_VIDEO.slug);
@@ -149,11 +202,29 @@ export const OTHER_LIVE_VIDEOS = LIVE_VIDEOS.filter((v) => v.slug !== BOOKING_LI
 /** Official release videos — not live footage, kept visually separate. */
 export const RELEASE_VIDEOS = ALL_VIDEOS.filter((v) => v.kind === 'music-video');
 
-/** 238 -> "3:58" */
+/** 238 -> "3:58", 2839 -> "47:19". Minutes are not wrapped into hours. */
 export function videoLength(video: Video) {
-  const m = Math.floor(video.durationSeconds / 60);
-  const s = video.durationSeconds % 60;
+  return timecode(video.durationSeconds);
+}
+
+/** 799 -> "13:19" — the label on a setlist row. */
+export function timecode(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/**
+ * Setlist rows paired with the offset each one ends at, so a chapter can be
+ * expressed as a half-open [start, end) range. The last track runs to the end
+ * of the video. Returns [] when the video is a single song.
+ */
+export function setlistChapters(video: Video) {
+  const tracks = video.setlist ?? [];
+  return tracks.map((track, i) => ({
+    ...track,
+    endsAt: tracks[i + 1]?.at ?? video.durationSeconds,
+  }));
 }
 
 /** 238 -> "PT3M58S", the ISO 8601 duration VideoObject requires. */
@@ -173,19 +244,29 @@ export function videoYear(video: Video) {
   });
 }
 
-/** Privacy-enhanced embed. youtube-nocookie sets no tracking cookie until play. */
-export function embedUrl(video: Video, { autoplay = false } = {}) {
+/**
+ * Privacy-enhanced embed. youtube-nocookie sets no tracking cookie until play.
+ *
+ * `start` is a seek offset in seconds, used when a visitor picks a track out of
+ * the setlist. It is left at 0 for the canonical embed: the `embedUrl` that goes
+ * into VideoObject has to address the whole video, because the `duration` beside
+ * it describes the whole video.
+ */
+export function embedUrl(video: Video, { autoplay = false, start = 0 } = {}) {
   const params = new URLSearchParams({
     rel: '0',
     modestbranding: '1',
     playsinline: '1',
     ...(autoplay ? { autoplay: '1' } : {}),
+    ...(start > 0 ? { start: String(start) } : {}),
   });
   return `https://www.youtube-nocookie.com/embed/${video.youtubeId}?${params}`;
 }
 
-export function watchUrl(video: Video) {
-  return `https://www.youtube.com/watch?v=${video.youtubeId}`;
+/** `start` in seconds becomes `&t=` — the form Google's Clip markup requires. */
+export function watchUrl(video: Video, { start = 0 } = {}) {
+  const base = `https://www.youtube.com/watch?v=${video.youtubeId}`;
+  return start > 0 ? `${base}&t=${start}` : base;
 }
 
 /* ---------------- coach ---------------- */

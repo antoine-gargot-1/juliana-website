@@ -7,8 +7,10 @@ import {
   type Show,
   type Video,
   embedUrl,
+  isLiveFootage,
   isPast,
   isoDuration,
+  setlistChapters,
   watchUrl,
 } from './content';
 import {
@@ -180,7 +182,9 @@ export const VIDEO_PAGE = '/artist/live-video';
  * served from your own origin.
  */
 export function videoObjectSchema(video: Video, { withContext = true } = {}) {
-  const live = video.kind === 'live-session';
+  const live = isLiveFootage(video);
+  const chapters = setlistChapters(video);
+
   return {
     ...(withContext ? { '@context': 'https://schema.org' } : {}),
     '@type': 'VideoObject',
@@ -189,16 +193,32 @@ export function videoObjectSchema(video: Video, { withContext = true } = {}) {
     description: video.description,
     thumbnailUrl: [video.thumbnail],
     uploadDate: video.uploadDate,
+    // Describes the whole video, so `embedUrl` below must address the whole
+    // video too — never a seek offset, or the two disagree.
     duration: isoDuration(video.durationSeconds),
     embedUrl: embedUrl(video),
     contentUrl: watchUrl(video),
     url: abs(`${VIDEO_PAGE}#${video.slug}`),
-    inLanguage: 'es',
+    inLanguage: video.inLanguage ?? 'es',
     isFamilyFriendly: true,
     genre: live ? 'Live music performance' : 'Music video',
     creator: { '@id': PERSON_ID },
     publisher: { '@id': PERSON_ID },
     author: { '@id': PERSON_ID },
+    // Key moments. For a 47-minute set this is what lets Google surface the
+    // individual songs in the result, and it is the honest way to express
+    // "start here" without lying about the video's duration.
+    ...(chapters.length
+      ? {
+          hasPart: chapters.map((chapter) => ({
+            '@type': 'Clip',
+            name: chapter.cover ? `${chapter.title} (${chapter.cover} cover)` : chapter.title,
+            startOffset: chapter.at,
+            endOffset: chapter.endsAt,
+            url: watchUrl(video, { start: chapter.at }),
+          })),
+        }
+      : {}),
   };
 }
 

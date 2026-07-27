@@ -24,9 +24,9 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
  * for.
  */
 export const metadata: Metadata = pageMeta({
-  title: 'Live Video — Full-Band Live Sessions',
+  title: 'Live Video — Full Show at Hotel Café & Live Sessions',
   description:
-    'Watch Juliana Beltran perform live: full-song, live-vocal band sessions plus official release videos. Live footage for venues, festivals and talent buyers.',
+    "Watch Juliana Beltran perform live: her complete 47-minute set at Hotel Café in Los Angeles with a full band, plus live sessions and official release videos. Live footage for venues, festivals and talent buyers.",
   path: '/artist/live-video',
   image: BOOKING_LIVE_VIDEO.thumbnail,
   imageWidth: BOOKING_LIVE_VIDEO.thumbnailWidth,
@@ -54,7 +54,10 @@ export default function LiveVideoPage() {
             listing on purpose. Newer uploads exist (the 2026 release videos) but
             they are studio productions, and a talent buyer follows this page to
             judge live performance. The copy says so out loud so the pin does not
-            read as a broken sort. */}
+            read as a broken sort. The pitch sentence comes from the pin's own
+            `bookingPitch` so it cannot drift out of sync when the pin moves —
+            it used to be hard-coded prose describing a single song, which went
+            stale the moment a full show took the pin. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
           <div className="video-primary-flag reveal">
             <span className="line" />
@@ -66,6 +69,7 @@ export default function LiveVideoPage() {
               placement="live-video-page"
               primary
               posterPriority
+              showSetlist
             />
           </div>
           <p
@@ -81,9 +85,8 @@ export default function LiveVideoPage() {
               margin: '30px 0 0',
             }}
           >
-            A complete song, one take, live vocal over a live four-piece band &mdash;{' '}
-            {videoLength(BOOKING_LIVE_VIDEO)} of what the set actually sounds like in a room. If
-            you only have time for one, make it this one.
+            {BOOKING_LIVE_VIDEO.bookingPitch ??
+              `${videoLength(BOOKING_LIVE_VIDEO)} of live performance — live vocal over a live band, no overdubs. If you only have time for one, make it this one.`}
           </p>
           <p
             className="reveal"
@@ -98,8 +101,8 @@ export default function LiveVideoPage() {
               margin: '14px 0 0',
             }}
           >
-            Hand-picked for bookers as the strongest full-band live take &mdash; not the newest
-            upload. Everything below is listed newest first.
+            Hand-picked for bookers as the strongest live footage &mdash; not the newest upload.
+            Jump to any song in the setlist above. Everything below is listed newest first.
           </p>
         </section>
 
