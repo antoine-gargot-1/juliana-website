@@ -5,7 +5,11 @@ import {
   SERVICES,
   TESTIMONIALS,
   type Show,
+  type Video,
+  embedUrl,
   isPast,
+  isoDuration,
+  watchUrl,
 } from './content';
 import {
   BUSINESS_ID,
@@ -160,6 +164,41 @@ export function eventListSchema(shows: Show[]) {
       url: abs(`/artist/live/${show.slug}`),
       item: musicEventSchema(show, { withContext: false }),
     })),
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* VideoObject                                                         */
+/* ------------------------------------------------------------------ */
+
+export const VIDEO_PAGE = '/artist/live-video';
+
+/**
+ * One VideoObject per video. `contentUrl` points at the YouTube watch page and
+ * `embedUrl` at the privacy-enhanced player, which is the pairing Google's video
+ * structured-data docs ask for when the media is hosted on YouTube rather than
+ * served from your own origin.
+ */
+export function videoObjectSchema(video: Video, { withContext = true } = {}) {
+  const live = video.kind === 'live-session';
+  return {
+    ...(withContext ? { '@context': 'https://schema.org' } : {}),
+    '@type': 'VideoObject',
+    '@id': abs(`${VIDEO_PAGE}#${video.slug}`),
+    name: `Juliana Beltran — ${video.title} (${video.subtitle})`,
+    description: video.description,
+    thumbnailUrl: [video.thumbnail],
+    uploadDate: video.uploadDate,
+    duration: isoDuration(video.durationSeconds),
+    embedUrl: embedUrl(video),
+    contentUrl: watchUrl(video),
+    url: abs(`${VIDEO_PAGE}#${video.slug}`),
+    inLanguage: 'es',
+    isFamilyFriendly: true,
+    genre: live ? 'Live music performance' : 'Music video',
+    creator: { '@id': PERSON_ID },
+    publisher: { '@id': PERSON_ID },
+    author: { '@id': PERSON_ID },
   };
 }
 
