@@ -64,33 +64,41 @@ export function SiteAnalytics() {
 
   return (
     <>
+      {/*
+        A plain inline <script>, not next/script. next/script defers inline
+        content until after hydration, and Consent Mode requires the
+        consent-default command to be in the dataLayer *before* the GA library
+        initialises — otherwise there is a window in which GA boots with Google's
+        own defaults. Rendering it into the server HTML makes the ordering
+        unconditional: this executes at parse time, the loader below is async and
+        can only run later.
+      */}
+      <script
+        id="ga4-init"
+        dangerouslySetInnerHTML={{
+          __html: [
+            'window.dataLayer=window.dataLayer||[];',
+            'function gtag(){dataLayer.push(arguments);}',
+            'window.gtag=gtag;',
+            "gtag('js',new Date());",
+            // Analytics only: every advertising signal is denied up front, so no
+            // remarketing identifiers are ever collected. Flip analytics_storage
+            // to 'denied' and call gtag('consent','update',...) from a banner if
+            // this site ever markets into the EU.
+            "gtag('consent','default',{" +
+              "ad_storage:'denied'," +
+              "ad_user_data:'denied'," +
+              "ad_personalization:'denied'," +
+              "analytics_storage:'granted'});",
+            `gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false,anonymize_ip:true});`,
+          ].join(''),
+        }}
+      />
       <Script
         id="ga4-src"
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
       />
-      <Script id="ga4-init" strategy="afterInteractive">
-        {`
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-window.gtag = gtag;
-gtag('js', new Date());
-// Consent Mode v2: analytics only. Every advertising signal is denied up front,
-// so no remarketing identifiers are ever collected and there is nothing to ask
-// EU consent for beyond the analytics cookie itself. Flip analytics_storage to
-// 'denied' here and gtag('consent','update',...) from a banner if that changes.
-gtag('consent', 'default', {
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
-  ad_personalization: 'denied',
-  analytics_storage: 'granted'
-});
-gtag('config', '${GA_MEASUREMENT_ID}', {
-  send_page_view: false,
-  anonymize_ip: true
-});
-        `}
-      </Script>
     </>
   );
 }

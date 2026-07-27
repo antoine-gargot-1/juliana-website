@@ -159,7 +159,16 @@ declare global {
 }
 
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '';
-export const GA_ENABLED = GA_MEASUREMENT_ID.length > 0;
+
+/**
+ * GA4 measurement IDs are "G-" followed by an alphanumeric token. The ID is
+ * interpolated into an inline <script> in SiteAnalytics, so it is format-checked
+ * rather than trusted: a typo'd or hostile env var can then only disable
+ * analytics, never inject script. A malformed value fails closed.
+ */
+const GA_ID_PATTERN = /^G-[A-Z0-9]{4,24}$/i;
+
+export const GA_ENABLED = GA_ID_PATTERN.test(GA_MEASUREMENT_ID);
 
 const VERCEL_CUSTOM_EVENTS = process.env.NEXT_PUBLIC_VERCEL_CUSTOM_EVENTS === '1';
 
