@@ -43,12 +43,23 @@
  */
 
 export type ConversionEvent =
-  /** User clicked the play facade on a video. */
+  /**
+   * User clicked the play facade on a video.
+   *
+   * NOTE ON NAMING: GA4's Enhanced Measurement automatically collects
+   * `video_start`, `video_progress` and `video_complete` for embedded YouTube
+   * players whose iframe has enablejsapi=1 — which ours does, because that is
+   * how the watch-through milestones are read. So these three names are
+   * deliberately avoided. If our events shared those names, GA4's auto-fired
+   * copies would merge into the same event with a different parameter schema
+   * and, crucially, no UTM attribution, filling any venue breakdown with
+   * "(not set)". Ours stay distinct so a venue report is clean.
+   */
   | 'video_play'
-  /** 25 / 50 / 75% watch-through milestone. */
-  | 'video_progress'
-  /** Player reached the end. */
-  | 'video_complete'
+  /** 25 / 50 / 75% watch-through milestone. Not `video_progress` — see above. */
+  | 'video_milestone'
+  /** Player reached the end. Not `video_complete` — see above. */
+  | 'video_finish'
   /** The EPK (/artist/press) was opened — the page outreach emails link to. */
   | 'epk_view'
   /** Booking inquiry submitted successfully. */

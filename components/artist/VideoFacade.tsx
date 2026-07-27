@@ -75,7 +75,7 @@ export function VideoFacade({
             onStateChange: (e: { data: number }) => {
               // 0 === ENDED
               if (e.data === 0) {
-                track('video_complete', {
+                track('video_finish', {
                   video_id: video.youtubeId,
                   video_slug: video.slug,
                   placement,
@@ -94,7 +94,7 @@ export function VideoFacade({
           for (const milestone of [25, 50, 75]) {
             if (percent >= milestone && !reached.has(milestone)) {
               reached.add(milestone);
-              track('video_progress', {
+              track('video_milestone', {
                 video_id: video.youtubeId,
                 video_slug: video.slug,
                 video_title: video.title,
