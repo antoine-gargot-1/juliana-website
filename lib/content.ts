@@ -86,33 +86,68 @@ export const ARTIST_BIO = artistJson.bio as string;
 
 /* ---------------- videos ---------------- */
 
-export const ALL_VIDEOS = videosJson.videos as Video[];
+/**
+ * Two independent concerns live in this block, and they must not be merged:
+ *
+ *   DISPLAY ORDER  — always newest upload first. Every exported list below is
+ *                    sorted by `uploadDate` descending, so ordering is a
+ *                    property of the data, not of where a row happens to sit
+ *                    in videos.json.
+ *   BOOKING PIN    — `BOOKING_LIVE_VIDEO`, the single video a booking email
+ *                    points a talent buyer at. It is an editorial choice and
+ *                    is deliberately exempt from the recency sort: the buyer
+ *                    is clicking through to judge whether she can perform
+ *                    live, so it has to be real live footage even when a
+ *                    studio release video is newer.
+ *
+ * Sorting the pin into the listing (or, worse, defining the pin as "whatever
+ * is first") would silently hand a talent buyer a music video. Don't.
+ */
+
+/** ISO YYYY-MM-DD strings sort correctly as plain strings. Newest first. */
+const byNewest = (a: Video, b: Video) => b.uploadDate.localeCompare(a.uploadDate);
+
+/** Every video, newest upload first. */
+export const ALL_VIDEOS = [...(videosJson.videos as Video[])].sort(byNewest);
 
 /**
- * The one video a talent buyer should watch. Resolved from `primarySlug` rather
- * than from array position so reordering the JSON can never silently demote it;
- * if the slug ever stops matching, the build fails here instead of shipping a
- * page with no designated primary.
+ * The live performance a talent buyer should watch — the target of the EPK and
+ * of booking outreach. Resolved from `bookingLiveVideoSlug` rather than from
+ * array position or from the recency sort, so reordering can never silently
+ * demote it.
+ *
+ * Both guards below are build-time failures rather than runtime fallbacks: a
+ * booking link that quietly points at nothing, or at a studio video, is worse
+ * than a failed deploy.
  */
-export const PRIMARY_VIDEO: Video = (() => {
-  const found = ALL_VIDEOS.find((v) => v.slug === videosJson.primarySlug);
+export const BOOKING_LIVE_VIDEO: Video = (() => {
+  const slug = videosJson.bookingLiveVideoSlug;
+  const found = ALL_VIDEOS.find((v) => v.slug === slug);
   if (!found) {
     throw new Error(
-      `content/videos.json: primarySlug "${videosJson.primarySlug}" matches no video slug.`,
+      `content/videos.json: bookingLiveVideoSlug "${slug}" matches no video slug.`,
+    );
+  }
+  if (found.kind !== 'live-session') {
+    throw new Error(
+      `content/videos.json: bookingLiveVideoSlug "${slug}" is kind "${found.kind}". ` +
+        'It must be a "live-session" — a talent buyer follows this link to see her ' +
+        'perform live, so an official/studio video cannot serve as the booking video. ' +
+        'If you were trying to surface the newest upload, note that the listing is ' +
+        'already sorted newest-first; leave this pin on live footage.',
     );
   }
   return found;
 })();
 
-/** Every live performance except the primary, newest first. */
-export const OTHER_LIVE_VIDEOS = ALL_VIDEOS.filter(
-  (v) => v.kind === 'live-session' && v.slug !== PRIMARY_VIDEO.slug,
-).sort((a, b) => b.uploadDate.localeCompare(a.uploadDate));
+/** Every live performance, newest first — including the booking pin. */
+export const LIVE_VIDEOS = ALL_VIDEOS.filter((v) => v.kind === 'live-session');
+
+/** Live performances other than the booking pin (which is shown separately). */
+export const OTHER_LIVE_VIDEOS = LIVE_VIDEOS.filter((v) => v.slug !== BOOKING_LIVE_VIDEO.slug);
 
 /** Official release videos — not live footage, kept visually separate. */
-export const RELEASE_VIDEOS = ALL_VIDEOS.filter((v) => v.kind === 'music-video').sort((a, b) =>
-  b.uploadDate.localeCompare(a.uploadDate),
-);
+export const RELEASE_VIDEOS = ALL_VIDEOS.filter((v) => v.kind === 'music-video');
 
 /** 238 -> "3:58" */
 export function videoLength(video: Video) {

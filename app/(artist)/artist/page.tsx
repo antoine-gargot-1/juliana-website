@@ -7,7 +7,7 @@ import { ParallaxHero } from '@/components/ParallaxHero';
 import { Reveal } from '@/components/Reveal';
 import { ShowRow } from '@/components/artist/ShowRow';
 import { VideoFacade } from '@/components/artist/VideoFacade';
-import { PLAYLISTS, PRESS_QUOTES, PRIMARY_VIDEO, STATS, partitionShows } from '@/lib/content';
+import { BOOKING_LIVE_VIDEO, PLAYLISTS, PRESS_QUOTES, STATS, partitionShows } from '@/lib/content';
 import { eventListSchema, musicGroupSchema, videoObjectSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
@@ -171,7 +171,7 @@ export default function ArtistHomePage() {
             </Link>
           </div>
           <div className="reveal" style={{ '--rd': '200ms' }}>
-            <VideoFacade video={PRIMARY_VIDEO} placement="artist-home" primary />
+            <VideoFacade video={BOOKING_LIVE_VIDEO} placement="artist-home" primary />
           </div>
         </div>
       </section>
@@ -276,7 +276,7 @@ export default function ArtistHomePage() {
       <JsonLd
         data={[
           musicGroupSchema(),
-          videoObjectSchema(PRIMARY_VIDEO),
+          videoObjectSchema(BOOKING_LIVE_VIDEO),
           eventListSchema(upcoming.length > 0 ? upcoming : past.slice(0, 3)),
           breadcrumbList([
             { name: 'Home', path: '/' },

@@ -6,8 +6,8 @@ import { Reveal } from '@/components/Reveal';
 import { VideoFacade } from '@/components/artist/VideoFacade';
 import {
   ALL_VIDEOS,
+  BOOKING_LIVE_VIDEO,
   OTHER_LIVE_VIDEOS,
-  PRIMARY_VIDEO,
   RELEASE_VIDEOS,
   videoLength,
 } from '@/lib/content';
@@ -28,9 +28,9 @@ export const metadata: Metadata = pageMeta({
   description:
     'Watch Juliana Beltran perform live: full-song, live-vocal band sessions plus official release videos. Live footage for venues, festivals and talent buyers.',
   path: '/artist/live-video',
-  image: PRIMARY_VIDEO.thumbnail,
-  imageWidth: PRIMARY_VIDEO.thumbnailWidth,
-  imageHeight: PRIMARY_VIDEO.thumbnailHeight,
+  image: BOOKING_LIVE_VIDEO.thumbnail,
+  imageWidth: BOOKING_LIVE_VIDEO.thumbnailWidth,
+  imageHeight: BOOKING_LIVE_VIDEO.thumbnailHeight,
 });
 
 export default function LiveVideoPage() {
@@ -50,14 +50,23 @@ export default function LiveVideoPage() {
           </h1>
         </section>
 
-        {/* Primary — the one a talent buyer should watch */}
+        {/* The booking pin: an editorial choice, held above the chronological
+            listing on purpose. Newer uploads exist (the 2026 release videos) but
+            they are studio productions, and a talent buyer follows this page to
+            judge live performance. The copy says so out loud so the pin does not
+            read as a broken sort. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
           <div className="video-primary-flag reveal">
             <span className="line" />
-            <span className="eyebrow">Watch this one</span>
+            <span className="eyebrow">Watch this one &mdash; live</span>
           </div>
           <div className="reveal" style={{ '--rd': '80ms' }}>
-            <VideoFacade video={PRIMARY_VIDEO} placement="live-video-page" primary posterPriority />
+            <VideoFacade
+              video={BOOKING_LIVE_VIDEO}
+              placement="live-video-page"
+              primary
+              posterPriority
+            />
           </div>
           <p
             className="reveal"
@@ -73,38 +82,37 @@ export default function LiveVideoPage() {
             }}
           >
             A complete song, one take, live vocal over a live four-piece band &mdash;{' '}
-            {videoLength(PRIMARY_VIDEO)} of what the set actually sounds like in a room. If
+            {videoLength(BOOKING_LIVE_VIDEO)} of what the set actually sounds like in a room. If
             you only have time for one, make it this one.
+          </p>
+          <p
+            className="reveal"
+            style={{
+              '--rd': '280ms',
+              fontFamily: 'var(--serif)',
+              fontSize: 15,
+              fontStyle: 'italic',
+              color: 'var(--muted)',
+              fontWeight: 300,
+              maxWidth: 720,
+              margin: '14px 0 0',
+            }}
+          >
+            Hand-picked for bookers as the strongest full-band live take &mdash; not the newest
+            upload. Everything below is listed newest first.
           </p>
         </section>
 
-        {/* Remaining live sessions */}
-        {OTHER_LIVE_VIDEOS.length > 0 && (
-          <section
-            className="block"
-            style={{ paddingTop: 20, paddingBottom: 60, borderTop: '1px solid var(--rule)' }}
-          >
-            <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
-              More live sessions
-            </div>
-            <div className="video-grid">
-              {OTHER_LIVE_VIDEOS.map((video, i) => (
-                <div key={video.slug} className="reveal" style={{ '--rd': `${i * 90}ms` }}>
-                  <VideoFacade video={video} placement="live-video-page-secondary" />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Release videos, clearly labelled as not-live */}
+        {/* Everything else, strictly newest-upload-first. The release videos are
+            the most recent work, so they lead — each group stays labelled for
+            what it is, live or not. */}
         {RELEASE_VIDEOS.length > 0 && (
           <section
             className="block"
             style={{ paddingTop: 20, paddingBottom: 60, borderTop: '1px solid var(--rule)' }}
           >
             <div className="eyebrow reveal" style={{ marginBottom: 8 }}>
-              Release videos
+              Latest release videos
             </div>
             <p
               className="reveal"
@@ -123,6 +131,37 @@ export default function LiveVideoPage() {
               {RELEASE_VIDEOS.map((video, i) => (
                 <div key={video.slug} className="reveal" style={{ '--rd': `${i * 90}ms` }}>
                   <VideoFacade video={video} placement="live-video-page-releases" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {OTHER_LIVE_VIDEOS.length > 0 && (
+          <section
+            className="block"
+            style={{ paddingTop: 20, paddingBottom: 60, borderTop: '1px solid var(--rule)' }}
+          >
+            <div className="eyebrow reveal" style={{ marginBottom: 8 }}>
+              More live sessions
+            </div>
+            <p
+              className="reveal"
+              style={{
+                fontFamily: 'var(--serif)',
+                fontSize: 15,
+                fontStyle: 'italic',
+                color: 'var(--muted)',
+                fontWeight: 300,
+                margin: '0 0 30px',
+              }}
+            >
+              Live band performances &mdash; full song, live vocal, no overdubs.
+            </p>
+            <div className="video-grid">
+              {OTHER_LIVE_VIDEOS.map((video, i) => (
+                <div key={video.slug} className="reveal" style={{ '--rd': `${i * 90}ms` }}>
+                  <VideoFacade video={video} placement="live-video-page-secondary" />
                 </div>
               ))}
             </div>

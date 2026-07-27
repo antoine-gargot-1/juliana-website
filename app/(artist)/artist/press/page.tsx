@@ -8,10 +8,10 @@ import { EpkViewTracker } from '@/components/artist/EpkViewTracker';
 import { VideoFacade } from '@/components/artist/VideoFacade';
 import {
   ARTIST_BIO,
+  BOOKING_LIVE_VIDEO,
   NOTABLE_VENUES,
   PRESS_ARTICLES,
   PRESS_QUOTES,
-  PRIMARY_VIDEO,
   STATS,
   monthYear,
   videoLength,
@@ -46,12 +46,15 @@ export default function PressPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
           <div className="epk-video">
             <div className="reveal">
-              <VideoFacade video={PRIMARY_VIDEO} placement="epk" primary posterPriority />
+              <VideoFacade video={BOOKING_LIVE_VIDEO} placement="epk" primary posterPriority />
             </div>
             <div className="reveal" style={{ '--rd': '140ms' }}>
+              {/* The booking pin, not the newest upload — see the `_ordering`
+                  note in content/videos.json. An EPK link has to land on live
+                  footage. */}
               <div className="video-primary-flag">
                 <span className="line" />
-                <span className="eyebrow">Watch this one</span>
+                <span className="eyebrow">Watch this one &mdash; live</span>
               </div>
               <p
                 style={{
@@ -63,7 +66,7 @@ export default function PressPage() {
                   margin: '0 0 22px',
                 }}
               >
-                {videoLength(PRIMARY_VIDEO)} of live performance &mdash; a complete song, one
+                {videoLength(BOOKING_LIVE_VIDEO)} of live performance &mdash; a complete song, one
                 take, live vocal over a live four-piece band. No overdubs, no edit.
               </p>
               <Link className="btn btn--ghost" href="/artist/live-video">
@@ -322,7 +325,7 @@ export default function PressPage() {
       <JsonLd
         data={[
           musicGroupSchema(),
-          videoObjectSchema(PRIMARY_VIDEO),
+          videoObjectSchema(BOOKING_LIVE_VIDEO),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Artist', path: '/artist' },
