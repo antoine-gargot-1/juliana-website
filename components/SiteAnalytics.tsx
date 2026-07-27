@@ -9,17 +9,35 @@ import { GA_ENABLED, GA_MEASUREMENT_ID, captureAttribution, track, trackPageView
 /**
  * GA4 loader plus the two site-wide listeners.
  *
- * Reads NEXT_PUBLIC_GA_MEASUREMENT_ID (a "G-XXXXXXXXXX" string) at build time.
- * When it is unset — which it is today, the user has to supply one — every
- * branch below no-ops: no script tags are emitted, no network requests are made,
- * and track() calls elsewhere in the app quietly do nothing. The site is
- * byte-for-byte what it was before, so this can ship ahead of the ID existing.
+ * Reads NEXT_PUBLIC_GA_MEASUREMENT_ID (a "G-XXXXXXXXXX" string) at build time;
+ * the committed default lives in .env and the Vercel dashboard overrides it.
+ * If it is ever unset or malformed, every branch below no-ops: no script tags
+ * are emitted, no network requests are made, and track() calls elsewhere in the
+ * app quietly do nothing. Failing closed is deliberate — a broken ID should
+ * cost analytics, not break the page.
  *
  * Deliberately uses usePathname() and reads window.location.search directly
  * rather than useSearchParams(): useSearchParams() forces a client-side bailout
  * that would drop these statically prerendered routes into dynamic rendering.
  */
-export function SiteAnalytics() {
+type Props = {
+  /**
+   * Suppresses GA4 entirely. Passed from the root layout, which reads the same
+   * SITE_NOINDEX flag robots.ts uses to mark a deployment that is not the real
+   * production site.
+   *
+   * Preview deployments serve a byte-for-byte copy of the site. Without this,
+   * every click around a preview URL would land in the same GA4 property as
+   * real venue traffic, and "did emailing Hotel Cafe produce a video play"
+   * would be answered partly with our own testing. Opt-in rather than derived
+   * from VERCEL_ENV for the reason robots.ts already documents: a throwaway
+   * review project builds to its own production target, so VERCEL_ENV reads
+   * "production" there too.
+   */
+  disabled?: boolean;
+};
+
+export function SiteAnalytics({ disabled = false }: Props) {
   const pathname = usePathname();
 
   // Latch UTMs on the very first paint, before any conversion can fire, so an
@@ -31,9 +49,9 @@ export function SiteAnalytics() {
   // App Router client navigation does not reload the page, so page_view has to
   // be sent by hand on every path change (the loader sets send_page_view:false).
   useEffect(() => {
-    if (!GA_ENABLED) return;
+    if (!GA_ENABLED || disabled) return;
     trackPageView(window.location.href, document.title);
-  }, [pathname]);
+  }, [pathname, disabled]);
 
   // Outbound Spotify clicks, by delegation. A single listener catches every
   // Spotify link on both the artist and coach sides — including any added later
@@ -60,7 +78,7 @@ export function SiteAnalytics() {
     return () => document.removeEventListener('click', onClick, { capture: true });
   }, []);
 
-  if (!GA_ENABLED) return null;
+  if (!GA_ENABLED || disabled) return null;
 
   return (
     <>

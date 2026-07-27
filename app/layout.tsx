@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* GA4: conversions + UTM attribution. No-ops until
             NEXT_PUBLIC_GA_MEASUREMENT_ID is set. See lib/analytics.ts for why
             both exist rather than one. */}
-        <SiteAnalytics />
+        <SiteAnalytics disabled={process.env.SITE_NOINDEX === '1'} />
       </body>
     </html>
   );
