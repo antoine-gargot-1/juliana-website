@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics';
 import { EMAIL } from '@/lib/site';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mojbyjdn';
@@ -54,6 +55,14 @@ export function BookingForm() {
       });
 
       if (res.ok) {
+        // Only a genuine 2xx counts as a conversion — tracking on submit-click
+        // would inflate the number with failed and bot submissions.
+        track('booking_submit', {
+          event_type: form.eventType,
+          has_date: form.eventDate !== '',
+          has_budget: form.budget !== '',
+          organization: form.organization.slice(0, 100),
+        });
         setStatus('sent');
         setForm(EMPTY);
         return;

@@ -8,6 +8,7 @@ import './fonts.css';
 import { fontClassNames } from './fonts';
 import { CursorRing } from '@/components/CursorRing';
 import { JsonLd } from '@/components/JsonLd';
+import { SiteAnalytics } from '@/components/SiteAnalytics';
 import { personSchema, websiteSchema } from '@/lib/schema';
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH, SITE_NAME, SITE_URL, abs } from '@/lib/site';
 
@@ -62,8 +63,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <CursorRing />
         <JsonLd data={[personSchema(), websiteSchema()]} />
+        {/* Vercel: page views + Core Web Vitals (cookieless, stays as-is). */}
         <Analytics />
         <SpeedInsights />
+        {/* GA4: conversions + UTM attribution. No-ops until
+            NEXT_PUBLIC_GA_MEASUREMENT_ID is set. See lib/analytics.ts for why
+            both exist rather than one. */}
+        <SiteAnalytics />
       </body>
     </html>
   );

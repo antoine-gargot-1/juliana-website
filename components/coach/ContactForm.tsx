@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { track } from '@/lib/analytics';
 import { EMAIL, SOCIAL } from '@/lib/site';
 
 const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xlgvagbj';
@@ -53,6 +54,12 @@ export function ContactForm() {
       });
 
       if (res.ok) {
+        // See BookingForm: conversion fires on a real 2xx, not on click.
+        track('contact_submit', {
+          interest: form.interest,
+          experience: form.experience,
+          mode: form.mode,
+        });
         setStatus('sent');
         setForm(EMPTY);
         return;

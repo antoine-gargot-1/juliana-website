@@ -1,0 +1,96 @@
+'use client';
+
+import { useEffect } from 'react';
+import Script from 'next/script';
+import { usePathname } from 'next/navigation';
+
+import { GA_ENABLED, GA_MEASUREMENT_ID, captureAttribution, track, trackPageView } from '@/lib/analytics';
+
+/**
+ * GA4 loader plus the two site-wide listeners.
+ *
+ * Reads NEXT_PUBLIC_GA_MEASUREMENT_ID (a "G-XXXXXXXXXX" string) at build time.
+ * When it is unset — which it is today, the user has to supply one — every
+ * branch below no-ops: no script tags are emitted, no network requests are made,
+ * and track() calls elsewhere in the app quietly do nothing. The site is
+ * byte-for-byte what it was before, so this can ship ahead of the ID existing.
+ *
+ * Deliberately uses usePathname() and reads window.location.search directly
+ * rather than useSearchParams(): useSearchParams() forces a client-side bailout
+ * that would drop these statically prerendered routes into dynamic rendering.
+ */
+export function SiteAnalytics() {
+  const pathname = usePathname();
+
+  // Latch UTMs on the very first paint, before any conversion can fire, so an
+  // outreach visitor who immediately hits play is still attributed.
+  useEffect(() => {
+    captureAttribution();
+  }, []);
+
+  // App Router client navigation does not reload the page, so page_view has to
+  // be sent by hand on every path change (the loader sets send_page_view:false).
+  useEffect(() => {
+    if (!GA_ENABLED) return;
+    trackPageView(window.location.href, document.title);
+  }, [pathname]);
+
+  // Outbound Spotify clicks, by delegation. A single listener catches every
+  // Spotify link on both the artist and coach sides — including any added later
+  // — without threading an onClick through a dozen server components.
+  //
+  // Note this only sees real <a> clicks. Plays that happen *inside* the embedded
+  // Spotify iframes are cross-origin and cannot be observed from here.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      const link = target?.closest?.('a[href*="open.spotify.com"]') as HTMLAnchorElement | null;
+      if (!link) return;
+
+      const href = link.href;
+      track('spotify_click', {
+        href,
+        // "artist" | "playlist" | "track" ... from the Spotify URL shape.
+        resource: new URL(href).pathname.split('/').filter(Boolean)[0] ?? 'unknown',
+        page: window.location.pathname,
+      });
+    };
+
+    document.addEventListener('click', onClick, { capture: true });
+    return () => document.removeEventListener('click', onClick, { capture: true });
+  }, []);
+
+  if (!GA_ENABLED) return null;
+
+  return (
+    <>
+      <Script
+        id="ga4-src"
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+      />
+      <Script id="ga4-init" strategy="afterInteractive">
+        {`
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('js', new Date());
+// Consent Mode v2: analytics only. Every advertising signal is denied up front,
+// so no remarketing identifiers are ever collected and there is nothing to ask
+// EU consent for beyond the analytics cookie itself. Flip analytics_storage to
+// 'denied' here and gtag('consent','update',...) from a banner if that changes.
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'granted'
+});
+gtag('config', '${GA_MEASUREMENT_ID}', {
+  send_page_view: false,
+  anonymize_ip: true
+});
+        `}
+      </Script>
+    </>
+  );
+}
