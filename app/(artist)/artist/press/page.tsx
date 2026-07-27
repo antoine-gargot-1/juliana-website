@@ -4,32 +4,73 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
+import { EpkViewTracker } from '@/components/artist/EpkViewTracker';
+import { VideoFacade } from '@/components/artist/VideoFacade';
 import {
   ARTIST_BIO,
   NOTABLE_VENUES,
   PRESS_ARTICLES,
   PRESS_QUOTES,
+  PRIMARY_VIDEO,
   STATS,
   monthYear,
+  videoLength,
 } from '@/lib/content';
-import { musicGroupSchema } from '@/lib/schema';
+import { musicGroupSchema, videoObjectSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
-  title: 'Press Kit — Bio, Photos & Coverage',
+  title: 'Press Kit — Bio, Photos, Live Video & Coverage',
   description:
-    'Electronic press kit for Juliana Beltran: artist bio, high-resolution press photos, review quotes from FEMMUSIC, LOUD WOMEN and Jammerzine, technical rider and stage plot.',
+    'Electronic press kit for Juliana Beltran: live performance video, artist bio, high-resolution press photos, review quotes from FEMMUSIC, LOUD WOMEN and Jammerzine, technical rider and stage plot.',
   path: '/artist/press',
 });
 
 export default function PressPage() {
   return (
     <div className="page-fade artist-theme">
+      <link rel="preconnect" href="https://i.ytimg.com" />
+      <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+
       <Reveal />
+      <EpkViewTracker />
       <div className="wrap">
         <section className="svc-page-hero">
           <div className="eyebrow">Electronic press kit</div>
           <h1>Press.</h1>
+        </section>
+
+        {/* Live video, first thing on the page. This is the EPK a booking email
+            links to, and a pitch without live footage gets ignored — so it goes
+            above the bio, not below the press clippings. */}
+        <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
+          <div className="epk-video">
+            <div className="reveal">
+              <VideoFacade video={PRIMARY_VIDEO} placement="epk" primary posterPriority />
+            </div>
+            <div className="reveal" style={{ '--rd': '140ms' }}>
+              <div className="video-primary-flag">
+                <span className="line" />
+                <span className="eyebrow">Watch this one</span>
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--serif)',
+                  fontSize: 19,
+                  lineHeight: 1.6,
+                  color: 'var(--ink-soft)',
+                  fontWeight: 300,
+                  margin: '0 0 22px',
+                }}
+              >
+                {videoLength(PRIMARY_VIDEO)} of live performance &mdash; a complete song, one
+                take, live vocal over a live four-piece band. No overdubs, no edit.
+              </p>
+              <Link className="btn btn--ghost" href="/artist/live-video">
+                All live video <span className="arrow">&rarr;</span>
+              </Link>
+            </div>
+          </div>
         </section>
 
         <section className="block" style={{ paddingTop: 20 }}>
@@ -281,6 +322,7 @@ export default function PressPage() {
       <JsonLd
         data={[
           musicGroupSchema(),
+          videoObjectSchema(PRIMARY_VIDEO),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Artist', path: '/artist' },

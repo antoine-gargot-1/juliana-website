@@ -1186,3 +1186,106 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   .article-arrow { display: none; }
 }
 
+
+/* ---------- Video (click-to-load YouTube facade) ---------- */
+.video-facade { margin: 0; }
+.video-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+}
+.video-facade.is-primary .video-frame {
+  border: none;
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,0.5);
+}
+.video-player, .video-poster {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: 0;
+}
+.video-poster { display: block; padding: 0; cursor: pointer; }
+.video-poster img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 4s cubic-bezier(.2,.7,.2,1), filter .6s ease;
+}
+.video-poster:hover img { transform: scale(1.04); }
+.video-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), rgba(0,0,0,0.05) 55%);
+  transition: background .4s ease;
+}
+.video-poster:hover .video-scrim { background: linear-gradient(to top, rgba(0,0,0,0.42), rgba(0,0,0,0)); }
+.video-play {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  width: 74px; height: 74px;
+  border: 1px solid var(--bg);
+  border-radius: 50%;
+  color: var(--bg);
+  padding-left: 4px;
+  transition: background .3s ease, color .3s ease, border-color .3s ease, transform .3s ease;
+}
+.video-poster:hover .video-play {
+  background: var(--bg);
+  color: var(--ink);
+  transform: translate(-50%, -50%) scale(1.06);
+}
+.video-poster:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.video-facade.is-primary .video-play { width: 96px; height: 96px; }
+.video-duration {
+  position: absolute; right: 16px; bottom: 14px;
+  font-size: 11px; letter-spacing: 0.2em;
+  color: var(--bg);
+  opacity: 0.85;
+}
+.video-meta { padding: 18px 0 0; }
+.video-meta-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 20px;
+}
+.video-title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(22px, 2.4vw, 30px);
+  line-height: 1.1;
+}
+.video-facade.is-primary .video-title { font-size: clamp(30px, 3.6vw, 46px); }
+.video-year { white-space: nowrap; }
+.video-credits {
+  font-family: var(--serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  font-weight: 300;
+  margin: 10px 0 0;
+}
+
+/* Secondary videos grid */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px 30px;
+}
+@media (max-width: 980px) { .video-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .video-grid { grid-template-columns: 1fr; } }
+
+/* "Watch this one" flag above the primary player */
+.video-primary-flag {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 18px;
+}
+.video-primary-flag .line { width: 36px; height: 1px; background: var(--accent); }
+.video-primary-flag .eyebrow { color: var(--accent); }
+
+/* EPK: primary video sits beside the pitch copy */
+.epk-video {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 50px;
+  align-items: start;
+}
+@media (max-width: 920px) { .epk-video { grid-template-columns: 1fr; gap: 30px; } }

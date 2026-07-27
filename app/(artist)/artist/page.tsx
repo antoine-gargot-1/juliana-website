@@ -6,8 +6,9 @@ import { JsonLd } from '@/components/JsonLd';
 import { ParallaxHero } from '@/components/ParallaxHero';
 import { Reveal } from '@/components/Reveal';
 import { ShowRow } from '@/components/artist/ShowRow';
-import { PLAYLISTS, PRESS_QUOTES, STATS, partitionShows } from '@/lib/content';
-import { eventListSchema, musicGroupSchema } from '@/lib/schema';
+import { VideoFacade } from '@/components/artist/VideoFacade';
+import { PLAYLISTS, PRESS_QUOTES, PRIMARY_VIDEO, STATS, partitionShows } from '@/lib/content';
+import { eventListSchema, musicGroupSchema, videoObjectSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
@@ -136,6 +137,45 @@ export default function ArtistHomePage() {
         </div>
       </section>
 
+      {/* Live video */}
+      <section className="block" style={{ paddingTop: 60, paddingBottom: 60 }}>
+        <div className="wrap">
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'baseline',
+              flexWrap: 'wrap',
+              gap: 20,
+              marginBottom: 40,
+            }}
+          >
+            <div>
+              <div className="eyebrow reveal">&mdash; Watch</div>
+              <h2
+                className="reveal"
+                style={{
+                  '--rd': '80ms',
+                  fontFamily: 'var(--display)',
+                  fontSize: 'clamp(38px, 5vw, 68px)',
+                  lineHeight: 1,
+                  margin: '12px 0 0',
+                  fontWeight: 400,
+                }}
+              >
+                Live <span className="it">video.</span>
+              </h2>
+            </div>
+            <Link className="btn reveal" href="/artist/live-video" style={{ '--rd': '160ms' }}>
+              All video <span className="arrow">&rarr;</span>
+            </Link>
+          </div>
+          <div className="reveal" style={{ '--rd': '200ms' }}>
+            <VideoFacade video={PRIMARY_VIDEO} placement="artist-home" primary />
+          </div>
+        </div>
+      </section>
+
       {/* Upcoming shows */}
       <section className="block" style={{ paddingTop: 60, paddingBottom: 60 }}>
         <div className="wrap">
@@ -236,6 +276,7 @@ export default function ArtistHomePage() {
       <JsonLd
         data={[
           musicGroupSchema(),
+          videoObjectSchema(PRIMARY_VIDEO),
           eventListSchema(upcoming.length > 0 ? upcoming : past.slice(0, 3)),
           breadcrumbList([
             { name: 'Home', path: '/' },

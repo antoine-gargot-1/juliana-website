@@ -11,6 +11,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry['c
     { path: '/', priority: 1.0, changeFrequency: 'monthly' },
     { path: '/artist', priority: 0.9, changeFrequency: 'weekly' },
     { path: '/artist/music', priority: 0.7, changeFrequency: 'monthly' },
+    { path: '/artist/live-video', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/artist/live', priority: 0.8, changeFrequency: 'weekly' },
     { path: '/artist/press', priority: 0.7, changeFrequency: 'monthly' },
     { path: '/artist/booking', priority: 0.8, changeFrequency: 'monthly' },

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 const links: [string, string][] = [
   ['/artist', 'Home'],
   ['/artist/music', 'Music'],
+  ['/artist/live-video', 'Video'],
   ['/artist/live', 'Live'],
   ['/artist/press', 'Press'],
   ['/artist/booking', 'Booking'],
