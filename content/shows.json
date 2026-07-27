@@ -1,0 +1,123 @@
+{
+  "_note": "Single source of truth for live dates. `start`/`end` are full ISO 8601 datetimes with the America/Los_Angeles UTC offset in effect on that date (PST -08:00, PDT -07:00). Upcoming vs. past is derived at build time by comparing `end` to now — never by array membership. `tickets` and `price` are optional; a MusicEvent `offers` block is only emitted when `tickets` is set.",
+  "shows": [
+    {
+      "slug": "harvard-and-stone-los-angeles-2026-09-01",
+      "date": "2026-09-01",
+      "start": "2026-09-01T20:00:00-07:00",
+      "end": "2026-09-01T22:00:00-07:00",
+      "venue": "Harvard and Stone",
+      "city": "Los Angeles, CA",
+      "note": null,
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "Harvard and Stone",
+        "streetAddress": "5221 Hollywood Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90027",
+        "addressCountry": "US"
+      }
+    },
+    {
+      "slug": "the-palm-and-the-pine-los-angeles-2026-04-15",
+      "date": "2026-04-15",
+      "start": "2026-04-15T20:00:00-07:00",
+      "end": "2026-04-15T22:00:00-07:00",
+      "venue": "The Palm and The Pine",
+      "city": "Los Angeles, CA",
+      "note": null,
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "The Palm and The Pine",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "addressCountry": "US"
+      }
+    },
+    {
+      "slug": "hotel-cafe-hollywood-2026-03-15",
+      "date": "2026-03-15",
+      "start": "2026-03-15T20:00:00-07:00",
+      "end": "2026-03-15T22:00:00-07:00",
+      "venue": "Hotel Cafe",
+      "city": "Hollywood, CA",
+      "note": null,
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "Hotel Cafe",
+        "streetAddress": "1623 N Cahuenga Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90028",
+        "addressCountry": "US"
+      }
+    },
+    {
+      "slug": "the-virgil-los-angeles-2025-04-15",
+      "date": "2025-04-15",
+      "start": "2025-04-15T20:00:00-07:00",
+      "end": "2025-04-15T22:00:00-07:00",
+      "venue": "The Virgil",
+      "city": "Los Angeles, CA",
+      "note": null,
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "The Virgil",
+        "streetAddress": "4519 Santa Monica Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90029",
+        "addressCountry": "US"
+      }
+    },
+    {
+      "slug": "hotel-cafe-hollywood-2025-03-08",
+      "date": "2025-03-08",
+      "start": "2025-03-08T20:00:00-08:00",
+      "end": "2025-03-08T22:00:00-08:00",
+      "venue": "Hotel Cafe",
+      "city": "Hollywood, CA",
+      "note": "Rising Voices: Latina Songwriters",
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "Hotel Cafe",
+        "streetAddress": "1623 N Cahuenga Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90028",
+        "addressCountry": "US"
+      }
+    },
+    {
+      "slug": "the-bourbon-room-los-angeles-2024-02-08",
+      "date": "2024-02-08",
+      "start": "2024-02-08T20:00:00-08:00",
+      "end": "2024-02-08T22:00:00-08:00",
+      "venue": "The Bourbon Room",
+      "city": "Los Angeles, CA",
+      "note": null,
+      "tickets": null,
+      "price": null,
+      "priceCurrency": "USD",
+      "place": {
+        "name": "The Bourbon Room",
+        "streetAddress": "6356 Hollywood Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90028",
+        "addressCountry": "US"
+      }
+    }
+  ]
+}

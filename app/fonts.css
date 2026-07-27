@@ -1,0 +1,12 @@
+/*
+ * Maps the self-hosted next/font families onto the design tokens defined in
+ * styles.css. Doubled `:root:root` so this wins over the `:root` block in
+ * styles.css regardless of stylesheet order — styles.css itself is unchanged.
+ * The original fallback stacks are preserved verbatim.
+ */
+:root:root {
+  --serif: var(--font-cormorant), 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --display: var(--font-italiana), 'Italiana', 'Cormorant Garamond', serif;
+  --sans: var(--font-manrope), 'Manrope', system-ui, -apple-system, sans-serif;
+  --script: var(--font-pinyon), 'Pinyon Script', cursive;
+}
