@@ -1,0 +1,17 @@
+{
+  "_note": "Dates and the shared draft banner for /coach/privacy and /coach/terms. They live here rather than in the two page files because the banner is one paragraph that must read identically on both pages, and a paragraph typed twice is a paragraph that drifts. Same reasoning as ASSESSMENT_CARD_COPY in components/coach/PriceGrid.tsx.",
+
+  "_effectiveDateNote": "CalOPPA (Cal. Bus. & Prof. Code §22575(b)(4)) requires the privacy policy to carry an effective date, so this is a REAL DATE and not a build-time new Date(). Update `lastUpdated` on any edit; update `effectiveDate` only when something material changes, and say what changed in the 'Changes to this page' section. The two documents have independent dates on purpose: editing the lesson policies should not silently restate the privacy policy as new.",
+
+  "_draftNoticeNote": "REMOVE THIS BANNER ONLY WHEN A CALIFORNIA ATTORNEY HAS ACTUALLY REVIEWED BOTH PAGES. Deleting it because the pages read confidently would be the whole problem. It is deliberately the first thing on each page rather than a footnote: a reader relying on either document deserves to know it has not been reviewed before they rely on it, not after.",
+  "draftNotice": "This page is a draft. Every factual claim on it was written from this site's own code rather than from a template, so what it describes really is what happens — but it has not yet been reviewed by a California attorney, and it is not legal advice. If something here matters to a decision you're making, email me and ask me directly.",
+
+  "privacy": {
+    "effectiveDate": "August 13, 2026",
+    "lastUpdated": "August 13, 2026"
+  },
+  "terms": {
+    "effectiveDate": "August 13, 2026",
+    "lastUpdated": "August 13, 2026"
+  }
+}

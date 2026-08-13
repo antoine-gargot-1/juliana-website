@@ -74,6 +74,20 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry['c
     { path: '/vocal-coach-los-angeles', priority: 0.9, changeFrequency: 'monthly' },
     { path: '/online-singing-lessons', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/online-songwriting-lessons', priority: 0.9, changeFrequency: 'monthly' },
+
+    // Legal. INDEXED DELIBERATELY, which is not the default instinct for a legal
+    // page. Two reasons. CalOPPA (Bus. & Prof. Code §22575) requires the privacy
+    // policy to be "conspicuously posted", and a page excluded from the sitemap
+    // and unreachable by search is a weaker version of posted than one that is
+    // both. And these are pages people go looking for on purpose — "does she take
+    // a card for the free lesson", "how do I cancel", "what do you keep about my
+    // kid" — usually while deciding whether to hand over a card, which makes them
+    // the least wasteful search results on the site.
+    //
+    // Priority 0.3, below a past show's 0.4: indexed, findable, and never
+    // competing with a page that sells a lesson.
+    { path: '/coach/privacy', priority: 0.3, changeFrequency: 'yearly' },
+    { path: '/coach/terms', priority: 0.3, changeFrequency: 'yearly' },
   ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

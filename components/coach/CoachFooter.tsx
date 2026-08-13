@@ -129,6 +129,19 @@ export function CoachFooter() {
         {/* Year is baked in at build time; suppress the hydration diff on
             the one day of the year a stale static page could disagree. */}
         <div suppressHydrationWarning>&copy; {new Date().getFullYear()} Juliana Beltran Music</div>
+        {/* Legal, in the base row rather than as a fifth column in .foot above.
+            Two reasons. It is where every reader already looks for it, and
+            CalOPPA (Bus. & Prof. Code §22575) requires the privacy policy to be
+            "conspicuously posted" — which the statute's own safe harbour reads as
+            a link on the homepage or on the first significant page after entry,
+            and this footer is on every page of the coaching side, including both
+            of those. A fifth column would also collapse the .foot grid to
+            1.4fr+1fr+1fr+1fr+1fr on a laptop and squeeze the four columns that
+            actually sell lessons. */}
+        <div className="foot-legal">
+          <Link href="/coach/privacy">Privacy</Link>
+          <Link href="/coach/terms">Terms</Link>
+        </div>
         <div>Made with care in Los Angeles</div>
       </div>
     </footer>

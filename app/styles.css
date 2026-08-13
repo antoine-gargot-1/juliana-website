@@ -2512,3 +2512,176 @@ form .submit-note {
   accent-color: var(--accent-text);
   cursor: pointer;
 }
+
+/* ============================================================================
+   LEGAL PAGES — /coach/privacy and /coach/terms
+   ----------------------------------------------------------------------------
+   The only two pages on the site that are long-form running prose rather than
+   composed sections, so they are the only two that need a set of prose defaults
+   at all. Nothing else on the site should use these classes; if a third page
+   wants them, that is the signal to generalise the names.
+
+   TYPOGRAPHY DECISIONS, AND WHY THEY DIFFER FROM THE MARKETING PAGES
+   ----------------------------------------------------------------------------
+   --display (Playfair) appears exactly once per page, on the h1, where
+   .svc-page-hero h1 already clamps it to 64–140px — comfortably above the 28px
+   hard floor documented in app/fonts.ts. Every heading BELOW the h1 is set in
+   --serif at 600 instead. A privacy policy has ten to fifteen section headings
+   and they have to be smaller than a page title; at 21–24px Playfair's hairlines
+   are under a pixel and antialias to pale grey, which is the exact failure this
+   stylesheet exists to prevent. Literata at 600 holds ink at that size.
+
+   Body copy is the site's --fs-body/1.6 at --measure (19px, 66ch). These pages
+   are read start-to-finish by someone deciding whether to hand over a card, so
+   the measure matters more here than anywhere: the audience is parents and
+   adults over forty, and a legal page set at 90ch is a legal page nobody
+   finishes.
+
+   Every heading carries scroll-margin-top, because the nav is fixed and an
+   in-page #anchor would otherwise land the heading underneath it.
+   ============================================================================ */
+
+/* Effective / last-updated line under the hero. Lining tabular figures for the
+   same reason prices get them — a date is a figure a reader may check twice. */
+.legal-meta {
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 28px 0 0;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Pulled-aside note. Used for the "this is a draft" banner at the top of both
+   pages and for the two or three statements inside them that a reader must not
+   be able to skim past — cancellation, and the answer to the cross-site
+   tracking question CalOPPA requires. Same visual grammar as
+   .assess-card-note, deliberately: on this site an accent left rule already
+   means "this sentence is a promise, read it". */
+.legal-note {
+  max-width: var(--measure);
+  margin: 28px 0 0;
+  padding: 18px 20px;
+  background: var(--bg-deep);
+  border-left: 2px solid var(--accent);
+}
+.legal-note p {
+  font-family: var(--serif);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+.legal-note p + p { margin-top: 12px; }
+
+/* Contents. Two columns on a laptop, one on a phone. A legal page is the one
+   place on this site where a reader arrives looking for a single section
+   ("can I cancel", "what about my kid") rather than reading down. */
+.legal-toc {
+  list-style: none;
+  max-width: var(--measure);
+  margin: 44px 0 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 44px;
+}
+@media (max-width: 720px) {
+  .legal-toc { columns: 1; }
+}
+.legal-toc li {
+  font-family: var(--serif);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  margin: 0 0 12px;
+  break-inside: avoid;
+}
+.legal-toc a {
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--rule-strong);
+}
+.legal-toc a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+
+/* ---------- Running prose ---------- */
+.legal-body { max-width: var(--measure); }
+
+.legal-body h2 {
+  font-family: var(--serif);   /* 24px — under the 28px --display floor */
+  font-weight: 600;
+  font-size: var(--fs-xl);
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 58px 0 16px;
+  scroll-margin-top: 120px;
+}
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body h3 {
+  font-family: var(--serif);   /* 21px */
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  line-height: 1.3;
+  color: var(--ink);
+  margin: 34px 0 10px;
+  scroll-margin-top: 120px;
+}
+
+.legal-body p,
+.legal-body li {
+  font-family: var(--serif);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+.legal-body p { margin: 0 0 16px; }
+.legal-body ul { margin: 0 0 18px; padding-left: 22px; }
+.legal-body li { margin: 0 0 10px; }
+.legal-body li::marker { color: var(--accent-text); }
+.legal-body strong { font-weight: 600; color: var(--ink); }
+.legal-body a { border-bottom: 1px solid var(--rule-strong); }
+.legal-body a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+/* Cookie and storage keys are named exactly, so they are set as code rather
+   than quoted — a reader who wants to go and look for `_ga` in their browser
+   needs the literal string. 15px because a monospace face runs small next to
+   19px Literata; at 1rem it looks like a heading. */
+.legal-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9375rem;
+  background: var(--bg-deep);
+  padding: 2px 6px;
+}
+
+/* The third-party list. A definition list, not a table: the second column is a
+   sentence, and a two-column table with a sentence in it is unreadable on the
+   phone most of this traffic arrives on. */
+.legal-dl { margin: 0 0 18px; }
+.legal-dl dt {
+  font-family: var(--serif);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+.legal-dl dt:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+.legal-dl dd {
+  font-family: var(--serif);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+}
+
+/* Footer legal row. Sits in .foot-base, which is a 14px uppercase flex row, so
+   these inherit that and only need the underline that marks them as links. */
+.foot-legal { display: flex; gap: 26px; }
+.foot-legal a { border-bottom: 1px solid currentColor; }
+.foot-legal a:hover { color: var(--bg); }
+@media (max-width: 760px) {
+  .foot-legal { gap: 18px; }
+}
