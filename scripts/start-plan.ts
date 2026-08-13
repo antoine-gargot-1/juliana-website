@@ -57,7 +57,8 @@ function usage(message: string): never {
   console.error('Options:');
   console.error('  --assessment <ISO>  Override the stored assessment datetime.');
   console.error('  --link              Email a signed one-click link instead of starting the plan.');
-  console.error('  --dry-run           Print what would happen. No Stripe writes, no email.');
+  console.error('  --dry-run           Print what would happen. No Stripe writes, no email, and');
+  console.error('                      no plan token minted — see the note in main().');
   console.error('');
   console.error('Monthly plans available:');
   for (const key of ['online_monthly_60', 'online_monthly_30', 'inperson_monthly_60', 'inperson_monthly_30']) {
@@ -163,20 +164,61 @@ async function main() {
   if (EMAIL_LINK) {
     if (!student.email) usage(`Customer ${student.id} has no email, so no link can be sent.`);
 
+    /*
+     * ===========================================================================
+     * THE DRY-RUN RETURN COMES BEFORE THE TOKEN IS MINTED. DO NOT MOVE IT DOWN.
+     * ===========================================================================
+     * planLinkUrl() does not describe a link, it CREATES one: an HMAC-signed,
+     * 21-day capability that starts a paid monthly subscription against the card
+     * already on file, with no further authentication at the far end. It is a live
+     * credential the moment it exists.
+     *
+     * This check used to sit AFTER the console.log of that URL, so
+     * `--link --dry-run` printed a fully working token and then reported "DRY RUN —
+     * no email sent." A dry run that mints a usable credential is not a dry run; it
+     * is the real thing with the notification suppressed. The token went to terminal
+     * scrollback, shell history and any CI log, and nothing could revoke it short of
+     * rotating BOOKING_LINK_SECRET — which invalidates every outstanding link for
+     * every student at once.
+     *
+     * Nothing is generated below, so there is nothing to redact.
+     */
+    if (DRY_RUN) {
+      console.log('DRY RUN — no link generated and no email sent.');
+      console.log(`The real run signs a 21-day plan link for ${student.id} and emails it.`);
+      console.log('No token is printed here on purpose: it would be immediately usable.');
+      return;
+    }
+
     const url = planLinkUrl(process.env.NEXT_PUBLIC_SITE_URL ?? SITE_URL, {
       customerId: student.id,
       mode: catalogPrice.mode,
+      /*
+       * Name the plan in the token, or the link silently resolves to the mode's
+       * anchor plan instead of the one this command was given.
+       *
+       * `--plan online_monthly_30 --link` used to email a link that opened at
+       * online_monthly_60 — $280 rather than $170. Not a surprise charge, because
+       * /coach/book/plan renders the resolved plan and price and requires a tick,
+       * so the student sees the real number before consenting. But it is a lost
+       * conversion and an operator who thinks they offered the cheaper plan.
+       *
+       * signBookingToken throws unless this is a monthly plan for the same mode,
+       * so a mismatch fails at signing rather than reaching a student.
+       */
+      lookupKey: catalogPrice.lookupKey,
       assessmentAt,
     });
 
-    console.log('Signed plan link (expires in 21 days):');
+    /*
+     * Printed only on a real run, and only because the operator needs a copy to
+     * paste by hand when the Resend send below fails — the alternative is a student
+     * waiting on an email that never arrives. It is still a live credential in
+     * scrollback: close the terminal, and never paste this into an issue or a chat.
+     */
+    console.log('Signed plan link (expires in 21 days) — treat as a password:');
     console.log(`  ${url}`);
     console.log('');
-
-    if (DRY_RUN) {
-      console.log('DRY RUN — no email sent.');
-      return;
-    }
 
     const result = await send(planLinkEmail({
       to: student.email,
