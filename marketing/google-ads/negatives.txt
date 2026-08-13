@@ -1,0 +1,154 @@
+# ============================================================================
+# NEGATIVE KEYWORD LIST - "Coaching junk traffic"
+# ============================================================================
+# Shared library > Negative keyword lists > new list named "Coaching junk traffic".
+# Apply to: Search - LA Local, Search - Songwriting US, Search - Online Voice US.
+# DO NOT apply to Search - Brand. See "Why not the Brand campaign" at the bottom.
+#
+# Syntax in this file is the syntax the Google Ads paste box accepts:
+#   term        -> broad negative  (blocks any query containing ALL these words,
+#                                   in any order, so it is the widest net)
+#   "term"      -> phrase negative (blocks the words only in this exact order)
+#   [term]      -> exact negative  (blocks only this query, verbatim)
+#
+# The paste box does not accept comment lines. To get a clean paste buffer:
+#   grep -v '^#' marketing/google-ads/negatives.txt | grep -v '^$' | pbcopy
+#
+# AGES 5+ ARE IN SCOPE. "kids", "kids near me", "children" and "teens" appear in
+# the source brief's negative list and are DELIBERATELY ABSENT here. She teaches
+# ages 5 to 70+ (content/coach.json, /coach/faq), so blocking parent searches
+# would block a real and well-converting segment. Do not add them back.
+# ============================================================================
+
+
+# --- 1. Employment, credentials and the training industry -------------------
+# People looking for a job, a diploma, or an institution to enrol in. None of
+# them are buying one-to-one lessons from a working artist.
+jobs
+career
+salary
+degree
+certification
+university
+college
+school
+courses
+
+
+# --- 2. No-purchase intent -------------------------------------------------
+# Looking for something at no cost. The free 30-minute assessment is real, but
+# it is a step toward a paid plan, not the product.
+free
+"learn to sing free"
+
+
+# --- 3. DIY and self-serve substitutes -------------------------------------
+# Wants a video, an app or a forum thread, not a teacher. Very high volume, very
+# cheap clicks, essentially zero conversion - the classic budget sink.
+app
+software
+tutorial
+youtube
+reddit
+karaoke
+"how to sing"
+
+
+# --- 4. Wrong service entirely ---------------------------------------------
+# Instrument repair and tuning, and an instrument she does not teach.
+"piano tuning"
+"guitar repair"
+drums
+
+
+# --- 5. Wrong context: institutional singing and TV talent shows ------------
+# Choir/church singing is a different discipline and a different buyer.
+# "the voice" and "american idol" are PHRASE, not broad, on purpose - see the
+# match-type note below.
+choir
+church
+audition
+"the voice"
+"american idol"
+
+
+# ============================================================================
+# MATCH-TYPE DECISIONS (not removals - every term above is from the brief)
+# ============================================================================
+# "the voice" is PHRASE, not broad. A broad negative "the voice" blocks any
+#   query containing both "the" and "voice" in any order - which would kill
+#   "who is the best voice teacher in los angeles" and "the voice lessons near
+#   me". Phrase keeps the TV show out and the customers in.
+# "how to sing", "learn to sing free", "american idol", "piano tuning" and
+#   "guitar repair" are PHRASE for the same reason: as broad negatives their
+#   individual words ("sing", "voice", "piano", "guitar") appear in queries we
+#   are paying for.
+# Everything in groups 1 and 3 is safe as broad - none of those words appear in
+#   a query we want.
+#
+# ============================================================================
+# THREE TERMS FROM THE BRIEF THAT WILL COST YOU TRAFFIC - REVIEW IN WEEK 2
+# ============================================================================
+# These are implemented exactly as the brief specified. They are also the three
+# most likely to be over-blocking. Check each against the search terms report at
+# the first weekly review and narrow if the report supports it.
+#
+# free (broad)
+#   Also blocks "free vocal assessment los angeles" and "free consultation
+#   singing lessons" - i.e. people searching for the exact offer being sold.
+#   Narrower alternative: replace with the phrases "free singing lessons",
+#   "free voice lessons", "free vocal lessons", "sing for free".
+#
+# school (broad)
+#   Also blocks "high school singing lessons", "school talent show", "school
+#   audition prep" - all of which are in scope for a teacher of ages 5+.
+#   Narrower alternative: replace with the phrases "music school", "singing
+#   school", "vocal school", "school of music".
+#
+# audition (broad)
+#   Direct conflict with the account's own offer. Audition prep is a listed
+#   service in content/coach.json and a structured snippet value in
+#   extensions.csv, so "audition prep vocal coach los angeles" is a high-intent
+#   query this negative blocks.
+#   Narrower alternative: keep the phrases "the voice audition", "american idol
+#   audition", "open audition", "audition notice", "casting call" and drop the
+#   bare broad term.
+#
+# ============================================================================
+# RECOMMENDED ADDITIONS - MY OWN, NOT IN THE SOURCE BRIEF
+# ============================================================================
+# Not applied by default. Add them if the search terms report shows the traffic.
+# The first three are the strongest: they are adjacent professions that share
+# the word "voice" and will absolutely appear.
+#
+# "voice over"
+# "voice actor"
+# "speech therapy"
+# "accent reduction"
+# "text to speech"
+# "vocal remover"
+# "sheet music"
+# lyrics
+# chords
+# "backing track"
+#
+# ARTIST-SIDE COLLISION - a judgement call, not an oversight.
+# The same domain also sells Juliana as a performer at
+# /live-music-for-events-los-angeles. So "singer for hire", "wedding singer",
+# "hire a singer" and "mariachi" are junk for THESE coaching campaigns but are
+# genuine artist-side business. Add them as negatives on the coaching campaigns
+# only, and never at true account level, or a future artist-side campaign
+# inherits negatives that block its whole market.
+#
+# ============================================================================
+# WHY NOT THE BRAND CAMPAIGN
+# ============================================================================
+# The brief calls this an "account-level list". If it is applied truly
+# account-wide (Settings > Account settings > Negative keywords) it also filters
+# brand queries, and "juliana beltran free lesson", "juliana beltran youtube"
+# and "juliana beltran the voice" are all people searching for her by name. On a
+# $50/mo brand campaign those are the cheapest conversions in the account.
+# So: build this as a SHARED LIST and attach it to Campaigns 1-3 only. Give the
+# Brand campaign its own two-line list if you need one:
+#   "juliana beltran instagram"
+#   "juliana beltran net worth"

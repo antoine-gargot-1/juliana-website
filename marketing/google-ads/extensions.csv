@@ -1,0 +1,28 @@
+Level,Campaign,Ad Group,Asset Type,Field,Text,Chars,Limit,Final URL,Comment
+Account,,,Sitelink,Link text,Pricing,7,25,https://www.juliana-beltran.com/coach/pricing,
+Account,,,Sitelink,Description line 1,"Lessons from $85, plans from $280",33,35,,
+Account,,,Sitelink,Description line 2,See the full rate card.,23,35,,
+Account,,,Sitelink,Link text,About Juliana,13,25,https://www.juliana-beltran.com/coach/about,
+Account,,,Sitelink,Description line 1,Colombian singer-songwriter.,28,35,,
+Account,,,Sitelink,Description line 2,Seven years teaching in LA.,27,35,,
+Account,,,Sitelink,Link text,Songwriting Lessons,19,25,https://www.juliana-beltran.com/online-songwriting-lessons,
+Account,,,Sitelink,Description line 1,Turn ideas into finished songs.,31,35,,
+Account,,,Sitelink,Description line 2,"Online, English or Spanish.",27,35,,
+Account,,,Sitelink,Link text,Book Free Assessment,20,25,https://www.juliana-beltran.com/coach/book,
+Account,,,Sitelink,Description line 1,Free 30-minute vocal assessment.,32,35,,
+Account,,,Sitelink,Description line 2,"Card held, never charged.",25,35,,
+Account,,,Callout,Callout text,Free first session,18,25,,Required by brief. Accurate: the 30-min assessment is $0.
+Account,,,Callout,Callout text,Online or in person,19,25,,Mode clarity. NEVER 'in-person studio' - there are no premises.
+Account,,,Callout,Callout text,Cancel anytime,14,25,,Accurate: the Stripe Portal is configured to allow cancellation.
+Account,,,Callout,Callout text,English or Spanish,18,25,,Added. Bilingual delivery is the underused advantage in LA.
+Account,,,Callout,Callout text,Ages 5 to 70+,13,25,,Added. Matches the public FAQ in content/coach.json.
+Account,,,Callout,Callout text,Beginners welcome,17,25,,Added. Removes the main objection at the click stage.
+Account,,,Structured snippet,Header,Types,5,25,,Valid GA header. Verify in the picker.
+Account,,,Structured snippet,Value,Vocal technique,15,25,,
+Account,,,Structured snippet,Value,Songwriting,11,25,,
+Account,,,Structured snippet,Value,Performance prep,16,25,,
+Account,,,Structured snippet,Value,Audition prep,13,25,,
+Account,,,Structured snippet,Value,Artist development,18,25,,
+Account,,,Structured snippet,Value,Guitar and piano,16,25,,
+Account,,,Location asset,DO NOT ADD,n/a,,,,"Deliberately omitted. A location asset publishes an address or a distance-to-you. Lessons happen in a private residence, so no location asset, no affiliate location, no GBP location link on this account."
+Account,,,Call asset,DEFERRED,n/a,,,,No business phone line is documented in the repo. Add a call asset only with a number she is willing to publish; do not use a personal mobile.
