@@ -50,7 +50,7 @@ export default function NotFound() {
           fontSize: 19,
           color: 'var(--ink-soft)',
           maxWidth: 440,
-          fontWeight: 300,
+          fontWeight: 400,
           lineHeight: 1.5,
         }}
       >

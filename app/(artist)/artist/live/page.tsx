@@ -51,7 +51,7 @@ export default function LivePage() {
             </>
           ) : (
             <div className="reveal" style={{ textAlign: 'center', padding: '60px 0' }}>
-              <p style={{ fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink-soft)', fontWeight: 300 }}>
+              <p style={{ fontFamily: 'var(--serif)', fontSize: 22, color: 'var(--ink-soft)', fontWeight: 400 }}>
                 No upcoming shows announced yet.
               </p>
               <p
@@ -59,7 +59,7 @@ export default function LivePage() {
                   fontFamily: 'var(--serif)',
                   fontSize: 18,
                   color: 'var(--muted)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   marginTop: 8,
                 }}
               >

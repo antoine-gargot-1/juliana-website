@@ -68,7 +68,7 @@ export default function PressPage() {
                   fontSize: 19,
                   lineHeight: 1.6,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -98,7 +98,7 @@ export default function PressPage() {
                     fontSize: 19,
                     lineHeight: 1.65,
                     color: 'var(--ink-soft)',
-                    fontWeight: 300,
+                    fontWeight: 400,
                     margin: '0 0 22px',
                   }}
                 >
@@ -180,11 +180,11 @@ export default function PressPage() {
                 <div key={i} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
                   <blockquote
                     style={{
-                      fontFamily: 'var(--display)',
+                      fontFamily: 'var(--serif)',
                       fontSize: 'clamp(20px, 2vw, 28px)',
                       lineHeight: 1.2,
                       margin: 0,
-                      fontWeight: 400,
+                      fontWeight: 600,
                     }}
                   >
                     &ldquo;{pq.quote}&rdquo;
@@ -231,9 +231,9 @@ export default function PressPage() {
                   <div className="article-body">
                     <div
                       style={{
-                        fontFamily: 'var(--display)',
+                        fontFamily: 'var(--serif)',
                         fontSize: 'clamp(20px, 2.2vw, 28px)',
-                        fontWeight: 400,
+                        fontWeight: 600,
                         lineHeight: 1.1,
                         marginBottom: 8,
                       }}
@@ -245,7 +245,7 @@ export default function PressPage() {
                         fontFamily: 'var(--serif)',
                         fontSize: 15,
                         color: 'var(--ink-soft)',
-                        fontWeight: 300,
+                        fontWeight: 400,
                         margin: 0,
                         lineHeight: 1.5,
                       }}
@@ -291,7 +291,7 @@ export default function PressPage() {
                     fontFamily: 'var(--serif)',
                     fontSize: 18,
                     color: 'var(--ink-soft)',
-                    fontWeight: 300,
+                    fontWeight: 400,
                   }}
                 >
                   Available on request. Please include event details in your booking inquiry.
@@ -307,7 +307,7 @@ export default function PressPage() {
                     fontFamily: 'var(--serif)',
                     fontSize: 18,
                     color: 'var(--ink-soft)',
-                    fontWeight: 300,
+                    fontWeight: 400,
                   }}
                 >
                   Available on request. Configurations for solo, duo, and full band.

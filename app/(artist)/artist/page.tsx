@@ -239,11 +239,11 @@ export default function ArtistHomePage() {
               <div key={i} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
                 <blockquote
                   style={{
-                    fontFamily: 'var(--display)',
+                    fontFamily: 'var(--serif)',
                     fontSize: 'clamp(22px, 2.5vw, 32px)',
                     lineHeight: 1.2,
                     margin: 0,
-                    fontWeight: 400,
+                    fontWeight: 600,
                   }}
                 >
                   &ldquo;{pq.quote}&rdquo;

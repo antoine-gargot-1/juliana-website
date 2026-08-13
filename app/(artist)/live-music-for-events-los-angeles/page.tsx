@@ -51,7 +51,7 @@ export default function LiveMusicForEventsPage() {
               color: 'var(--ink-soft)',
               maxWidth: 700,
               marginTop: 24,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             I am Juliana Beltran, a Colombian singer-songwriter based in Los Angeles. I sing in
@@ -79,7 +79,7 @@ export default function LiveMusicForEventsPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -97,7 +97,7 @@ export default function LiveMusicForEventsPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -114,7 +114,7 @@ export default function LiveMusicForEventsPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: 0,
                 }}
               >
@@ -180,9 +180,9 @@ export default function LiveMusicForEventsPage() {
                   >
                     <div
                       style={{
-                        fontFamily: 'var(--display)',
+                        fontFamily: 'var(--serif)',
                         fontSize: 'clamp(20px, 2.2vw, 26px)',
-                        fontWeight: 400,
+                        fontWeight: 600,
                         marginBottom: 6,
                       }}
                     >
@@ -193,7 +193,7 @@ export default function LiveMusicForEventsPage() {
                         fontFamily: 'var(--serif)',
                         fontSize: 16,
                         color: 'var(--ink-soft)',
-                        fontWeight: 300,
+                        fontWeight: 400,
                         margin: 0,
                         lineHeight: 1.55,
                       }}
@@ -219,7 +219,7 @@ export default function LiveMusicForEventsPage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 18,
-                      fontWeight: 300,
+                      fontWeight: 400,
                       display: 'flex',
                       gap: 18,
                     }}
@@ -254,7 +254,7 @@ export default function LiveMusicForEventsPage() {
               fontSize: 19,
               lineHeight: 1.65,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 760,
               margin: '0 0 26px',
             }}
@@ -280,7 +280,7 @@ export default function LiveMusicForEventsPage() {
               fontSize: 19,
               lineHeight: 1.65,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 760,
               margin: '0 0 18px',
             }}
@@ -298,7 +298,7 @@ export default function LiveMusicForEventsPage() {
               fontSize: 19,
               lineHeight: 1.65,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 760,
               margin: 0,
             }}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
 import { ASSESSMENT_CTA_LABEL, PRICING_CTA_LABEL } from '@/components/coach/PriceGrid';
+import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
 import { TESTIMONIALS } from '@/lib/content';
 import { ASSESSMENT, IN_PERSON_DAYS } from '@/lib/pricing';
 import { assessmentOfferSchema, voiceLessonsServiceSchema } from '@/lib/schema';
@@ -76,7 +77,7 @@ export default function VoiceLessonsLosAngelesPage() {
               color: 'var(--ink-soft)',
               maxWidth: 700,
               marginTop: 24,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             One-to-one singing lessons with a working recording artist. In person in Los Angeles or
@@ -102,7 +103,7 @@ export default function VoiceLessonsLosAngelesPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -120,7 +121,7 @@ export default function VoiceLessonsLosAngelesPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -138,7 +139,7 @@ export default function VoiceLessonsLosAngelesPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: 0,
                 }}
               >
@@ -178,7 +179,7 @@ export default function VoiceLessonsLosAngelesPage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 18,
-                      fontWeight: 300,
+                      fontWeight: 400,
                       display: 'flex',
                       gap: 18,
                     }}
@@ -210,7 +211,7 @@ export default function VoiceLessonsLosAngelesPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -229,7 +230,7 @@ export default function VoiceLessonsLosAngelesPage() {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 26px',
                 }}
               >
@@ -256,26 +257,29 @@ export default function VoiceLessonsLosAngelesPage() {
           <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
           </div>
-          <div className="press-quotes-grid">
-            {TESTIMONIALS.slice(0, 3).map((t, i) => (
-              <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
-                <blockquote
-                  style={{
-                    fontFamily: 'var(--display)',
-                    fontSize: 'clamp(20px, 2vw, 28px)',
-                    lineHeight: 1.2,
-                    margin: 0,
-                    fontWeight: 400,
-                  }}
-                >
-                  {t.quote}
-                </blockquote>
-                <div className="eyebrow" style={{ marginTop: 16 }}>
-                  {t.name}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/*
+            All five reviews, via the shared component, rather than the three
+            hand-rolled cards that used to sit here. Three reasons, none cosmetic:
+
+            COUNT HONESTY — the JSON-LD on this page emits `reviewCount: 5`
+            (derived from TESTIMONIALS.length, so it cannot drift). Showing three
+            made the marked-up count disagree with the visible one, which is a
+            structured-data violation on its own, not merely untidy.
+
+            TYPE — the old block set quotes in var(--display) at
+            clamp(20px, 2vw, 28px). The display face has a hard 28px floor
+            because below that its hairlines are sub-pixel and antialias to pale
+            grey, so at narrow viewports this was the least readable text on a
+            page whose audience is the reason we retyped the site.
+
+            PROOF SHOULD NOT NEED JS — the cards carried `.reveal`, which is
+            opacity:0 until useReveal adds `.in`. Testimonials are the evidence;
+            they should be in the HTML and visible without scripting.
+
+            The component also renders the visible aggregate line, so do not add
+            a second one here.
+          */}
+          <TestimonialCarousel testimonials={TESTIMONIALS} />
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
@@ -289,7 +293,7 @@ export default function VoiceLessonsLosAngelesPage() {
               fontSize: 19,
               lineHeight: 1.65,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 760,
               margin: '0 0 26px',
             }}

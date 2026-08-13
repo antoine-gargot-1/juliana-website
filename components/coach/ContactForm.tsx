@@ -126,7 +126,7 @@ export function ContactForm() {
               fontSize: 19,
               color: 'var(--ink-soft)',
               maxWidth: 540,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             I&apos;ll be in touch within a few days. If you&apos;d rather not wait, you can book
@@ -330,7 +330,7 @@ export function ContactForm() {
                     fontSize: 16,
                     color: 'var(--accent)',
                     margin: '18px 0 0',
-                    fontWeight: 300,
+                    fontWeight: 400,
                   }}
                 >
                   Your note didn&apos;t send &mdash; {error} Please try again, or email{' '}

@@ -129,7 +129,7 @@ export function BookingForm() {
               fontSize: 19,
               color: 'var(--ink-soft)',
               maxWidth: 540,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             I&apos;ll get back to you within 48 hours with availability and details.
@@ -294,7 +294,7 @@ export function BookingForm() {
                     fontSize: 16,
                     color: 'var(--accent)',
                     margin: '18px 0 0',
-                    fontWeight: 300,
+                    fontWeight: 400,
                   }}
                 >
                   Your inquiry didn&apos;t send &mdash; {error} Please try again, or email{' '}

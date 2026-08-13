@@ -80,7 +80,7 @@ export default function LiveVideoPage() {
               fontSize: 19,
               lineHeight: 1.6,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 720,
               margin: '30px 0 0',
             }}
@@ -96,7 +96,7 @@ export default function LiveVideoPage() {
               fontSize: 15,
               fontStyle: 'italic',
               color: 'var(--muted)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 720,
               margin: '14px 0 0',
             }}
@@ -124,7 +124,7 @@ export default function LiveVideoPage() {
                 fontSize: 15,
                 fontStyle: 'italic',
                 color: 'var(--muted)',
-                fontWeight: 300,
+                fontWeight: 400,
                 margin: '0 0 30px',
               }}
             >
@@ -155,7 +155,7 @@ export default function LiveVideoPage() {
                 fontSize: 15,
                 fontStyle: 'italic',
                 color: 'var(--muted)',
-                fontWeight: 300,
+                fontWeight: 400,
                 margin: '0 0 30px',
               }}
             >

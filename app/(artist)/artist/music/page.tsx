@@ -49,7 +49,7 @@ export default function MusicPage() {
                     href={p.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 300 }}
+                    style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 400 }}
                   >
                     {p.name} ↗
                   </a>
@@ -81,7 +81,7 @@ export default function MusicPage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 18,
-                      fontWeight: 300,
+                      fontWeight: 400,
                       display: 'flex',
                       justifyContent: 'space-between',
                     }}

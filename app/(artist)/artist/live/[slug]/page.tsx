@@ -85,7 +85,7 @@ export default async function ShowPage({ params }: Props) {
               color: 'var(--ink-soft)',
               maxWidth: 640,
               marginTop: 24,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             Juliana Beltran {past ? 'performed' : 'performs'} live at {show.venue} in {show.city} on{' '}
@@ -111,7 +111,7 @@ export default async function ShowPage({ params }: Props) {
                       margin: '8px 0 0',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     {showLongDate(show)}
@@ -127,7 +127,7 @@ export default async function ShowPage({ params }: Props) {
                       margin: '8px 0 0',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     {showTime(show)} &middot; Pacific Time
@@ -143,7 +143,7 @@ export default async function ShowPage({ params }: Props) {
                       margin: '8px 0 0',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     {show.place.name}
@@ -166,7 +166,7 @@ export default async function ShowPage({ params }: Props) {
                       margin: '8px 0 0',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     {show.tickets ? (
@@ -194,7 +194,7 @@ export default async function ShowPage({ params }: Props) {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 22px',
                 }}
               >
@@ -210,7 +210,7 @@ export default async function ShowPage({ params }: Props) {
                   fontSize: 19,
                   lineHeight: 1.65,
                   color: 'var(--ink-soft)',
-                  fontWeight: 300,
+                  fontWeight: 400,
                   margin: '0 0 30px',
                 }}
               >
