@@ -1,0 +1,159 @@
+{
+  "_note": "Single source of truth for the lesson rate card. Both the UI and scripts/stripe-bootstrap.ts read this file, so the price on the page and the price in Stripe cannot drift. `amountCents` is Stripe's minor-unit format — never a float, never a display string. `lookupKey` is the stable handle the app resolves prices by; no Stripe price ID is ever hardcoded anywhere in this repo. See lib/pricing.ts for the accessors and for why the single-lesson premium must not be 'cleaned up'.",
+
+  "_pricingModel": "Prices cover the LESSON SLOT, not the discipline: a 60-minute lesson costs the same whether it is voice, guitar, piano, songwriting or artist development. Group classes are deliberately absent — they are quoted per group and stay off the grid.",
+
+  "_billingAssumption": "A monthly plan bills 4 lessons per month at a weekly cadence. Note that 'weekly' over a full year is ~52 lessons while 12 monthly bills cover 48, so the plan is 4-per-month and NOT 'every week forever'. Say '4 lessons a month' in copy, never 'every single week', or the fifth week in a long month becomes an argument. See LESSONS_PER_MONTH in lib/pricing.ts.",
+
+  "_inPersonNote": "In-person lessons happen in a private residence. There is no studio and no commercial space, so no address, neighbourhood, drive-time or opening hours appears anywhere in this repo, in JSON-LD, or in ad copy. The tier is labelled 'In-person · Los Angeles'. The address is shared privately after a booking is confirmed.",
+
+  "_productModel": "ONE STRIPE PRODUCT PER PURCHASABLE PLAN — not one per delivery mode. This looks more verbose than necessary and it is deliberate: Checkout Sessions and invoices render the PRODUCT name on each line item, not the price nickname. Collapsing these into two products ('Online Lessons', 'In-Person Lessons') would make a student's receipt for a 30-minute monthly plan read 'Online Lessons' — character-for-character identical to the 60-minute plan, to a single lesson, and to a 10-lesson pack. The teacher could not reconcile payments and the student could not tell what they bought. Stripe's own catalog guidance is explicit that multiple Prices on one Product are for billing VARIANTS of the same plan (monthly vs annual, currency), never for different plans. Do not 'tidy' this back into two products.",
+
+  "products": [
+    {
+      "key": "online_single_60",
+      "name": "Online Lesson · 60 min",
+      "description": "A single 60-minute one-to-one music lesson over video — voice, guitar, piano, songwriting or artist development."
+    },
+    {
+      "key": "online_monthly_60",
+      "name": "Online Lessons · Monthly, 60 min",
+      "description": "Four 60-minute one-to-one online lessons per month, weekly cadence."
+    },
+    {
+      "key": "online_monthly_30",
+      "name": "Online Lessons · Monthly, 30 min",
+      "description": "Four 30-minute one-to-one online lessons per month, weekly cadence."
+    },
+    {
+      "key": "online_pack_10",
+      "name": "Online Lessons · 10-lesson pack, 60 min",
+      "description": "Ten 60-minute one-to-one online lessons, used at your own pace."
+    },
+    {
+      "key": "inperson_single_60",
+      "name": "In-Person Lesson · 60 min, Los Angeles",
+      "description": "A single 60-minute one-to-one music lesson in person in Los Angeles."
+    },
+    {
+      "key": "inperson_monthly_60",
+      "name": "In-Person Lessons · Monthly, 60 min, Los Angeles",
+      "description": "Four 60-minute one-to-one in-person lessons per month in Los Angeles, weekly cadence."
+    },
+    {
+      "key": "inperson_monthly_30",
+      "name": "In-Person Lessons · Monthly, 30 min, Los Angeles",
+      "description": "Four 30-minute one-to-one in-person lessons per month in Los Angeles, weekly cadence."
+    },
+    {
+      "key": "inperson_pack_10",
+      "name": "In-Person Lessons · 10-lesson pack, 60 min, Los Angeles",
+      "description": "Ten 60-minute one-to-one in-person lessons in Los Angeles, used at your own pace."
+    },
+    {
+      "key": "assessment",
+      "name": "Free Vocal Assessment · 30 min",
+      "description": "A free 30-minute vocal assessment. Nothing is charged; a card is collected only to hold the slot."
+    }
+  ],
+
+  "prices": [
+    {
+      "lookupKey": "online_single_60",
+      "product": "online_single_60",
+      "mode": "online",
+      "duration": 60,
+      "type": "single",
+      "amountCents": 8500,
+      "interval": null,
+      "lessons": 1,
+      "name": "Single lesson · 60 min",
+      "blurb": "One lesson, no commitment."
+    },
+    {
+      "lookupKey": "online_monthly_60",
+      "product": "online_monthly_60",
+      "mode": "online",
+      "duration": 60,
+      "type": "monthly",
+      "amountCents": 28000,
+      "interval": "month",
+      "lessons": 4,
+      "name": "Monthly · 4 × 60 min",
+      "blurb": "Four 60-minute lessons a month, weekly cadence."
+    },
+    {
+      "lookupKey": "online_monthly_30",
+      "product": "online_monthly_30",
+      "mode": "online",
+      "duration": 30,
+      "type": "monthly",
+      "amountCents": 17000,
+      "interval": "month",
+      "lessons": 4,
+      "name": "Monthly · 4 × 30 min",
+      "blurb": "Four 30-minute lessons a month — good for younger students and tight weeks."
+    },
+    {
+      "lookupKey": "online_pack_10",
+      "product": "online_pack_10",
+      "mode": "online",
+      "duration": 60,
+      "type": "pack",
+      "amountCents": 70000,
+      "interval": null,
+      "lessons": 10,
+      "name": "10-lesson pack · 60 min",
+      "blurb": "Ten 60-minute lessons, used at your own pace."
+    },
+
+    {
+      "lookupKey": "inperson_single_60",
+      "product": "inperson_single_60",
+      "mode": "inperson",
+      "duration": 60,
+      "type": "single",
+      "amountCents": 11000,
+      "interval": null,
+      "lessons": 1,
+      "name": "Single lesson · 60 min",
+      "blurb": "One lesson in person, no commitment."
+    },
+    {
+      "lookupKey": "inperson_monthly_60",
+      "product": "inperson_monthly_60",
+      "mode": "inperson",
+      "duration": 60,
+      "type": "monthly",
+      "amountCents": 36000,
+      "interval": "month",
+      "lessons": 4,
+      "name": "Monthly · 4 × 60 min",
+      "blurb": "Four 60-minute lessons a month, in person in Los Angeles."
+    },
+    {
+      "lookupKey": "inperson_monthly_30",
+      "product": "inperson_monthly_30",
+      "mode": "inperson",
+      "duration": 30,
+      "type": "monthly",
+      "amountCents": 21000,
+      "interval": "month",
+      "lessons": 4,
+      "name": "Monthly · 4 × 30 min",
+      "blurb": "Four 30-minute lessons a month, in person in Los Angeles."
+    },
+    {
+      "lookupKey": "inperson_pack_10",
+      "product": "inperson_pack_10",
+      "mode": "inperson",
+      "duration": 60,
+      "type": "pack",
+      "amountCents": 90000,
+      "interval": null,
+      "lessons": 10,
+      "name": "10-lesson pack · 60 min",
+      "blurb": "Ten 60-minute lessons in person, used at your own pace."
+    }
+  ]
+}
