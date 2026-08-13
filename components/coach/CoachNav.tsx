@@ -6,19 +6,38 @@ import { usePathname, useRouter } from 'next/navigation';
 
 /**
  * Desktop nav. Six items is the ceiling before this row starts wrapping into the
- * brand on a laptop, so Pricing had to earn its slot rather than be added to it:
- * a published price is the single biggest objection-remover on a coaching site,
- * and burying it costs more than any of these links.
+ * brand on a laptop, so every slot has to be earned.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY "LESSONS" IS NOW TWO ITEMS, AND WHY IT NO LONGER POINTS AT /coach/services
+ * ---------------------------------------------------------------------------
+ * The single "Lessons" item used to point at /coach/services — a menu of six
+ * disciplines with no price, no proof, no testimonial and no video on it. That
+ * made the highest-intent link in the nav its biggest dead end, while the two
+ * pages that actually combine proof → mechanics → rates → buy
+ * (/coach/lessons/online and /coach/lessons/in-person) appeared nowhere in the
+ * nav at all — footer only. So the two selling pages take the slot, split by the
+ * only distinction a visitor cares about before reading anything: can I do this
+ * from my house, or do I have to be in Los Angeles.
+ *
+ * `Home` paid for one of those slots. The `.brand` to the left of this row is
+ * already a link to /coach on every page, which is where a reader looks for it
+ * anyway, and it sits at z-index 30 — above the mobile sheet at 29 — so it stays
+ * tappable even with the menu open. A second Home link cost a slot and bought
+ * nothing.
+ *
+ * /coach/services keeps its URL (it is indexed) and stays reachable from the
+ * footer and from the disciplines line on /coach.
  *
  * `Book` is deliberately NOT here — it is the `nav-cta` below, which is the one
  * element on the page styled to be clicked.
  */
 const links: [string, string][] = [
-  ['/coach', 'Home'],
   ['/coach/about', 'About'],
-  // Path unchanged (it is indexed); the label is shorter than "Services" and
-  // says what the page is.
-  ['/coach/services', 'Lessons'],
+  ['/coach/lessons/online', 'Online'],
+  // "In Person" rather than "In-Person · LA": the row is 11.5px at 0.22em
+  // tracking, so a label with punctuation in it is the one that wraps first.
+  ['/coach/lessons/in-person', 'In Person'],
   ['/coach/pricing', 'Pricing'],
   ['/coach/faq', 'FAQ'],
   ['/coach/contact', 'Contact'],
@@ -29,6 +48,10 @@ const links: [string, string][] = [
  * `display: none` under 860px (app/styles.css). Without this row the primary
  * call to action would be unreachable on the majority of the paid-search
  * traffic, which is mobile.
+ *
+ * Deliberately the same seven rows plus the mode switch as before, and no more:
+ * the sheet is a centred flex column at 36px with no scroll, so a ninth row
+ * starts pushing the mode switch off a short phone.
  */
 const mobileLinks: [string, string][] = [...links, ['/coach/book', 'Free assessment']];
 

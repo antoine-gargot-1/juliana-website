@@ -1,5 +1,21 @@
 import Link from 'next/link';
 import { EMAIL, SOCIAL } from '@/lib/site';
+import {
+  ASSESSMENT,
+  LESSONS_PER_MONTH,
+  formatUsd,
+  monthlyPlans,
+  perLessonCents,
+} from '@/lib/pricing';
+
+/**
+ * The price floor, computed — never typed. Same figure and same derivation as
+ * the /coach hero: the per-lesson rate of the cheapest full-hour commitment.
+ * A footer sits on every coach page, so a hardcoded number here would be the
+ * most-repeated stale price on the site the day a rate changes.
+ */
+const plan = monthlyPlans('online')[0];
+const FROM_PER_LESSON = plan ? formatUsd(perLessonCents(plan)) : null;
 
 export function CoachFooter() {
   return (
@@ -11,28 +27,27 @@ export function CoachFooter() {
           </div>
           <p style={{ fontFamily: 'var(--serif)', fontSize: 16, lineHeight: 1.6, maxWidth: 360 }}>
             Voice, guitar, piano, songwriting &amp; artist development. Online worldwide &middot; in
-            person in Los Angeles. Every new student starts with a free 30-minute assessment.
+            person in Los Angeles.{' '}
+            {FROM_PER_LESSON
+              ? `${LESSONS_PER_MONTH} lessons a month from ${FROM_PER_LESSON} a lesson. `
+              : ''}
+            Every new student starts with a free {ASSESSMENT.durationMinutes}-minute assessment.
           </p>
         </div>
         {/* "Studio" here means her teaching practice, which is standard
             music-pedagogy usage and claims no premises. It is not a place: see
             the note in lib/schema.ts on why no address, geo or opening hours is
             published anywhere. */}
+        {/* Order is by how much of the buying decision a page can settle, not
+            alphabetically and not by site depth: the two pages that carry proof,
+            mechanics, rates and a buy button come first, then the price page,
+            then everything else. /coach/services is the disciplines menu — it is
+            indexed and it is linked, but it settles nothing, so it is not the
+            first thing in this column any more and no longer holds the word
+            "Lessons" on its own. */}
         <div>
           <h4>Studio</h4>
           <ul>
-            <li>
-              <Link href="/coach">Home</Link>
-            </li>
-            <li>
-              <Link href="/coach/about">About</Link>
-            </li>
-            <li>
-              <Link href="/coach/services">Lessons &amp; coaching</Link>
-            </li>
-            <li>
-              <Link href="/coach/pricing">Pricing</Link>
-            </li>
             <li>
               <Link href="/coach/lessons/online">Online Lessons</Link>
             </li>
@@ -40,13 +55,25 @@ export function CoachFooter() {
               <Link href="/coach/lessons/in-person">In-Person Lessons &middot; LA</Link>
             </li>
             <li>
-              <Link href="/coach/voice-lessons-los-angeles">Voice Lessons in LA</Link>
+              <Link href="/coach/pricing">Pricing</Link>
             </li>
             <li>
               <Link href="/coach/songwriting">Songwriting Lessons</Link>
             </li>
             <li>
+              <Link href="/coach/voice-lessons-los-angeles">Voice Lessons in LA</Link>
+            </li>
+            <li>
+              <Link href="/coach/services">What I teach</Link>
+            </li>
+            <li>
               <Link href="/coach/faq">FAQ</Link>
+            </li>
+            <li>
+              <Link href="/coach/about">About</Link>
+            </li>
+            <li>
+              <Link href="/coach">Home</Link>
             </li>
           </ul>
         </div>
