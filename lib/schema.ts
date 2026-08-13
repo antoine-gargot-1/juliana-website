@@ -340,6 +340,33 @@ export function faqPageSchema() {
 
 const stripQuotes = (s: string) => s.replace(/^"|"$/g, '');
 
+/**
+ * The 5.0-from-five-reviews aggregate.
+ *
+ * ---------------------------------------------------------------------------
+ * ONLY EVER ATTACH THIS TO A `Service` (OR AN `Offer`). NOT TO THE BUSINESS.
+ * ---------------------------------------------------------------------------
+ * `aggregateRating` and `review` are in domain for LocalBusiness (via
+ * Organization/Place) — checked against the published vocabulary,
+ * schemaorg-current-https.jsonld: domainIncludes = Brand, CreativeWork, Event,
+ * Offer, Organization, Place, Product, Service. So the vocabulary permits it and
+ * this is not a validity question. It is a *policy* question, and Google's
+ * review-snippet guidance answers it: a business may not mark up reviews it
+ * collects about itself on its own LocalBusiness/Organization markup — that is
+ * self-serving review content, and the penalty is the rich result being dropped
+ * or a manual action against the site.
+ *
+ * This used to hang off five nodes at once, localBusinessSchema() among them.
+ * Repeating one rating across five nodes does not strengthen the claim; it just
+ * multiplies the number of places the disallowed pattern appears. It now hangs
+ * off the four Service nodes only, and no single page carries the rating twice.
+ *
+ * The other half of the same guidance is that the rating must correspond to
+ * review content the visitor can actually see. Any page adding a rated Service
+ * node must render the reviews (or at least the aggregate sentence) on the page
+ * — see the visible summary in components/coach/TestimonialCarousel.tsx, which
+ * computes the same average and count from the same records.
+ */
 export function aggregateRatingSchema() {
   return {
     '@type': 'AggregateRating',
@@ -350,6 +377,15 @@ export function aggregateRatingSchema() {
   };
 }
 
+/**
+ * The five student reviews. One `Review` per record in content/coach.json —
+ * `author`, `datePublished`, `reviewBody` and `reviewRating` on every one, all
+ * four read straight off the record with nothing filled in by hand.
+ *
+ * Nested inside a parent node's `review`, so no `itemReviewed`: the parent *is*
+ * the reviewed item. Attach this only to a node on a page that renders the
+ * reviews — see aggregateRatingSchema above.
+ */
 export function reviewsSchema() {
   return TESTIMONIALS.map((t) => ({
     '@type': 'Review',
@@ -426,8 +462,23 @@ export function localBusinessSchema() {
       { '@type': 'Country', name: 'Worldwide (online)' },
     ],
     knowsLanguage: ['en', 'es'],
-    aggregateRating: aggregateRatingSchema(),
-    review: reviewsSchema(),
+    /**
+     * ALSO DELIBERATELY ABSENT: `aggregateRating` and `review`. DO NOT ADD THEM.
+     *
+     * Both used to be here. Google's review-snippet guidance forbids a business
+     * marking up reviews of itself on its own LocalBusiness/Organization node —
+     * self-serving review content — and the cost of getting it wrong is the
+     * snippet being ignored or a manual action, on a site that has just gone
+     * live and is about to take paid traffic. schema.org itself allows the
+     * properties here (see aggregateRatingSchema for the domain check), which is
+     * exactly why a validator will not warn you: this one is on us to hold.
+     *
+     * It was also emitting five reviews on /coach/contact, which renders none.
+     *
+     * The rating now lives on the Service nodes (lessonsServiceSchema,
+     * songwritingServiceSchema, coachingServiceSchema, voiceLessonsServiceSchema)
+     * and the review bodies on coachingServiceSchema, whose page shows all five.
+     */
     makesOffer: SERVICES.map((s) => ({
       '@type': 'Offer',
       itemOffered: {
@@ -734,8 +785,20 @@ export function pricingOfferCatalogSchema() {
  * GROUP CLASSES CARRY NO PRICE, ON PURPOSE. They are quoted per group and are
  * deliberately absent from content/pricing.json; inventing a per-head figure
  * here would be the one thing a pricing snippet must never do.
+ *
+ * WHY THE REVIEW BODIES LANDED HERE: they used to sit on localBusinessSchema(),
+ * which is not allowed to carry them (see aggregateRatingSchema). This is the
+ * Service node /coach emits, and /coach renders all five reviews with names,
+ * dates and star ratings — so the markup matches the page, which is the other
+ * half of the same guidance.
+ *
+ * Pass `{ withReviews: false }` from any page that emits this node without
+ * showing the reviews. /coach/services is the one such caller today: it already
+ * asserted the aggregate with no review content on the page, and the honest fix
+ * there is either two visible reviews or this flag. It is a page-file change,
+ * so it is not made here.
  */
-export function coachingServiceSchema() {
+export function coachingServiceSchema({ withReviews = true } = {}) {
   const onlineSingle = lookup('online_single_60');
   const inPersonSingle = lookup('inperson_single_60');
   const QUOTE_ONLY = new Set(['Group Classes']);
@@ -752,6 +815,7 @@ export function coachingServiceSchema() {
     areaServed: [LOS_ANGELES, ONLINE_WORLDWIDE],
     audience: { '@type': 'Audience', audienceType: 'Singers and songwriters, ages 5 to 70+' },
     aggregateRating: aggregateRatingSchema(),
+    ...(withReviews ? { review: reviewsSchema() } : {}),
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'Lessons & coaching',
@@ -833,7 +897,21 @@ export function liveMusicServiceSchema() {
       url: abs('/artist'),
       sameAs: SAME_AS,
     },
-    availableLanguage: ['en', 'es'],
+    /*
+     * Languages ride on the channel, not on the Service — same rule as
+     * bookingChannel above, and this node had the bug the coach side already
+     * fixed. `availableLanguage`'s domainIncludes is ContactPoint, Course,
+     * LodgingBusiness, ServiceChannel and TouristAttraction; `Service` is not
+     * among them, so setting it here is out of domain and consumers drop it.
+     *
+     * That matters commercially rather than pedantically: bilingual
+     * English/Spanish is a genuine differentiator for LA event bookings —
+     * quinceañeras and Latin repertoire are half the offer described above —
+     * and stated in the wrong place the signal was simply not being read.
+     */
+    availableChannel: bookingChannel(
+      'Live music booking for events across Southern California, in English or Spanish',
+    ),
     areaServed: EVENT_SERVICE_AREAS.map((name) => ({ '@type': 'AdministrativeArea', name })),
     offers: EVENT_PACKAGES.map((p) => ({
       '@type': 'Offer',
