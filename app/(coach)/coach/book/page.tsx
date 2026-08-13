@@ -29,16 +29,21 @@ export default function BookPage() {
           <h1>
             Let&apos;s hear your <span className="it">voice.</span>
           </h1>
-          {/* WHAT THIS SENTENCE IS FOR, AND WHY IT COUNTS THE FIELDS.
-              It read "Two questions and a calendar" against a form that asks
-              eight — plus two more for a guardian, plus a card at the end. An
-              expectation violation at the moment of highest anxiety is the most
-              expensive kind, so the count here is the real count: online or in
-              person, name, email, age, focus, experience, goals, availability.
-              If BookingForm gains or loses a field, this number moves with it. */}
+          {/* WHAT THIS SENTENCE IS FOR, AND WHY IT COUNTS THINGS.
+              It once read "Two questions and a calendar" against a form that
+              asked eight, and then said "eight short questions" against a form
+              that also ended at a payment page it did not mention. An expectation
+              violation at the moment of highest anxiety is the most expensive
+              kind, so this counts what is actually there: THREE required answers
+              plus a tick box (online or in person, name, email, under 18?), then
+              the calendar, then the $0 card hold. Under 18 adds a guardian's name
+              and email, because a minor cannot contract. Everything else on the
+              form is optional and says so.
+              If BookingForm's REQUIRED set changes, this sentence moves with it. */}
           <p className="lede-plain" style={{ maxWidth: '54ch' }}>
-            Eight short questions, then a calendar. Under 18 adds two more, for a parent or
-            guardian. The last step takes a card to hold the slot, and it isn&apos;t charged.
+            Three steps and about two minutes: your name, your email and whether you&apos;re online
+            or in LA &mdash; then the calendar &mdash; then a card to hold the slot, which
+            isn&apos;t charged. Under 18 books with a parent or guardian.
           </p>
           <p className="prose" style={{ fontSize: 20, marginTop: 18, maxWidth: 640 }}>
             Then you sing for half an hour, I tell you honestly what&apos;s in the way and what a
@@ -59,6 +64,11 @@ export default function BookPage() {
               <dl>
                 <dt>What it costs</dt>
                 <dd>Nothing.</dd>
+                {/* Specific on purpose. "It only takes a minute" is what every
+                    form says; naming the three steps and the card is what makes
+                    the estimate believable. */}
+                <dt>Booking takes</dt>
+                <dd>About two minutes &middot; three steps &middot; card on the last one</dd>
                 <dt>About the card</dt>
                 <dd
                   style={{

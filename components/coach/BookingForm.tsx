@@ -43,6 +43,37 @@ import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
  * else first risks showing a calendar that cannot honour the answer.
  *
  * ===========================================================================
+ * WHY THE COUNTER SAYS THREE
+ * ===========================================================================
+ * It used to say "Step 2 of 2" over the calendar, and then a Stripe page asked
+ * for a card. A counter that promises the end and then produces a payment form
+ * is the most expensive sentence on the site: it breaks trust at the exact
+ * moment the visitor is deciding whether this is a real teacher or a funnel.
+ * The third step is therefore named up front, wherever the counter appears —
+ * see STEP_LABEL — and ASSESSMENT_CARD_COPY is shown before it, never after.
+ *
+ * ===========================================================================
+ * WHY ONLY FOUR THINGS ARE REQUIRED
+ * ===========================================================================
+ * Nothing is required here unless a slot cannot be reserved without it:
+ *
+ *   mode                    decides which Cal.com event type and which
+ *                           availability the visitor is shown at all
+ *   name, email             who the booking and the calendar invite belong to
+ *   under 18 + guardian     a minor cannot enter a payment agreement, so the
+ *                           Stripe Customer whose card holds the slot has to be
+ *                           the parent or guardian. This is a legal question,
+ *                           not a preference.
+ *
+ * focus, experience, goals and the student's age all help Juliana prepare, and
+ * none of them is needed to hold half an hour on a calendar. They stay on the
+ * form — collecting them later would mean a second ask nobody answers — but in
+ * a collapsed, plainly optional group that cannot block submission. The two
+ * selects deliberately start empty rather than on "Voice" and "Beginner": a
+ * default that is silently submitted is worse than a blank, because Juliana
+ * cannot tell a real beginner from someone who skipped the question.
+ *
+ * ===========================================================================
  * ACCESSIBILITY
  * ===========================================================================
  * This is the one page in the site where a labelling bug costs money, so it
@@ -53,16 +84,15 @@ import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
  * `role="alert"` before focus moves to the first offending control.
  */
 
-type Status = 'details' | 'scheduling';
+type Status = 'details' | 'scheduling' | 'handoff';
 
 const EMPTY = {
   name: '',
   email: '',
   age: '',
-  focus: 'Voice',
-  experience: 'Beginner — never had a lesson',
+  focus: '',
+  experience: '',
   goals: '',
-  availability: '',
   guardianName: '',
   guardianEmail: '',
 };
@@ -72,6 +102,34 @@ type Errors = Partial<Record<keyof Fields | 'mode', string>>;
 
 /** Old enough to enter a payment agreement in California. */
 const ADULT_AGE = 18;
+
+/**
+ * The counter, in one place so the two renders below cannot drift apart, and so
+ * the third step keeps its name. "(no charge)" is part of the label rather than
+ * a footnote underneath it: the whole point is that a visitor knows a card is
+ * coming, and knows it is not a payment, before they type anything.
+ */
+const STEP_LABEL = {
+  1: 'Step 1 of 3 · Your details',
+  2: 'Step 2 of 3 · Pick your time',
+  3: 'Step 3 of 3 · Hold your slot (no charge)',
+} as const;
+
+/** The same three steps, short enough to sit side by side on a phone. */
+const STEPS = [
+  { n: 1, label: 'Your details', note: 'a minute' },
+  { n: 2, label: 'Pick your time', note: 'your timezone' },
+  { n: 3, label: 'Hold your slot', note: 'no charge' },
+] as const;
+
+/**
+ * Fields that live inside the collapsed optional group.
+ *
+ * Only used to reopen it before moving focus: a control inside a closed
+ * <details> cannot take focus, so an error there would otherwise announce itself
+ * and then send the visitor nowhere.
+ */
+const OPTIONAL_KEYS = new Set<string>(['age', 'focus', 'experience', 'goals']);
 
 /* ------------------------------------------------------------------ */
 /* Cal.com wiring                                                      */
@@ -126,6 +184,21 @@ export function BookingForm() {
   const [form, setForm] = useState<Fields>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
+  /**
+   * "The student is under 18" as a checkbox, replacing the required age field.
+   *
+   * WHY A CHECKBOX AND NOT AN AGE. The only thing the booking legally needs is
+   * the answer to one yes/no question — whether a guardian has to be the one
+   * contracting and holding the card. An exact age is useful to Juliana when she
+   * plans the lesson, and it is asked for in the optional group below, so nothing
+   * she relies on is lost; it just no longer stands between a parent and a
+   * calendar.
+   */
+  const [underEighteen, setUnderEighteen] = useState(false);
+  /** Whether the optional group is expanded. Controlled so an error can open it. */
+  const [optionalOpen, setOptionalOpen] = useState(false);
+  /** The hold URL, kept only so the hand-off screen can offer it as a link. */
+  const [handoff, setHandoff] = useState('');
   // Honeypot: off-screen but not display:none, so screen readers skip it and
   // headless form-fillers still see it. Same pattern as ContactForm.
   const [gotcha, setGotcha] = useState('');
@@ -163,7 +236,15 @@ export function BookingForm() {
   }, []);
 
   const ageNumber = Number.parseInt(form.age, 10);
-  const isMinor = Number.isFinite(ageNumber) && ageNumber > 0 && ageNumber < ADULT_AGE;
+  const ageGiven = form.age.trim() !== '';
+  const ageIsMinor = Number.isFinite(ageNumber) && ageNumber > 0 && ageNumber < ADULT_AGE;
+  /**
+   * The checkbox is the answer that counts, but an age typed into the optional
+   * group is honoured too: someone who tells me the student is 12 and leaves the
+   * box unticked has still told me a guardian is needed, and taking a card from a
+   * child because of a missed tick is not a mistake worth being relaxed about.
+   */
+  const isMinor = underEighteen || ageIsMinor;
 
   const set =
     (key: keyof Fields) =>
@@ -188,12 +269,6 @@ export function BookingForm() {
       next.email = 'Please add an email address I can send the confirmation to.';
     }
 
-    if (!form.age.trim()) {
-      next.age = 'Please add the student’s age — lessons run from 5 to 70+ and it changes the plan.';
-    } else if (!Number.isFinite(ageNumber) || ageNumber < 3 || ageNumber > 110) {
-      next.age = 'Please enter an age in years.';
-    }
-
     // A minor cannot enter a payment agreement, so the card on file and the
     // booking confirmation both have to belong to a parent or guardian. This is
     // not optional politeness — it is who the Stripe Customer is.
@@ -204,8 +279,19 @@ export function BookingForm() {
       }
     }
 
-    if (!form.goals.trim()) {
-      next.goals = 'A sentence about what you want to work on makes the 30 minutes much better.';
+    /*
+     * Age is optional and is checked only when something has been typed — and the
+     * message says it may be left blank, because an optional field that rejects an
+     * answer without saying that reads as a trap. It is validated LAST so that
+     * insertion order matches the order of the controls on screen: focus goes to
+     * the first problem a visitor would meet scrolling down, not to the one buried
+     * in a collapsed group.
+     *
+     * goals is no longer validated at all. It was the only required field on the
+     * form that a slot could be reserved without.
+     */
+    if (ageGiven && (!Number.isFinite(ageNumber) || ageNumber < 3 || ageNumber > 110)) {
+      next.age = 'Please enter an age in years, or leave it blank.';
     }
 
     return next;
@@ -228,7 +314,16 @@ export function BookingForm() {
     if (firstKey) {
       // Move focus to the offending control so a keyboard or screen-reader user
       // is taken to the problem rather than told one exists somewhere above.
-      document.getElementById(firstKey === 'mode' ? 'mode-online' : `bf-${firstKey}`)?.focus();
+      const id = firstKey === 'mode' ? 'mode-online' : `bf-${firstKey}`;
+      if (OPTIONAL_KEYS.has(firstKey)) {
+        // A control inside a closed <details> is not focusable, so the group has
+        // to be open before focus can land in it. One tick is enough for React to
+        // commit the open attribute.
+        setOptionalOpen(true);
+        window.setTimeout(() => document.getElementById(id)?.focus(), 0);
+      } else {
+        document.getElementById(id)?.focus();
+      }
       return;
     }
 
@@ -290,12 +385,25 @@ export function BookingForm() {
     const fields: Record<string, string> = {
       name: form.name.trim(),
       email: form.email.trim(),
+      /*
+       * Every line is conditional now, because every field in it is optional. An
+       * unanswered optional question must not arrive as "Goals:" with nothing
+       * after it — a note full of empty labels is harder to read at a glance than
+       * a short one, and this is what Juliana actually opens before a lesson.
+       *
+       * The old "Availability:" line is gone with the field it came from: asking
+       * "when are you usually free?" and then showing a slot picker was the same
+       * work twice, and the answer was never used for anything.
+       */
       notes: [
-        `Focus: ${form.focus}`,
-        `Experience: ${form.experience}`,
-        `Goals: ${form.goals.trim()}`,
-        form.availability.trim() ? `Availability: ${form.availability.trim()}` : '',
-        isMinor ? `Student is ${form.age}; guardian ${form.guardianName}` : `Age: ${form.age}`,
+        form.focus ? `Focus: ${form.focus}` : '',
+        form.experience ? `Experience: ${form.experience}` : '',
+        form.goals.trim() ? `Goals: ${form.goals.trim()}` : '',
+        isMinor
+          ? `Student is under 18${ageGiven ? ` (age ${form.age})` : ''}; guardian ${form.guardianName}`
+          : ageGiven
+            ? `Age: ${form.age}`
+            : '',
       ]
         .filter(Boolean)
         .join('\n')
@@ -333,7 +441,7 @@ export function BookingForm() {
     if (isMinor && form.guardianEmail.trim()) fields.guests = form.guardianEmail.trim();
 
     return fields;
-  }, [form, isMinor, metadata]);
+  }, [ageGiven, form, isMinor, metadata]);
 
   /** The scheduler on cal.com itself, for the new-tab fallback. */
   const calUrl = calLink ? `https://cal.com/${calLink}?${new URLSearchParams(calFields)}` : '';
@@ -356,28 +464,72 @@ export function BookingForm() {
     return `/coach/book/hold?${params}`;
   };
 
+  /* -------------------- hand-off to the card step -------------------- */
+
+  /**
+   * The half-second between Cal.com confirming the booking and /coach/book/hold
+   * taking over.
+   *
+   * It exists because that gap used to be spent looking at a calendar that had
+   * just gone quiet, and then a Stripe page appeared. Naming step 3 here — with
+   * the card promise above it — means the payment page is something the visitor
+   * was told about twice before it loads. It changes nothing about the hand-off
+   * itself: the same router.push with the same holdUrl fires immediately.
+   *
+   * WHAT IT CANNOT SAY. Not the chosen time. The embed reports one thing to this
+   * page, the booking uid (see bookingUidFrom in CalEmbed), and the slot itself is
+   * only resolvable server-side from the Cal.com API — which is what
+   * /coach/book/hold does. Inventing a reassuring "you're holding Tuesday at 6"
+   * from data we do not have is exactly the kind of small lie this flow is being
+   * cleaned up to remove.
+   */
+  if (status === 'handoff') {
+    return (
+      <div>
+        <StepRail current={3} />
+        <div className="bform-step">{STEP_LABEL[3]}</div>
+        <h2 className="bform-h2">Your time is booked.</h2>
+        <p className="bform-hint">
+          One last screen — Stripe&rsquo;s own, so this site never sees your card — and then
+          you&rsquo;re done. Taking you there now.
+        </p>
+        <strong className="assess-card-note">{ASSESSMENT_CARD_COPY}</strong>
+
+        {/* A visible way forward if the client-side navigation does not land — a
+            blocked route change would otherwise leave someone whose slot IS booked
+            staring at "taking you there now". Same URL as the push, and
+            /coach/book/hold is idempotent on the uid, so following both is safe. */}
+        {handoff && (
+          <p className="cal-note" style={{ marginTop: 20 }}>
+            Still here?{' '}
+            <a
+              href={handoff}
+              style={{ color: 'var(--accent-text)', textDecoration: 'underline' }}
+            >
+              Open the last step
+            </a>
+            .
+          </p>
+        )}
+      </div>
+    );
+  }
+
   /* -------------------- scheduling step -------------------- */
 
   if (status === 'scheduling' && mode) {
     return (
       <div>
-        <div className="bform-step">Step 2 of 2</div>
-        <h2
-          style={{
-            fontFamily: 'var(--display)',
-            fontWeight: 400,
-            fontSize: 'clamp(28px, 6vw, 40px)',
-            lineHeight: 1.05,
-            margin: '0 0 12px',
-          }}
-        >
-          Pick a time that suits you.
-        </h2>
+        <StepRail current={2} />
+        <div className="bform-step">{STEP_LABEL[2]}</div>
+        <h2 className="bform-h2">Pick a time that suits you.</h2>
         <p className="bform-hint">
           Times are shown in your own timezone.{' '}
           {mode === 'inperson'
             ? `In-person assessments run on ${IN_PERSON_DAYS.join('s and ')}s.`
-            : 'Online assessments run most days, early and late.'}
+            : 'Online assessments run most days, early and late.'}{' '}
+          Choosing a time books it. Then there&rsquo;s one step left — holding the slot with a card,
+          on Stripe&rsquo;s own page, for nothing.
         </p>
 
         {/* The card promise is restated here, immediately before the step that
@@ -403,7 +555,15 @@ export function BookingForm() {
               config={calFields}
               fallbackUrl={calUrl}
               title="Choose a time for your free vocal assessment"
-              onBooked={(uid) => router.push(holdUrl(uid))}
+              onBooked={(uid) => {
+                // Order matters only for what is on screen: the push is the same
+                // push it has always been, and the hold route is idempotent on the
+                // uid, so this cannot produce a second hold.
+                const url = holdUrl(uid);
+                setHandoff(url);
+                setStatus('handoff');
+                router.push(url);
+              }}
             />
           ) : (
             /* TODO(integration): remove this branch once NEXT_PUBLIC_CAL_LINK is
@@ -420,15 +580,18 @@ export function BookingForm() {
                 href={`mailto:${EMAIL}?subject=${encodeURIComponent(
                   `Free ${ASSESSMENT.durationMinutes}-minute assessment — ${form.name}`,
                 )}&body=${encodeURIComponent(
+                  /* Same rule as the Cal.com note: only the lines that have an
+                     answer. Every field after the first three is optional now, and
+                     the availability line is gone with the field. */
                   [
                     `Name: ${form.name}`,
                     `Email: ${form.email}`,
-                    `Age: ${form.age}`,
                     `Format: ${mode === 'online' ? 'Online' : 'In-person · Los Angeles'}`,
-                    `Focus: ${form.focus}`,
-                    `Experience: ${form.experience}`,
-                    `Goals: ${form.goals}`,
-                    form.availability ? `Availability: ${form.availability}` : '',
+                    isMinor ? 'Student is under 18' : '',
+                    ageGiven ? `Age: ${form.age}` : '',
+                    form.focus ? `Focus: ${form.focus}` : '',
+                    form.experience ? `Experience: ${form.experience}` : '',
+                    form.goals.trim() ? `Goals: ${form.goals.trim()}` : '',
                     isMinor ? `Guardian: ${form.guardianName} (${form.guardianEmail})` : '',
                   ]
                     .filter(Boolean)
@@ -489,6 +652,15 @@ export function BookingForm() {
       <input type="hidden" name="landing_page" value={attribution.landing_page ?? ''} readOnly />
       <input type="hidden" name="landed_at" value={attribution.landed_at ?? ''} readOnly />
 
+      {/* The shape of the whole thing, before anyone commits a keystroke to it:
+          three steps, how long, and the card named as the third. Anxiety on a
+          booking form is mostly about not knowing how long the corridor is. */}
+      <StepRail current={1} />
+      <p className="bform-flow">
+        Three steps, about two minutes. Four things here, then the calendar, then a card to hold the
+        slot &mdash; which isn&rsquo;t charged for this.
+      </p>
+
       {submitted && errorList.length > 0 && (
         <div className="bform-summary" role="alert">
           There {errorList.length === 1 ? 'is one thing' : `are ${errorList.length} things`} to fix
@@ -501,9 +673,10 @@ export function BookingForm() {
         </div>
       )}
 
+      <div className="bform-step">{STEP_LABEL[1]}</div>
+
       {/* ---------------- mode ---------------- */}
       <fieldset>
-        <div className="bform-step">Step 1 of 2</div>
         <legend>Online or in person?</legend>
         <p className="bform-hint">
           They run on different days, so this decides which times you see next.
@@ -546,7 +719,10 @@ export function BookingForm() {
 
       {/* ---------------- student ---------------- */}
       <fieldset>
-        <legend>About the student</legend>
+        <legend>Who&rsquo;s this for?</legend>
+        <p className="bform-hint">
+          Two lines and a tick box. Everything else is optional and further down.
+        </p>
 
         <div className="row">
           <div>
@@ -594,93 +770,26 @@ export function BookingForm() {
           </div>
         </div>
 
-        <div className="row">
-          <div>
-            <label htmlFor="bf-age">Age</label>
-            <input
-              id="bf-age"
-              name="age"
-              type="number"
-              inputMode="numeric"
-              min={3}
-              max={110}
-              value={form.age}
-              onChange={set('age')}
-              aria-invalid={Boolean(errors.age)}
-              aria-describedby={errors.age ? 'error-age' : 'hint-age'}
-              required
-            />
-            {errors.age ? (
-              <span className="field-error" id="error-age">
-                {errors.age}
-              </span>
-            ) : (
-              <span className="field-hint" id="hint-age">
-                Students run from 5 to 70+. Under 18 adds two questions below.
-              </span>
-            )}
-          </div>
-          <div>
-            <label htmlFor="bf-focus">Mainly interested in</label>
-            <select id="bf-focus" name="focus" value={form.focus} onChange={set('focus')}>
-              <option>Voice</option>
-              <option>Songwriting</option>
-              <option>Guitar</option>
-              <option>Piano</option>
-              <option>Artist development</option>
-              <option>A mix</option>
-            </select>
-          </div>
+        {/* ---------------- under 18 ----------------
+            One checkbox where a required age field used to be. It is here, in the
+            required block, because it decides who contracts and whose card holds
+            the slot — and the label says that plainly rather than making a parent
+            work it out from a hint. */}
+        <div className="bform-check">
+          <input
+            id="bf-under18"
+            name="under18"
+            type="checkbox"
+            checked={isMinor}
+            onChange={(e) => setUnderEighteen(e.target.checked)}
+            aria-describedby="hint-under18"
+          />
+          <label htmlFor="bf-under18">The student is under 18</label>
         </div>
-
-        <label htmlFor="bf-experience">Experience so far</label>
-        <select
-          id="bf-experience"
-          name="experience"
-          value={form.experience}
-          onChange={set('experience')}
-        >
-          <option>Beginner — never had a lesson</option>
-          <option>Sung a bit, self-taught</option>
-          <option>Had lessons before</option>
-          <option>Performing regularly</option>
-          <option>Releasing music</option>
-        </select>
-
-        <label htmlFor="bf-goals">What do you want to work on?</label>
-        <textarea
-          id="bf-goals"
-          name="goals"
-          rows={3}
-          value={form.goals}
-          onChange={set('goals')}
-          placeholder="A song you cannot get through, a range you cannot reach, an audition in six weeks…"
-          aria-invalid={Boolean(errors.goals)}
-          aria-describedby={errors.goals ? 'error-goals' : 'hint-goals'}
-          required
-        />
-        {errors.goals ? (
-          <span className="field-error" id="error-goals">
-            {errors.goals}
-          </span>
-        ) : (
-          <span className="field-hint" id="hint-goals">
-            One sentence is plenty. It means the 30 minutes starts on your actual problem.
-          </span>
-        )}
-
-        <label htmlFor="bf-availability">When are you usually free?</label>
-        <input
-          id="bf-availability"
-          name="availability"
-          type="text"
-          value={form.availability}
-          onChange={set('availability')}
-          placeholder="Weeknights after 6, Saturday mornings…"
-          aria-describedby="hint-availability"
-        />
-        <span className="field-hint" id="hint-availability">
-          Optional — the calendar comes next, this just helps if we need to rearrange.
+        <span className="field-hint" id="hint-under18">
+          {ageIsMinor && !underEighteen
+            ? 'The age below is under 18, so a parent or guardian’s details are needed.'
+            : 'Tick this and I’ll ask for a parent or guardian — they book, and the card sits with them.'}
         </span>
 
         {/* Shown only for a minor. Rendered conditionally rather than disabled
@@ -738,6 +847,109 @@ export function BookingForm() {
         )}
       </fieldset>
 
+      {/* ---------------- optional ----------------
+          WHY THESE FOUR ARE HERE AND NOT ABOVE. They are the questions that make
+          the half hour better and none of them is needed to reserve it. Collapsed
+          by default, so the form a visitor first sees is as short as it honestly
+          can be; still on this page, because a follow-up email asking for them
+          would be answered by almost nobody, and Juliana reads them before the
+          lesson.
+
+          <details> is doing real work on a phone here: it takes four controls out
+          of the initial scroll without hiding them, needs no JavaScript to open,
+          and cannot block submission because nothing inside it is required. The
+          open state is controlled only so that a bad age can reopen it and take
+          focus — see handleSubmit. */}
+      <details
+        className="bform-optional"
+        open={optionalOpen}
+        onToggle={(e) => setOptionalOpen(e.currentTarget.open)}
+      >
+        <summary>
+          Anything you want me to know?
+          <span className="bform-optional-tag">Optional</span>
+        </summary>
+
+        <div className="bform-optional-body">
+          <p className="bform-hint" style={{ marginBottom: 0 }}>
+            Skip all of it if you like &mdash; it changes nothing about your booking. Answer any of
+            it and the {ASSESSMENT.durationMinutes} minutes starts on your actual problem instead of
+            on questions.
+          </p>
+
+          <div className="row">
+            <div>
+              <label htmlFor="bf-age">Student&rsquo;s age</label>
+              <input
+                id="bf-age"
+                name="age"
+                type="number"
+                inputMode="numeric"
+                min={3}
+                max={110}
+                value={form.age}
+                onChange={set('age')}
+                aria-invalid={Boolean(errors.age)}
+                aria-describedby={errors.age ? 'error-age' : 'hint-age'}
+              />
+              {errors.age ? (
+                <span className="field-error" id="error-age">
+                  {errors.age}
+                </span>
+              ) : (
+                <span className="field-hint" id="hint-age">
+                  Students run from 5 to 70+, and it changes how a lesson is built.
+                </span>
+              )}
+            </div>
+            <div>
+              <label htmlFor="bf-focus">Mainly interested in</label>
+              <select id="bf-focus" name="focus" value={form.focus} onChange={set('focus')}>
+                {/* Empty first, deliberately. A pre-selected "Voice" is submitted
+                    by everyone who never looked at this control, which makes the
+                    answer worthless to the person reading it. */}
+                <option value="">Not sure yet</option>
+                <option>Voice</option>
+                <option>Songwriting</option>
+                <option>Guitar</option>
+                <option>Piano</option>
+                <option>Artist development</option>
+                <option>A mix</option>
+              </select>
+            </div>
+          </div>
+
+          <label htmlFor="bf-experience">Experience so far</label>
+          <select
+            id="bf-experience"
+            name="experience"
+            value={form.experience}
+            onChange={set('experience')}
+          >
+            <option value="">Rather not say</option>
+            <option>Beginner — never had a lesson</option>
+            <option>Sung a bit, self-taught</option>
+            <option>Had lessons before</option>
+            <option>Performing regularly</option>
+            <option>Releasing music</option>
+          </select>
+
+          <label htmlFor="bf-goals">What do you want to work on?</label>
+          <textarea
+            id="bf-goals"
+            name="goals"
+            rows={3}
+            value={form.goals}
+            onChange={set('goals')}
+            placeholder="A song you cannot get through, a range you cannot reach, an audition in six weeks…"
+            aria-describedby="hint-goals"
+          />
+          <span className="field-hint" id="hint-goals">
+            One sentence is plenty. This is the one I read twice.
+          </span>
+        </div>
+      </details>
+
       {/* Constraint: the card promise appears wherever the assessment is
           offered, above the button that acts on it. */}
       <strong className="assess-card-note" style={{ marginTop: 0 }}>
@@ -746,13 +958,46 @@ export function BookingForm() {
 
       <div className="submit-row">
         <span className="submit-note">
-          {ASSESSMENT.durationMinutes} minutes, no charge, no audition.
+          {ASSESSMENT.durationMinutes} minutes, no charge, no audition. Next: the calendar.
         </span>
         <button type="submit" className="btn btn--solid">
           Choose a time <span className="arrow">&rarr;</span>
         </button>
       </div>
     </form>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Step rail                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The whole flow, visible at every step of it.
+ *
+ * An ordered list rather than a row of styled divs, because that is what it is:
+ * a screen reader announces "list of 3" and the position, which is the same
+ * information the numbers give everyone else. `aria-current="step"` marks where
+ * the visitor is. The third item is named "Hold your slot / no charge" wherever
+ * this appears, which is the point — the card is never a surprise.
+ */
+function StepRail({ current }: { current: 1 | 2 | 3 }) {
+  return (
+    <ol className="bform-rail" aria-label="Booking, in three steps">
+      {STEPS.map((step) => (
+        <li
+          key={step.n}
+          data-state={step.n === current ? 'now' : step.n < current ? 'done' : 'next'}
+          aria-current={step.n === current ? 'step' : undefined}
+        >
+          <span className="bform-rail-n" aria-hidden="true">
+            {step.n}
+          </span>
+          <span className="bform-rail-t">{step.label}</span>
+          <span className="bform-rail-note">{step.note}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

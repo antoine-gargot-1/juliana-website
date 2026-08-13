@@ -110,6 +110,14 @@ export default async function ConfirmedPage({ searchParams }: { searchParams: Se
             {ASSESSMENT_CARD_COPY}
           </strong>
 
+          {/* Closes the counter the form opened. It promises three steps and names
+              the card as the third, so the end of the third step should say so
+              plainly rather than leave someone wondering what else is coming. */}
+          <p className="prose" style={{ fontSize: 19, marginTop: 22 }}>
+            That was the last of the three steps. Nothing has been charged and there&apos;s nothing
+            else to do &mdash; just turn up.
+          </p>
+
           <div className="eyebrow" style={{ margin: '44px 0 16px' }}>
             Before we meet
           </div>
