@@ -4,8 +4,21 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
+import { ASSESSMENT } from '@/lib/pricing';
+import { coachPersonSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * The visible credentials, and the source the Person JSON-LD is written against.
+ *
+ * ORDER AND CONTENT ARE BOTH LOAD-BEARING. The strongest claims here are the
+ * touring work, the editorial placements and the 5-to-70+ teaching range — an
+ * Associate of Arts is real and worth listing, but it is the weakest item on the
+ * list and must never be allowed to replace the others as the headline
+ * credential. `coachPersonSchema()` in lib/schema.ts mirrors this list, so a row
+ * added here should be reflected there (and vice versa) rather than one of them
+ * quietly becoming the fuller version.
+ */
 const BACKGROUND = [
   'Vocal coaching for students ages 5 to 70+',
   'Artist coaching & songwriting mentorship',
@@ -13,6 +26,8 @@ const BACKGROUND = [
   'Studio recording experience',
   'Professional performance work in LA',
   'Vocalist for international artist Amanda Miguel',
+  'Original songs on Spotify editorial playlists',
+  'Associate of Arts — voice & songwriting',
 ];
 
 const STYLES = ['Pop', 'Latin Pop', 'Indie Pop', 'Singer-Songwriter', 'Acoustic', 'Alternative'];
@@ -158,16 +173,18 @@ export default function AboutPage() {
           </h2>
           <p className="reveal" style={{ '--rd': '120ms' }}>
             Lessons are personalized — built around your goals, your interests, and where you are
-            right now.
+            right now. Start with a free {ASSESSMENT.durationMinutes}-minute assessment: a card
+            holds the slot and nothing is charged.
           </p>
-          <Link className="btn btn--solid reveal" style={{ '--rd': '240ms' }} href="/coach/contact">
-            Start the conversation <span className="arrow">&rarr;</span>
+          <Link className="btn btn--solid reveal" style={{ '--rd': '240ms' }} href="/coach/book">
+            Book your free assessment <span className="arrow">&rarr;</span>
           </Link>
         </section>
       </div>
 
       <JsonLd
         data={[
+          coachPersonSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Coaching', path: '/coach' },

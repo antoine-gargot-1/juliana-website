@@ -9,9 +9,9 @@ import { faqPageSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
-  title: 'Music Lesson FAQ — Ages, Levels, Online Lessons & Styles',
+  title: 'Music Lesson FAQ — Ages, Levels, Billing, Online Lessons & Styles',
   description:
-    'Answers to the eight questions people ask before booking: do you need experience, what ages are taught, are online lessons available, which styles, how often to take lessons.',
+    'Answers to what people ask before booking: the free 30-minute assessment and the card that holds the slot, how monthly billing works, cancelling and pausing, how in-person lessons in LA work, students under 18, ages, levels and styles.',
   path: '/coach/faq',
 });
 
@@ -38,9 +38,14 @@ export default function FaqPage() {
             Still <span className="it">curious?</span>
           </h2>
           <p>Send me a note — happy to answer anything before you book.</p>
-          <Link className="btn btn--solid" href="/coach/contact">
-            Get in touch <span className="arrow">&rarr;</span>
-          </Link>
+          <div className="hero-ctas" style={{ justifyContent: 'center' }}>
+            <Link className="btn btn--solid" href="/coach/contact">
+              Get in touch <span className="arrow">&rarr;</span>
+            </Link>
+            <Link className="btn btn--ghost" href="/coach/book">
+              Book a free assessment
+            </Link>
+          </div>
         </section>
       </div>
 

@@ -4,13 +4,33 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
+/**
+ * Desktop nav. Six items is the ceiling before this row starts wrapping into the
+ * brand on a laptop, so Pricing had to earn its slot rather than be added to it:
+ * a published price is the single biggest objection-remover on a coaching site,
+ * and burying it costs more than any of these links.
+ *
+ * `Book` is deliberately NOT here — it is the `nav-cta` below, which is the one
+ * element on the page styled to be clicked.
+ */
 const links: [string, string][] = [
   ['/coach', 'Home'],
   ['/coach/about', 'About'],
-  ['/coach/services', 'Services'],
+  // Path unchanged (it is indexed); the label is shorter than "Services" and
+  // says what the page is.
+  ['/coach/services', 'Lessons'],
+  ['/coach/pricing', 'Pricing'],
   ['/coach/faq', 'FAQ'],
   ['/coach/contact', 'Contact'],
 ];
+
+/**
+ * The mobile sheet gets the booking link appended, because `.nav-cta` is
+ * `display: none` under 860px (app/styles.css). Without this row the primary
+ * call to action would be unreachable on the majority of the paid-search
+ * traffic, which is mobile.
+ */
+const mobileLinks: [string, string][] = [...links, ['/coach/book', 'Free assessment']];
 
 export function CoachNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -58,8 +78,12 @@ export function CoachNav() {
               Artist &rarr;
             </button>
           </div>
-          <Link className="nav-cta" href="/coach/contact">
-            Book a Lesson
+          {/* The primary CTA is the free assessment, not a generic "book a
+              lesson": the funnel's first step is the $0 assessment, and pointing
+              the loudest element on the page at anything else costs conversions
+              at the top of it. */}
+          <Link className="nav-cta" href="/coach/book">
+            Free Assessment
           </Link>
           <button
             className={`nav-hamburger ${menuOpen ? 'open' : ''}`}
@@ -73,7 +97,7 @@ export function CoachNav() {
         </div>
       </nav>
       <div className={`nav-mobile ${menuOpen ? 'open' : ''}`}>
-        {links.map(([path, label]) => (
+        {mobileLinks.map(([path, label]) => (
           <Link
             key={path}
             className={pathname === path ? 'active' : ''}

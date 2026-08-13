@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
 import { SERVICES } from '@/lib/content';
-import { coachingServiceSchema } from '@/lib/schema';
+import { ASSESSMENT } from '@/lib/pricing';
+import { assessmentOfferSchema, coachingServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
@@ -36,7 +37,15 @@ export default function ServicesPage() {
             }}
           >
             Every session is personalized. Mix and match disciplines, or focus on one craft deeply —
-            the structure shifts with your goals.
+            the structure shifts with your goals. Prices cover the lesson, not the subject: a
+            60-minute lesson costs the same whether we spend it on voice, guitar, piano or
+            songwriting.{' '}
+            {/* Global `a` resets colour and underline, so an inline link in body
+                copy has to say it is a link. */}
+            <Link href="/coach/pricing" style={{ textDecoration: 'underline' }}>
+              See the prices
+            </Link>
+            .
           </p>
         </section>
 
@@ -67,11 +76,12 @@ export default function ServicesPage() {
             Not sure where to <span className="it">start?</span>
           </h2>
           <p>
-            Book a free 15-minute consultation. We&apos;ll talk through your goals and shape a path
-            that fits.
+            Book a free {ASSESSMENT.durationMinutes}-minute assessment. I&apos;ll listen, we&apos;ll
+            talk through your goals, and I&apos;ll shape a path that fits. A card holds the slot;
+            nothing is charged.
           </p>
-          <Link className="btn btn--solid" href="/coach/contact">
-            Free consultation <span className="arrow">&rarr;</span>
+          <Link className="btn btn--solid" href="/coach/book">
+            Free {ASSESSMENT.durationMinutes}-minute assessment <span className="arrow">&rarr;</span>
           </Link>
         </section>
       </div>
@@ -79,6 +89,7 @@ export default function ServicesPage() {
       <JsonLd
         data={[
           coachingServiceSchema(),
+          assessmentOfferSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Coaching', path: '/coach' },

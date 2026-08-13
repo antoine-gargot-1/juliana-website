@@ -1,5 +1,7 @@
 {
   "_note": "Coach-side content. Testimonials carry an ISO `datePublished` so they can be emitted as schema.org Review objects backing the AggregateRating on /coach.",
+
+  "_faqsNote": "`faqs` is the single source for BOTH the /coach/faq accordion and the FAQPage JSON-LD on that route (faqPageSchema in lib/schema.ts), so a question added here appears in the page and in the rich result together and can never disagree with itself. Answers are plain text in Juliana's first-person voice — no HTML, no markdown, since the same string is rendered as JSX text and as schema.org `acceptedAnswer.text`. THE MONEY ANSWERS: the assessment answer must keep saying that a card is taken and nothing is charged (being coy about it converts worse and generates support email), and the billing answer must say '4 lessons a month' rather than 'every week' — 12 monthly bills cover 48 lessons while a year of true weekly lessons is ~52, so 'every week' is a promise the schedule cannot keep. See LESSONS_PER_MONTH in lib/pricing.ts. Nothing here may name a lesson address: in-person lessons happen in a private residence and the address goes out privately after booking (see content/pricing.json `_inPersonNote`). One hardcoded coupling to watch: the in-person answer names Tuesdays and Thursdays, which is IN_PERSON_DAYS in lib/pricing.ts — JSON cannot interpolate, so if that constant changes this answer has to change with it.",
   "services": [
     {
       "n": "01",
@@ -156,6 +158,38 @@
     {
       "q": "Do you help artists release music?",
       "a": "Yes. Artist development sessions can include creative direction, performance coaching, branding, and a release plan."
+    },
+    {
+      "q": "What happens in the free 30-minute assessment?",
+      "a": "We meet for thirty minutes, online or in person, and I listen to you sing. I map where your range sits today, what your voice is doing under pressure, and what you actually want to be able to do — then I tell you honestly how I'd get you there. You leave with something to work on whether or not you book anything else. It's free, and there's no audition to pass to get one."
+    },
+    {
+      "q": "Why do you ask for a card if the assessment is free?",
+      "a": "To hold the slot, and only for that. Nothing is charged for the assessment — you'll see a $0 hold and no payment. The reason it exists is unglamorous: an assessment is a real hour out of my teaching week, and slots held with nothing behind them get forgotten. Keeping the card on file also means that if you do decide to carry on, starting lessons is one click instead of another checkout."
+    },
+    {
+      "q": "How does monthly billing work?",
+      "a": "A monthly plan covers 4 lessons a month at a weekly cadence, billed once a month on the same date. I say four a month rather than 'every week' on purpose: some months have five of your weekday, and I would rather the number in your plan be the number you can hold me to. If a fifth lesson suits us both, we can add it as a single lesson."
+    },
+    {
+      "q": "When is my first payment taken?",
+      "a": "A week after your assessment, so the first bill lands after you've had your first proper lesson and know whether this is for you. Nothing is taken at the assessment itself."
+    },
+    {
+      "q": "Can I cancel, or take a break?",
+      "a": "Cancel any time — there's no notice period and no contract to see out. You keep the lessons you've already paid for. And if life gets in the way rather than ends the lessons, you can pause your plan for one month, once a year, at no cost: no billing, your slot held. Just tell me before the next billing date so I'm not charging you for a month you're away."
+    },
+    {
+      "q": "Where do in-person lessons happen?",
+      "a": "In person in Los Angeles, on Tuesdays and Thursdays. I teach from a private space rather than a commercial studio, so I share the exact address with you privately once your lesson is confirmed. If those two days don't work, online is the same lesson — several of my longest-running students have never been in the room."
+    },
+    {
+      "q": "Can you teach a student under 18?",
+      "a": "Yes, and I love teaching younger students — mine have started as young as five. A parent or guardian books the lessons, and it's the guardian's card that goes on file and their name on the account. You're welcome to sit in, especially for the first few lessons with a younger child; some students settle faster with a parent in the room and some without, and we'll work out which yours is."
+    },
+    {
+      "q": "How much do lessons cost?",
+      "a": "Every price is published — see the pricing page. Prices are for the lesson slot, not the subject, so a 60-minute lesson costs the same whether we spend it on voice, guitar, piano or songwriting. Monthly plans work out cheaper per lesson than single lessons, because consistent weeks are what actually make a voice change."
     }
   ],
   "credits": [

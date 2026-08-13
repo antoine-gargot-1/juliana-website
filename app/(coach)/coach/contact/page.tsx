@@ -9,7 +9,7 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
 export const metadata: Metadata = pageMeta({
   title: 'Book a Lesson — Studio Inquiry',
   description:
-    'Tell Juliana about your goals and book a free consultation. Voice, guitar, piano, songwriting and artist development lessons in Los Angeles or online worldwide.',
+    'Tell Juliana about your goals, or book a free 30-minute assessment straight away. Voice, guitar, piano, songwriting and artist development lessons in Los Angeles or online worldwide.',
   path: '/coach/contact',
 });
 

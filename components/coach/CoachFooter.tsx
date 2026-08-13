@@ -10,10 +10,14 @@ export function CoachFooter() {
             Juliana<span className="dot">.</span>
           </div>
           <p style={{ fontFamily: 'var(--serif)', fontSize: 16, lineHeight: 1.6, maxWidth: 360 }}>
-            Voice, guitar, piano, songwriting &amp; artist development. Los Angeles &middot; online
-            &amp; in-person.
+            Voice, guitar, piano, songwriting &amp; artist development. Online worldwide &middot; in
+            person in Los Angeles. Every new student starts with a free 30-minute assessment.
           </p>
         </div>
+        {/* "Studio" here means her teaching practice, which is standard
+            music-pedagogy usage and claims no premises. It is not a place: see
+            the note in lib/schema.ts on why no address, geo or opening hours is
+            published anywhere. */}
         <div>
           <h4>Studio</h4>
           <ul>
@@ -24,10 +28,22 @@ export function CoachFooter() {
               <Link href="/coach/about">About</Link>
             </li>
             <li>
-              <Link href="/coach/services">Services</Link>
+              <Link href="/coach/services">Lessons &amp; coaching</Link>
+            </li>
+            <li>
+              <Link href="/coach/pricing">Pricing</Link>
+            </li>
+            <li>
+              <Link href="/coach/lessons/online">Online Lessons</Link>
+            </li>
+            <li>
+              <Link href="/coach/lessons/in-person">In-Person Lessons &middot; LA</Link>
             </li>
             <li>
               <Link href="/coach/voice-lessons-los-angeles">Voice Lessons in LA</Link>
+            </li>
+            <li>
+              <Link href="/coach/songwriting">Songwriting Lessons</Link>
             </li>
             <li>
               <Link href="/coach/faq">FAQ</Link>
@@ -37,6 +53,12 @@ export function CoachFooter() {
         <div>
           <h4>Contact</h4>
           <ul>
+            <li>
+              <Link href="/coach/book">Book a free assessment</Link>
+            </li>
+            <li>
+              <Link href="/coach/contact">Studio inquiry</Link>
+            </li>
             <li>
               <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
             </li>

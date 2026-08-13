@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { track } from '@/lib/analytics';
 import { EMAIL, SOCIAL } from '@/lib/site';
 
@@ -128,16 +129,29 @@ export function ContactForm() {
               fontWeight: 300,
             }}
           >
-            I&apos;ll be in touch within a few days to set up a free consultation. Looking forward
-            to hearing your story.
+            I&apos;ll be in touch within a few days. If you&apos;d rather not wait, you can book
+            your free 30-minute assessment right now &mdash; a card holds the slot and nothing is
+            charged.
           </p>
-          <button
-            className="btn btn--ghost"
-            style={{ marginTop: 30 }}
-            onClick={() => setStatus('idle')}
+          {/* The paragraph above offers the assessment, so the affordance has to
+              be here — a promise with no link is a dead end on the one screen
+              where the visitor is already convinced. */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 14,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginTop: 30,
+            }}
           >
-            Send another &rarr;
-          </button>
+            <Link className="btn btn--solid" href="/coach/book">
+              Book the free assessment <span className="arrow">&rarr;</span>
+            </Link>
+            <button className="btn btn--ghost" onClick={() => setStatus('idle')}>
+              Send another &rarr;
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -184,8 +198,12 @@ export function ContactForm() {
                     Listen
                   </a>
                 </dd>
-                <dt>Studio</dt>
-                <dd>Los Angeles, CA &middot; Online available worldwide</dd>
+                {/* Was labelled "Studio" with a city beside it, which in a block
+                    of contact details reads as an address for a place you could
+                    visit. Lessons happen in a private space; there is no
+                    storefront. This says what is actually on offer. */}
+                <dt>Lessons</dt>
+                <dd>Online worldwide &middot; in person in Los Angeles</dd>
                 <dt>Response time</dt>
                 <dd
                   style={{
@@ -325,7 +343,7 @@ export function ContactForm() {
 
               <div className="submit-row">
                 <span className="submit-note">
-                  First lesson is followed by a free consultation call.
+                  Every new student starts with a free 30-minute assessment.
                 </span>
                 <button type="submit" className="btn btn--solid" disabled={status === 'sending'}>
                   {status === 'sending' ? 'Sending...' : 'Send inquiry'}{' '}

@@ -6,9 +6,11 @@ import { JsonLd } from '@/components/JsonLd';
 import { Marquee } from '@/components/Marquee';
 import { ParallaxHero } from '@/components/ParallaxHero';
 import { Reveal } from '@/components/Reveal';
+import { ASSESSMENT_CTA_LABEL, PRICING_CTA_LABEL } from '@/components/coach/PriceGrid';
 import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
 import { CREDITS, SERVICES, TESTIMONIALS } from '@/lib/content';
-import { coachingServiceSchema, localBusinessSchema } from '@/lib/schema';
+import { ASSESSMENT } from '@/lib/pricing';
+import { assessmentOfferSchema, coachingServiceSchema, localBusinessSchema } from '@/lib/schema';
 import { SOCIAL } from '@/lib/site';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
@@ -63,11 +65,11 @@ export default function CoachHomePage() {
             sing their own song.
           </p>
           <div className="hero-ctas reveal" style={{ '--rd': '580ms' }}>
-            <Link className="btn btn--solid" href="/coach/contact">
-              Book a lesson <span className="arrow">&rarr;</span>
+            <Link className="btn btn--solid" href="/coach/book">
+              {ASSESSMENT_CTA_LABEL} <span className="arrow">&rarr;</span>
             </Link>
-            <Link className="btn btn--ghost" href="/coach/contact">
-              Say hi
+            <Link className="btn btn--ghost" href="/coach/pricing">
+              {PRICING_CTA_LABEL}
             </Link>
           </div>
         </div>
@@ -122,7 +124,9 @@ export default function CoachHomePage() {
               {SERVICES.slice(0, 5).map((s, i) => (
                 <li key={s.n} className="reveal" style={{ '--rd': `${i * 80}ms` }}>
                   <Link
-                    href="/coach/services"
+                    // Songwriting has a page of its own now; the rest of the
+                    // disciplines still land on the services menu.
+                    href={s.name === 'Songwriting' ? '/coach/songwriting' : '/coach/services'}
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -304,10 +308,11 @@ export default function CoachHomePage() {
           Come <span className="it">sing.</span>
         </h2>
         <p className="reveal" style={{ '--rd': '240ms' }}>
-          First step is a free consult. We&apos;ll talk through your goals — no pressure, no script.
+          First step is a free {ASSESSMENT.durationMinutes}-minute assessment. We take a card to
+          hold your slot &mdash; you won&apos;t be charged for the assessment.
         </p>
-        <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/coach/contact">
-          Book a lesson <span className="arrow">&rarr;</span>
+        <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/coach/book">
+          {ASSESSMENT_CTA_LABEL} <span className="arrow">&rarr;</span>
         </Link>
       </section>
 
@@ -315,6 +320,7 @@ export default function CoachHomePage() {
         data={[
           localBusinessSchema(),
           coachingServiceSchema(),
+          assessmentOfferSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Coaching', path: '/coach' },

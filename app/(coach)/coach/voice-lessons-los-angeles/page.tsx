@@ -4,8 +4,10 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
+import { ASSESSMENT_CTA_LABEL, PRICING_CTA_LABEL } from '@/components/coach/PriceGrid';
 import { TESTIMONIALS } from '@/lib/content';
-import { voiceLessonsServiceSchema } from '@/lib/schema';
+import { ASSESSMENT, IN_PERSON_DAYS } from '@/lib/pricing';
+import { assessmentOfferSchema, voiceLessonsServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 const FOCUS = [
@@ -19,6 +21,25 @@ const FOCUS = [
   'Audition and showcase preparation',
 ];
 
+/**
+ * "Tuesdays and Thursdays", generated from the one constant that decides it.
+ *
+ * Read off IN_PERSON_DAYS rather than typed into the paragraph, because the same
+ * two days configure Cal.com's in-person availability. Copy that disagrees with
+ * the scheduler sends people to a booking page with no slots on the day they
+ * were promised. Intl.ListFormat keeps the sentence grammatical if the list ever
+ * becomes one day or three.
+ */
+const IN_PERSON_DAY_LABEL = new Intl.ListFormat('en-US', {
+  style: 'long',
+  type: 'conjunction',
+}).format(IN_PERSON_DAYS.map((day) => `${day}s`));
+
+/**
+ * Where students travel in from — a service-area signal, not a location claim.
+ * Nothing here says where a lesson happens; the paragraph below says plainly
+ * that the address is shared privately after booking.
+ */
 const NEIGHBOURHOODS = [
   'Mid-City',
   'Koreatown',
@@ -62,8 +83,8 @@ export default function VoiceLessonsLosAngelesPage() {
             online anywhere, in English or Spanish, for total beginners through performing artists.
           </p>
           <div style={{ marginTop: 32 }}>
-            <Link className="btn btn--solid" href="/coach/contact">
-              Book a free consultation <span className="arrow">&rarr;</span>
+            <Link className="btn btn--solid" href="/coach/book">
+              {ASSESSMENT_CTA_LABEL} <span className="arrow">&rarr;</span>
             </Link>
           </div>
         </section>
@@ -193,10 +214,12 @@ export default function VoiceLessonsLosAngelesPage() {
                   margin: '0 0 22px',
                 }}
               >
-                In-person lessons run from the Mid-City studio, an easy drive from most of central
-                Los Angeles. Online lessons use a calibrated audio setup rather than default video
-                call compression, so breath, tone and pitch all come through clearly enough to
-                coach properly — several of my longest-running students have never been in the room.
+                In-person lessons happen one-to-one in Los Angeles on {IN_PERSON_DAY_LABEL}. I
+                teach from a private space rather than a commercial studio, so I share the exact
+                address with you once your lesson is confirmed. Online lessons use a calibrated
+                audio setup rather than default video call compression, so breath, tone and pitch
+                all come through clearly enough to coach properly &mdash; several of my
+                longest-running students have never been in the room.
               </p>
               <p
                 className="reveal"
@@ -210,12 +233,15 @@ export default function VoiceLessonsLosAngelesPage() {
                   margin: '0 0 26px',
                 }}
               >
-                Weekly lessons give the most consistent growth; bi-weekly works during busier
-                seasons. Group classes are available for friends, siblings or a band that wants to
-                work on harmony together.
+                {/* "4 lessons a month", never "weekly cadence" — see the note in
+                    content/pricing.json. A plan bills four lessons; a month with
+                    five of your weekday still bills four. */}
+                One lesson a week works best, which is why the monthly plans are 4 lessons a month.
+                Every other week is fine in a busy season. Group classes are available for friends,
+                siblings or a band that wants to work on harmony together.
               </p>
               <div className="eyebrow reveal" style={{ marginBottom: 16 }}>
-                Students travel from
+                Students come from
               </div>
               <div className="press-strip reveal">
                 {NEIGHBOURHOODS.map((n) => (
@@ -268,14 +294,15 @@ export default function VoiceLessonsLosAngelesPage() {
               margin: '0 0 26px',
             }}
           >
-            The first step is a free fifteen-minute consultation — a short call about what you want
-            to sing, what has felt difficult, and how often you can realistically practise. No
-            audition, no experience required. Plenty of people arrive having only ever sung in the
-            car. If you also write, or want to, songwriting and artist development sessions can run
-            alongside the voice work.
+            The first step is a free {ASSESSMENT.durationMinutes}-minute assessment &mdash; I
+            listen to you sing, map where your range sits today, and tell you honestly how I would
+            get you where you want to go. We take a card to hold the slot; nothing is charged for
+            the assessment. No audition, no experience required. Plenty of people arrive having only
+            ever sung in the car. If you also write, or want to, songwriting and artist development
+            sessions can run alongside the voice work.
           </p>
-          <Link className="btn btn--solid reveal" style={{ '--rd': '120ms' }} href="/coach/services">
-            See all lessons <span className="arrow">&rarr;</span>
+          <Link className="btn btn--solid reveal" style={{ '--rd': '120ms' }} href="/coach/pricing">
+            {PRICING_CTA_LABEL} <span className="arrow">&rarr;</span>
           </Link>
         </section>
 
@@ -287,10 +314,11 @@ export default function VoiceLessonsLosAngelesPage() {
             Come <span className="it">sing.</span>
           </h2>
           <p className="reveal" style={{ '--rd': '240ms' }}>
-            Free consultation first. We&apos;ll talk through your goals — no pressure, no script.
+            A free {ASSESSMENT.durationMinutes}-minute assessment first &mdash; no pressure, no
+            script. A card holds your slot and nothing is charged.
           </p>
-          <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/coach/contact">
-            Book a lesson <span className="arrow">&rarr;</span>
+          <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/coach/book">
+            {ASSESSMENT_CTA_LABEL} <span className="arrow">&rarr;</span>
           </Link>
         </section>
       </div>
@@ -298,6 +326,7 @@ export default function VoiceLessonsLosAngelesPage() {
       <JsonLd
         data={[
           voiceLessonsServiceSchema(),
+          assessmentOfferSchema(),
           breadcrumbList([
             { name: 'Home', path: '/' },
             { name: 'Coaching', path: '/coach' },

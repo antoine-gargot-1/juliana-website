@@ -128,7 +128,8 @@ export default function HomePage() {
             Miguel, and my songs sit on Spotify editorial playlists. If you are booking live music
             for a wedding, quincea&ntilde;era, corporate event or venue night in Southern
             California, start on the artist side. If you want to sing better, write your own songs,
-            or take your artistry seriously, start in the studio.
+            or take your artistry seriously, start in the studio &mdash; every lesson price is
+            published, and the first step is a free 30-minute assessment.
           </p>
         </div>
       </section>
@@ -189,9 +190,17 @@ export default function HomePage() {
                   ['/coach', 'Coaching home'],
                   ['/coach/about', 'About Juliana'],
                   ['/coach/services', 'Lessons & coaching'],
+                  ['/coach/pricing', 'Lesson prices'],
                   ['/coach/voice-lessons-los-angeles', 'Voice lessons in Los Angeles'],
-                  ['/coach/faq', 'FAQ'],
-                  ['/coach/contact', 'Studio inquiry'],
+                  ['/coach/songwriting', 'Songwriting lessons'],
+                  // Root-level keyword landing pages, linked from here for the
+                  // same reason /live-music-for-events-los-angeles is linked from
+                  // the artist column: a page that only exists in the sitemap is
+                  // a page with no internal links pointing at it.
+                  ['/vocal-coach-los-angeles', 'Vocal coach in Los Angeles'],
+                  ['/online-singing-lessons', 'Online singing lessons'],
+                  ['/online-songwriting-lessons', 'Online songwriting lessons'],
+                  ['/coach/book', 'Book a free 30-minute assessment'],
                 ].map(([href, label], i) => (
                   <li
                     key={href}
