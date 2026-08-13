@@ -209,6 +209,30 @@ type BuyButtonProps = {
    * button styling alone.
    */
   variant?: 'solid' | 'outline';
+  /**
+   * Present ONLY for recurring plans, absent for one-time purchases.
+   *
+   * California's Automatic Renewal Law (Bus. & Prof. Code §§17600–17606, as
+   * amended by AB 2863 for contracts entered into on or after 1 July 2025)
+   * requires that the renewal terms sit "in visual proximity to the request for
+   * consent" and that the business obtain "the consumer's affirmative consent to
+   * the agreement containing the automatic renewal offer terms". §17602(a)(1)
+   * spells out what the terms must say: that it renews until cancelled, the
+   * length and terms of the renewal period, and the amount and frequency of the
+   * charges. There is no small-business exemption, and §17600's stated intent
+   * covers "ongoing deliveries of service".
+   *
+   * A bare "Choose" click with the terms elsewhere on the page — which is what
+   * this component did before — is the textbook failure case. So is a
+   * pre-ticked box: consent has to be affirmative, which means the visitor
+   * ticks it.
+   *
+   * `disclosure` is composed on the server from content/pricing.json, because
+   * this is a client component and importing lib/pricing here would ship the
+   * whole catalogue to the browser. It must never be typed by hand — a
+   * disclosure stating a price the rate card does not charge is worse than none.
+   */
+  recurring?: { disclosure: string };
 };
 
 /**
@@ -219,7 +243,13 @@ type BuyButtonProps = {
  * invariant block into the browser bundle. The label and the lookup key are
  * computed on the server and handed down as strings.
  */
-export function BuyButton({ lookupKey, label, ariaLabel, variant = 'outline' }: BuyButtonProps) {
+export function BuyButton({
+  lookupKey,
+  label,
+  ariaLabel,
+  variant = 'outline',
+  recurring,
+}: BuyButtonProps) {
   const scope = useContext(PurchaseCtx);
   if (!scope) {
     // A buy button outside a PurchaseScope has no way to collect a guardian
@@ -244,9 +274,25 @@ export function BuyButton({ lookupKey, label, ariaLabel, variant = 'outline' }: 
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /*
+   * Starts false, always. This is the ARL's "affirmative consent" — a pre-ticked
+   * box is not consent, it is a default. Deliberately not persisted anywhere:
+   * every purchase gets its own tick.
+   */
+  const [renewalConsent, setRenewalConsent] = useState(false);
+  const consentId = `renew-consent-${lookupKey}`;
+  const disclosureId = `renew-terms-${lookupKey}`;
 
   async function buy() {
     setError(null);
+
+    // Recurring plans cannot proceed without the tick. Checked before the
+    // guardian branch below only because it is the cheaper test; both must pass.
+    if (recurring && !renewalConsent) {
+      setError('Tick the box to confirm you understand the plan renews each month until you cancel.');
+      document.getElementById(consentId)?.focus();
+      return;
+    }
 
     if (ctx.isMinor && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ctx.guardianEmail)) {
       setError('Add a parent or guardian email first — they are the ones who pay.');
@@ -329,6 +375,31 @@ export function BuyButton({ lookupKey, label, ariaLabel, variant = 'outline' }: 
 
   return (
     <span className="tier-buy">
+      {/*
+        ARL §17602(a)(1): the renewal terms and the tick sit immediately above the
+        button — "in visual proximity to the request for consent" — not behind a
+        link and not further down the page. Reading size, not fine print: the
+        statute says clear and conspicuous, and small grey text next to a charge is
+        the thing it exists to prohibit.
+      */}
+      {recurring && (
+        <span className="renew-terms">
+          <span id={disclosureId} className="renew-terms-text">
+            {recurring.disclosure}
+          </span>
+          <label className="renew-consent" htmlFor={consentId}>
+            <input
+              id={consentId}
+              type="checkbox"
+              checked={renewalConsent}
+              onChange={(e) => setRenewalConsent(e.target.checked)}
+              aria-describedby={disclosureId}
+            />
+            <span>I understand this renews each month until I cancel.</span>
+          </label>
+        </span>
+      )}
+
       <button
         type="button"
         className={`btn tier-btn${variant === 'solid' ? ' btn--solid' : ''}`}
@@ -336,7 +407,14 @@ export function BuyButton({ lookupKey, label, ariaLabel, variant = 'outline' }: 
         disabled={busy}
         aria-busy={busy}
         aria-label={ariaLabel}
-        aria-describedby={scope.isMinor ? scope.guardianFieldId : undefined}
+        aria-describedby={
+          [
+            recurring ? disclosureId : null,
+            scope.isMinor ? scope.guardianFieldId : null,
+          ]
+            .filter(Boolean)
+            .join(' ') || undefined
+        }
       >
         {busy ? 'Opening checkout…' : label}
       </button>

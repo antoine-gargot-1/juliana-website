@@ -72,8 +72,26 @@ import {
  * rather than a reassurance. The purchase side has its own note —
  * PURCHASE_NOTE in components/coach/Purchase.tsx — and the two never mix.
  */
+/*
+ * THE SECOND SENTENCE IS LOAD-BEARING, AND NOT ONLY FOR REASSURANCE.
+ *
+ * Storing a card against a free offer is what California's ARL calls a
+ * "free-to-pay conversion" (Bus. & Prof. Code §17601), and if a free trial can
+ * turn into a charge without a further decision, the whole automatic-renewal
+ * regime attaches at the moment the card is stored. It does not turn into a
+ * charge here: the assessment creates a SetupIntent with no amount, and a plan
+ * only ever begins when someone separately chooses one. Verified against the
+ * live account — the one real customer has a stored card, zero subscriptions,
+ * zero schedules, zero invoices and zero charges.
+ *
+ * Saying so out loud is what keeps that true and provable. It is also the
+ * honest answer to the question every parent is actually asking, which is not
+ * "will you charge me for the assessment" but "will this quietly start billing
+ * me". Answer the real question.
+ */
 export const ASSESSMENT_CARD_COPY =
-  "We take a card to hold your slot. You won't be charged for the assessment.";
+  "We take a card to hold your slot. You won't be charged for the assessment, " +
+  'and nothing starts unless you choose a plan yourself.';
 
 /* ------------------------------------------------------------------ */
 /* CTA labels — one string per destination                             */
@@ -327,6 +345,11 @@ export function PriceGrid({ mode, footnote, buy = true, purchaseHref }: PriceGri
                    of context, which is how a screen reader reads them. */
                 ariaLabel={`${BUY_CTA_LABEL} ${tierName(price)}`}
                 variant={isBest ? 'solid' : 'outline'}
+                /* Recurring plans only. One-time lessons and packs are not
+                   automatic renewals, so the ARL disclosure would be false on
+                   them — and a renewal warning next to a single $85 lesson would
+                   frighten people out of a purchase that never repeats. */
+                recurring={price.interval ? { disclosure: renewalDisclosure(price) } : undefined}
               />
             ) : (
               <Link className="btn tier-btn" href={purchaseHref as string}>
@@ -368,6 +391,36 @@ export function PriceGrid({ mode, footnote, buy = true, purchaseHref }: PriceGri
  * wants "Monthly — 4 short lessons". Exhaustive over LessonType by
  * construction, so a new tier type cannot reach a card unnamed.
  */
+
+/**
+ * The automatic-renewal disclosure, composed from the rate card.
+ *
+ * Every element California's ARL requires at the point of sale, in the order
+ * §17602(a)(1) lists them:
+ *   (A) that it renews until the consumer cancels
+ *   (B) the length and terms of the renewal period
+ *   (C) the amount charged and how often
+ * plus how to cancel, which §17602(d) requires be possible online, at will, and
+ * without further steps — which is true here, because cancellation is the Stripe
+ * customer portal at /coach/account and needs no email and no conversation.
+ *
+ * WRITTEN FROM `price`, NEVER TYPED. A disclosure is a promise about what the
+ * card will be charged; the moment it is prose rather than arithmetic it can
+ * disagree with Stripe, and a disclosure that misstates the amount is worse than
+ * no disclosure at all — it is an inaccurate statement made to obtain payment.
+ *
+ * Plain words on purpose. "Clear and conspicuous" is a comprehension standard,
+ * and the buyers here are parents and adults over forty, not lawyers. It says
+ * what will happen, when, for how much, and how to stop it.
+ */
+function renewalDisclosure(price: Price): string {
+  return (
+    `${formatUsd(price.amountCents)} a month for ${price.lessons} lessons, ` +
+    `charged every month until you cancel. ` +
+    `Cancel any time from your billing page — no email and no phone call.`
+  );
+}
+
 function tierName(price: Price): string {
   switch (price.type) {
     case 'single':

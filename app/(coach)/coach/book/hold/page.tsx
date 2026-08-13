@@ -76,11 +76,38 @@ const first = (value: string | string[] | undefined) =>
  * client_id: losing it makes every server-side conversion for this student land
  * as "(not set)", which is indistinguishable from not tracking at all.
  */
+/**
+ * Keys the URL is allowed to supply, and nothing else.
+ *
+ * WHY THIS ALLOW-LIST EXISTS. A booking uid is not a secret: it sits in the
+ * address bar, in the `?booking=` parameter on the success URL, and in the
+ * subject line of the fallback mailto. Before this list, `value()` fell back to
+ * the query string for EVERY key, so anyone holding a uid could load
+ *   /coach/book/hold?uid=<theirs>&guardian_email=…&goals=…&gclid=…
+ * and write those fields onto that student's real Stripe Customer, because
+ * findOrCreateStudent patches metadata rather than replacing it. The poisoned
+ * click ID would then outlive the student's genuine booking and misattribute the
+ * conversion the ad budget bids on.
+ *
+ * The legitimate need is narrow and worth keeping: the GA4 client_id and the ad
+ * click IDs are the one class of value Cal.com may not carry, and losing them
+ * makes every server-side conversion land as "(not set)" — indistinguishable
+ * from not tracking at all. They are also low-harm if forged: the worst case is
+ * one misattributed conversion, not a corrupted identity.
+ *
+ * Identity and PII — name, email, guardian_email, goals, experience — must come
+ * from the booking itself, which is fetched server-side from Cal.com and cannot
+ * be forged from a URL.
+ */
+const URL_SUPPLIABLE_KEYS = new Set(['ga_client_id', 'gclid', 'gbraid', 'wbraid']);
+
 const value = (
   booking: CalBooking,
   params: Record<string, string | string[] | undefined>,
   key: string,
-): string | undefined => bookingValue(booking, key) ?? (first(params[key]) || undefined);
+): string | undefined =>
+  bookingValue(booking, key) ??
+  (URL_SUPPLIABLE_KEYS.has(key) ? first(params[key]) || undefined : undefined);
 
 type Failure = 'no-uid' | 'not-configured' | 'not-found' | 'unknown-mode' | 'error';
 

@@ -2462,3 +2462,53 @@ form .submit-note {
    column until there is room for two. */
 .split { display: grid; gap: 40px; align-items: start; }
 @media (min-width: 920px) { .split { grid-template-columns: 1fr 1fr; gap: 70px; } }
+
+/* ---------------------------------------------------------------------------
+   Automatic-renewal disclosure and consent (California ARL, B&P §17602)
+   ---------------------------------------------------------------------------
+   Deliberately NOT styled as fine print. The statute requires the renewal terms
+   to be "clear and conspicuous" and "in visual proximity to the request for
+   consent", which is a comprehension standard, not a disclosure-somewhere
+   standard. Small grey text beside a recurring charge is precisely the pattern
+   §17602 exists to prohibit, so this block sits at reading size in --ink-soft
+   (9.08:1) directly above the button.
+
+   The checkbox is 24px so it meets WCAG 2.5.8 Target Size, and the label wraps
+   the input so the text is part of the hit area — most of these buyers are on a
+   phone, and a 13px tick target beside a payment is its own defect.
+   --------------------------------------------------------------------------- */
+.renew-terms {
+  display: block;
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--rule-strong);
+  background: var(--bg-deep);
+}
+.renew-terms-text {
+  display: block;
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+}
+.renew-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+}
+.renew-consent input[type='checkbox'] {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--accent-text);
+  cursor: pointer;
+}
