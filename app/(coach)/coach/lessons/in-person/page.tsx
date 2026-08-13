@@ -11,8 +11,10 @@ import {
   PurchaseCta,
   PurchaseCtaLink,
   PurchaseFacts,
+  RiskReversal,
 } from '@/components/coach/PriceGrid';
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
+import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
 import { TESTIMONIALS } from '@/lib/content';
 import { IN_PERSON_DAYS, formatUsd, singleLesson } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema, localBusinessSchema } from '@/lib/schema';
@@ -54,7 +56,7 @@ const WHY_IN_PERSON = [
   },
   {
     t: 'Performance rehearsal',
-    d: 'Auditions, showcases, first gigs. Standing up and delivering to a person two metres away is a different skill from delivering to a laptop, and it is the one the audition tests.',
+    d: 'Auditions, showcases, first gigs. Standing up and delivering to a person two metres away is a different skill from delivering to a laptop, and it’s the one the audition tests.',
   },
 ];
 
@@ -86,6 +88,7 @@ export default function InPersonLessonsPage() {
             </Link>
           </div>
           <p className="lp-hero-note">{PURCHASE_NOTE}</p>
+          <RiskReversal />
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
@@ -107,7 +110,7 @@ export default function InPersonLessonsPage() {
               </ul>
               <p className="prose" style={{ marginTop: 26 }}>
                 Plenty of students mix the two: in person when it matters, online when the week is
-                difficult. The plans are per mode, and I will move you between them without fuss
+                difficult. The plans are per mode, and I&rsquo;ll move you between them without fuss
                 rather than letting a bad week become a missed month.
               </p>
             </div>
@@ -155,7 +158,7 @@ export default function InPersonLessonsPage() {
                   <span>
                     <span className="t">Where</span>
                     Los Angeles. The exact address is shared privately once your lesson is confirmed
-                    — it is a private space, not a walk-in one.
+                    — it&rsquo;s a private space, not a walk-in one.
                   </span>
                 </li>
                 <li>
@@ -171,7 +174,7 @@ export default function InPersonLessonsPage() {
                   <span>
                     <span className="t">Rescheduling</span>
                     24 hours&rsquo; notice moves a lesson at no cost. Illness is illness — tell me and
-                    we will sort it out.
+                    we&rsquo;ll sort it out.
                   </span>
                 </li>
                 <li>
@@ -203,7 +206,7 @@ export default function InPersonLessonsPage() {
                   singleLesson('online')?.amountCents ?? 0,
                 )} for one lesson`
               : ''}
-            . If that is the deciding factor, start online.
+            . If that&rsquo;s the deciding factor, start online.
           </p>
           <AssessmentCta mode="inperson" tone="secondary" />
         </section>
@@ -212,26 +215,14 @@ export default function InPersonLessonsPage() {
           <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
           </div>
-          <div className="press-quotes-grid">
-            {TESTIMONIALS.slice(2, 5).map((t, i) => (
-              <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
-                <blockquote
-                  style={{
-                    fontFamily: 'var(--display)',
-                    fontSize: 'clamp(20px, 2vw, 28px)',
-                    lineHeight: 1.2,
-                    margin: 0,
-                    fontWeight: 400,
-                  }}
-                >
-                  {t.quote}
-                </blockquote>
-                <div className="eyebrow" style={{ marginTop: 16 }}>
-                  {t.name}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* ALL FIVE, with the aggregate line the component renders for itself.
+              lessonsServiceSchema('inperson') attaches aggregateRating with
+              reviewCount 5 to this page, and three quotes with no rating meant
+              the markup claimed a number the reader could not see. The
+              component computes its line over the reviews actually passed to
+              it, so the visible count and reviewCount cannot drift. Do not add
+              a second aggregate sentence beside it. */}
+          <TestimonialCarousel testimonials={TESTIMONIALS} />
         </section>
 
         <div className="block" style={{ paddingTop: 0, paddingBottom: 60 }}>

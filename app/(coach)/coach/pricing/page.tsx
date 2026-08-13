@@ -11,8 +11,10 @@ import {
   PurchaseCta,
   PurchaseCtaLink,
   PurchaseFacts,
+  RiskReversal,
 } from '@/components/coach/PriceGrid';
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
+import { CREDITS, TESTIMONIALS } from '@/lib/content';
 import { formatUsd, monthlyPlans, monthlySavingVs } from '@/lib/pricing';
 import { assessmentOfferSchema, pricingOfferCatalogSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
@@ -41,7 +43,51 @@ export const metadata: Metadata = pageMeta({
  * stop a purchase, a short list of what a lesson includes, and one repeat of the
  * CTA. Everything else lives on /coach/faq. The editorial voice stays in the
  * heading and the nav; it does not get between a reader and a number.
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT WAS ADDED BACK, AND WHY IT IS NOT A REGRESSION
+ * ---------------------------------------------------------------------------
+ * Two named reviews and one credit line, under the cards. The page that asks
+ * for $900 carried no evidence of any kind — no review, no video, no credit —
+ * while three other pages carried three reviews each. Two is the number,
+ * because this is still a price page: enough that the reader has heard from a
+ * person, not enough to become a testimonials page.
+ *
+ * The aggregate rating stays OFF this page. Numbers move belief and stories
+ * move action, and they work on different mechanisms; stacking "5.0 from 5
+ * reviews" on top of a named sentence makes the sentence read as marketing
+ * material rather than as something somebody said. The rating lives on /coach.
  */
+
+/**
+ * The two reviews this page carries, selected BY NAME rather than by slice.
+ *
+ * Both say something a buyer at the moment of paying is actually weighing —
+ * Luis on getting exercises and notes to work from, Rajaat on noticing a change
+ * in skill and confidence — and neither is one of the three already on the
+ * online lessons page above the fold. Selecting by name means reordering
+ * content/coach.json cannot silently swap which reviews back the highest-value
+ * page on the site, and the guard below turns a rename into a build failure
+ * rather than an empty grid.
+ */
+const PROOF_NAMES = ['Luis', 'Rajaat'];
+const PROOF_REVIEWS = TESTIMONIALS.filter((t) => PROOF_NAMES.includes(t.name));
+if (PROOF_REVIEWS.length !== PROOF_NAMES.length) {
+  throw new Error(
+    `/coach/pricing: expected reviews from ${PROOF_NAMES.join(' and ')} in ` +
+      `content/coach.json, found ${PROOF_REVIEWS.map((t) => t.name).join(', ') || 'none'}. ` +
+      'This is the page that asks for the largest amount of money on the site and it is not ' +
+      'allowed to render without evidence on it — pick two other named reviews here rather ' +
+      'than removing the block.',
+  );
+}
+
+/** One credit line, not a gallery. The tour is the checkable one. */
+const PROOF_CREDIT = CREDITS.find((c) => c.what.includes('Amanda Miguel')) ?? CREDITS[0];
+if (!PROOF_CREDIT) {
+  throw new Error('/coach/pricing: content/coach.json has no credits to render.');
+}
+
 export default function PricingPage() {
   /*
    * Computed, so the sentence below can never contradict the cards under it.
@@ -76,6 +122,9 @@ export default function PricingPage() {
             <PurchaseCtaLink />
           </div>
           <p className="lp-hero-note">{PURCHASE_NOTE}</p>
+          {/* Adjacent to the note about being charged, which until now was the
+              only thing this page said about money before the cards. */}
+          <RiskReversal />
         </section>
 
         {/* The tier cards, and the destination of every purchase CTA on the page.
@@ -88,7 +137,7 @@ export default function PricingPage() {
             label="Lesson format"
           />
 
-          {/* Mounted once, outside the toggle: the three answers are the same for
+          {/* Mounted once, outside the toggle: the five answers are the same for
               both delivery modes. */}
           <PurchaseFacts />
 
@@ -97,6 +146,46 @@ export default function PricingPage() {
               it offers the assessment; the buy buttons above must never carry it,
               because there the card is charged. */}
           <AssessmentCta tone="secondary" />
+        </section>
+
+        {/* PROOF, under the cards. Two of her students, named, and one line of
+            credit. Quotes are set in the sans rather than the display
+            face: this is the plainest page on the site by design, and a review
+            here is evidence rather than editorial. */}
+        <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
+          <div className="eyebrow reveal" style={{ marginBottom: 26 }}>
+            Two students, in their own words
+          </div>
+          <div
+            className="press-quotes-grid"
+            /* Two cards, not three: auto-fit fills the row instead of leaving a
+               third of it empty. */
+            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 22rem), 1fr))' }}
+          >
+            {PROOF_REVIEWS.map((t, i) => (
+              <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
+                <blockquote
+                  style={{
+                    fontFamily: 'var(--sans)',
+                    fontSize: 18,
+                    lineHeight: 1.55,
+                    fontWeight: 400,
+                    color: 'var(--ink)',
+                    margin: 0,
+                  }}
+                >
+                  {t.quote}
+                </blockquote>
+                <div className="eyebrow" style={{ marginTop: 18 }}>
+                  {t.name}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="press-strip reveal" style={{ paddingTop: 34, paddingBottom: 34 }}>
+            <span>{PROOF_CREDIT.what}</span>
+            <span>{PROOF_CREDIT.em}</span>
+          </div>
         </section>
 
         {/*

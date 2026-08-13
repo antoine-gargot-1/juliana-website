@@ -11,9 +11,11 @@ import {
   PurchaseCta,
   PurchaseCtaLink,
   PurchaseFacts,
+  RiskReversal,
 } from '@/components/coach/PriceGrid';
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
-import { BOOKING_LIVE_VIDEO } from '@/lib/content';
+import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
+import { BOOKING_LIVE_VIDEO, TESTIMONIALS } from '@/lib/content';
 import { assessmentOfferSchema, songwritingServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
@@ -40,7 +42,7 @@ const ARC = [
   },
   {
     t: 'Lyrics that are specific',
-    d: 'The difference between a line that lands and a line that does not is almost never vocabulary — it is specificity. Object writing, sensory detail, and the discipline of cutting the line you are proudest of when it is doing nothing.',
+    d: "The difference between a line that lands and a line that doesn't is almost never vocabulary — it's specificity. Object writing (ten timed minutes on one physical object, through every sense you have), sensory detail, and the discipline of cutting the line you're proudest of when it's doing nothing.",
   },
   {
     t: 'Melody as a decision, not an accident',
@@ -48,11 +50,11 @@ const ARC = [
   },
   {
     t: 'Structure and the second verse',
-    d: 'Second verses are where songs die. Form, prosody, and the specific problem of having said the interesting thing already.',
+    d: 'Second verses are where songs die. Form, prosody — whether the stressed syllables in your words land on the stressed beats of your melody — and the specific problem of having said the interesting thing already.',
   },
   {
     t: 'Chords under it',
-    d: 'Enough guitar or piano to accompany yourself and to get out of the three-chord loop you write everything in. You do not need to play well; you need to play enough to hear options.',
+    d: "Enough guitar or piano to accompany yourself and to get out of the three-chord loop you write everything in. You don't need to play well; you need to play enough to hear your options.",
   },
   {
     t: 'Finishing, and then finishing again',
@@ -92,6 +94,7 @@ export default function SongwritingPage() {
             <PurchaseCtaLink />
           </div>
           <p className="lp-hero-note">{PURCHASE_NOTE}</p>
+          <RiskReversal />
         </section>
 
         {/* The setlist is the proof, and it is the reason this component is used
@@ -147,8 +150,9 @@ export default function SongwritingPage() {
           </ul>
           <p className="prose" style={{ marginTop: 26 }}>
             That is a shape, not a syllabus. Someone arriving with an album half-written and a
-            release date does not start at week one, and someone who has never written a line does
-            not get handed a co-write. The first session exists to work out which of those you are.
+            release date doesn&rsquo;t start at week one, and someone who has never written a line
+            doesn&rsquo;t get handed a co-write. The first session exists to work out which of those
+            you are.
           </p>
         </section>
 
@@ -172,15 +176,15 @@ export default function SongwritingPage() {
                 Songwriting and voice together
               </div>
               <p className="prose">
-                Most students end up doing both, and the rate card does not care: a 60-minute lesson
+                Most students end up doing both, and the rate card doesn&rsquo;t care: a 60-minute lesson
                 costs the same whether we spend it on technique, on a lyric, or half on each. Writers
                 who sing their own songs need a voice that can deliver what they wrote, and singers
                 who write stop being dependent on someone else&rsquo;s material.
               </p>
               <p className="prose">
-                If you play, we will use it. If you do not, we will get you far enough on guitar or
-                piano to accompany yourself — six chords and a strumming pattern is genuinely enough
-                to write with.
+                If you play, we&rsquo;ll use it. If you don&rsquo;t, we&rsquo;ll get you far enough
+                on guitar or piano to accompany yourself — six chords and a strumming pattern is
+                genuinely enough to write with.
               </p>
               <p className="prose">
                 Artist development sits next to this for people getting ready to release: identity,
@@ -208,6 +212,18 @@ export default function SongwritingPage() {
           />
           <PurchaseFacts />
           <AssessmentCta tone="secondary" />
+        </section>
+
+        {/* This page emitted aggregateRating with reviewCount 5 through
+            songwritingServiceSchema() while rendering no review at all, so the
+            markup claimed five reviews a reader could not find anywhere on the
+            page. All five, with the aggregate line the component renders over
+            the reviews it was actually given. */}
+        <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
+          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+            What students say
+          </div>
+          <TestimonialCarousel testimonials={TESTIMONIALS} />
         </section>
 
         <div className="block" style={{ paddingTop: 0, paddingBottom: 60 }}>

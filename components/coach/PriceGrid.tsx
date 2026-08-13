@@ -473,36 +473,134 @@ function freeLessonsPhrase(saving: NonNullable<ReturnType<typeof packSavingVs>>)
 }
 
 /* ------------------------------------------------------------------ */
-/* The three questions people actually ask before paying               */
+/* The five questions people actually ask before paying                */
 /* ------------------------------------------------------------------ */
 
 /**
- * One short strip, three questions, one sentence each.
+ * FIVE, NOT THREE — and the two that were added are the two best ones.
  *
- * These are the objections that stop a purchase — what happens if I miss one,
- * can I get out of it, do I have to pay now — and answering them within a
- * thumb's reach of the button is worth more than nine FAQs one page away.
+ * This block used to answer "what if I miss one", "can I get out of it" and "do
+ * I have to pay now". Every one of those is a risk the reader is already
+ * thinking about; none of them was an answer that makes the risk smaller. The
+ * two facts that do — you can pause for a month, once a year, at no charge with
+ * your slot held, and if you come in through the assessment your first bill
+ * lands a week later, after a real lesson — were sitting in the FAQ accordion
+ * one page away, which is to say nowhere. Both are already true (see the
+ * billing and cancellation answers in content/coach.json); they were just never
+ * shown at the point where the money is decided.
+ *
+ * "When is the first bill?" answers BOTH paths in one breath, in that order,
+ * because the honest answer on this page is "now" — PURCHASE_NOTE says so a few
+ * inches above and the two must not disagree. The week's grace is a property of
+ * the assessment route, not of a package purchase, and printing it unqualified
+ * beside a buy button would be a false statement rather than a reassurance.
+ * Same reason ASSESSMENT_CARD_COPY never appears here.
  *
  * Mounted ONCE per page, outside any ModeToggle: the answers are the same for
  * both delivery modes, so putting them inside the toggle would ship the same
- * three sentences twice.
+ * five sentences twice.
  */
+const PURCHASE_FACTS: { q: string; a: string }[] = [
+  {
+    q: 'What if I miss a lesson?',
+    a: 'Tell me 24 hours ahead and we move it, at no cost.',
+  },
+  {
+    q: 'Can I cancel?',
+    a: 'Yes — cancel a monthly plan any time from your billing page. There’s no notice period and no email to write.',
+  },
+  {
+    q: 'Can I take a month off?',
+    a: 'Yes. Pause a monthly plan for one month a year at no charge: no billing that month, and your slot is held for you.',
+  },
+  {
+    q: 'Do I pay upfront?',
+    a: 'Yes. You pay in full, then choose your lesson times.',
+  },
+  {
+    q: 'When is the first bill?',
+    a:
+      `Now, if you take a plan here. If you start with the free ${ASSESSMENT.durationMinutes}-minute ` +
+      'assessment instead, it’s a week after that — so the first bill lands once you’ve had a real lesson.',
+  },
+];
+
 export function PurchaseFacts() {
   return (
-    <dl className="facts">
-      <div className="fact">
-        <dt>What if I miss a lesson?</dt>
-        <dd>Tell me 24 hours ahead and we move it, at no cost.</dd>
-      </div>
-      <div className="fact">
-        <dt>Can I cancel?</dt>
-        <dd>Yes — cancel a monthly plan any time from your billing page.</dd>
-      </div>
-      <div className="fact">
-        <dt>Do I pay upfront?</dt>
-        <dd>Yes. You pay in full, then choose your lesson times.</dd>
-      </div>
+    <dl
+      className="facts"
+      /* The stylesheet's three-column rule was written when there were three
+         facts. auto-fit keeps the row honest at any count and at any container
+         width without a media query, and the rule under every fact is restored
+         inline so the rows stay separable once the grid wraps onto two lines. */
+      style={{
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))',
+        columnGap: 40,
+      }}
+    >
+      {PURCHASE_FACTS.map(({ q, a }) => (
+        <div className="fact" key={q} style={{ borderBottom: '1px solid var(--rule)' }}>
+          <dt>{q}</dt>
+          <dd>{a}</dd>
+        </div>
+      ))}
     </dl>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Risk reversal, said out loud, next to the note about being charged  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The five facts that make this a small decision instead of a large one.
+ *
+ * WHY IT SITS WHERE IT SITS: PURCHASE_NOTE — "Paid in full now." — is the first
+ * thing a parent reads under the purchase CTA, and until this block existed it
+ * was the ONLY thing. The risk was stated at reading size and every one of its
+ * answers was hidden in an accordion on another route. So this goes directly
+ * under that note, on every page that sells a package, above the cards.
+ *
+ * POSITIVELY FRAMED, ON PURPOSE. Not "if you dislike it you can leave" — which
+ * plants the doubt it is trying to answer — but what you get in every case.
+ * Every line is already true somewhere in the repo: the assessment is free
+ * (ASSESSMENT), the week's grace and the one-month pause are the billing and
+ * cancellation answers in content/coach.json, the billing page is
+ * /coach/account, and the 24-hour reschedule is on the in-person page and in
+ * PURCHASE_FACTS.
+ *
+ * NO CARD-HOLD SENTENCE HERE, DELIBERATELY. This block states that the
+ * assessment is free; it does not offer it and carries no link to it, so nobody
+ * can reach a card field from here. The offer itself — AssessmentCta or
+ * AssessmentOffer — carries ASSESSMENT_CARD_COPY verbatim, and appears further
+ * down every page this block appears on. Adding the card sentence here would
+ * put "you won't be charged" a few inches from "paid in full now".
+ */
+const RISK_REVERSAL: string[] = [
+  `A free ${ASSESSMENT.durationMinutes}-minute assessment first, if you want one`,
+  'Start there and the first bill comes a week later, after a real lesson',
+  'Cancel a monthly plan yourself, from your billing page',
+  'Pause one month a year at no charge, with your slot held',
+  '24 hours’ notice moves a lesson, free',
+];
+
+/** The block itself. One per page, directly under PURCHASE_NOTE. */
+export function RiskReversal({ heading = 'What you get either way' }: { heading?: string }) {
+  return (
+    <div style={{ marginTop: 26, maxWidth: '68ch' }}>
+      {/* --ink-soft rather than the inherited --muted: this block sits on the
+          purchase surfaces, where .eyebrow's site-wide colour is under AA. The
+          pricing page opts in through .page-plain; the lesson pages do not, and
+          this is not a label to render at 3.9:1. */}
+      <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--ink-soft)' }}>
+        {heading}
+      </div>
+      <ul className="plain-points">
+        {RISK_REVERSAL.map((fact) => (
+          <li key={fact}>{fact}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -602,8 +700,13 @@ export function AssessmentCta({
 
   return (
     <aside className="alt-path">
+      {/* "Not ready to pay?" was framing on the buyer's wallet, and the reader
+          it lands on hardest is the parent who is ready and now wondering
+          whether they should be. This says the same thing about the offer
+          instead of about them. */}
       <p className="alt-path-lede">
-        Not ready to pay? Start with a free {ASSESSMENT.durationMinutes}-minute assessment instead.
+        Rather hear each other first? Start with a free {ASSESSMENT.durationMinutes}-minute
+        assessment.
       </p>
       <strong className="alt-path-note">{ASSESSMENT_CARD_COPY}</strong>
       <Link className="btn" href={href}>
