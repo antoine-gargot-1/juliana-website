@@ -1,0 +1,356 @@
+'use client';
+
+import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
+
+import { GA_ENABLED, GA_MEASUREMENT_ID, getAttribution } from '@/lib/analytics';
+import { EMAIL } from '@/lib/site';
+
+/**
+ * Direct purchase: the buy control that turns a rate-card row into a sale.
+ *
+ * ===========================================================================
+ * WHY THIS EXISTS ALONGSIDE THE FREE ASSESSMENT RATHER THAN INSTEAD OF IT
+ * ===========================================================================
+ * Every path used to funnel through the form → scheduler → $0 card hold. That
+ * is the right first step for a stranger who just searched "vocal coach los
+ * angeles" and has no reason yet to hand over $360. It is the wrong step for
+ * someone who arrived on /coach/pricing already knowing what they want: making
+ * that person sit through a free assessment before they are allowed to pay is
+ * friction dressed up as generosity, and it delays revenue by a week.
+ *
+ * So both paths ship, and each page nominates exactly one of them as primary.
+ * The rule is in the page files; this component is only the purchase half.
+ *
+ * ===========================================================================
+ * THE BUTTON SENDS A LOOKUP KEY AND NEVER AN AMOUNT
+ * ===========================================================================
+ * The POST body carries `lookupKey` — the stable handle from
+ * content/pricing.json — and the server resolves the price against the rate
+ * card itself. A client that could name its own price is a client that can pay
+ * $1 for a $700 pack by editing one line in devtools. There is deliberately no
+ * `amount`, `price` or `total` prop anywhere in this file, and adding one would
+ * be a security bug rather than a convenience.
+ *
+ * ===========================================================================
+ * ORDER OF OPERATIONS: PAY, THEN SCHEDULE
+ * ===========================================================================
+ * Checkout completes → /coach/purchase/confirmed → Cal.com. Collecting the
+ * money first means the slot that gets held is a paid slot; the reverse order
+ * produces held calendar time for people who never complete the payment.
+ */
+
+const CHECKOUT_ENDPOINT = '/api/stripe/checkout';
+
+/**
+ * Ad-click ids, read straight off the current URL and merged over the latched
+ * set from lib/analytics.ts.
+ *
+ * The latch is the path that matters — it is what carries a click id from a
+ * landing page through to wherever the purchase happens. This direct read covers
+ * the one case the latch cannot: sessionStorage unavailable (private-mode Safari,
+ * cookie-blocked contexts), where the write silently fails.
+ *
+ * Worth the redundancy because the loss is permanent. Google Ads Offline
+ * Conversion Import is keyed SOLELY on the click id, with no email fallback, and
+ * a gclid cannot be reconstructed after the fact — so a pack sale that arrives
+ * without one can never have its true value attributed to the click that paid
+ * for it.
+ */
+const CLICK_ID_KEYS = ['gclid', 'gbraid', 'wbraid'] as const;
+
+function clickIdsFromUrl(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.search);
+  const found: Record<string, string> = {};
+  for (const key of CLICK_ID_KEYS) {
+    const value = params.get(key);
+    if (value) found[key] = value.slice(0, 200);
+  }
+  return found;
+}
+
+/**
+ * The purchase copy that must NOT be confused with the assessment's card copy.
+ *
+ * ASSESSMENT_CARD_COPY ("you won't be charged") is true beside the free
+ * assessment and FALSE beside a buy button, where the card is charged in full
+ * and immediately. So the two notes are separate constants in separate files,
+ * and this is the one that belongs next to a price.
+ */
+export const PURCHASE_NOTE = 'Paid in full now. You choose your lesson times on the next page.';
+
+/* ------------------------------------------------------------------ */
+/* Scope — the guardian question, asked once per rate card             */
+/* ------------------------------------------------------------------ */
+
+type PurchaseContext = {
+  guardianEmail: string;
+  isMinor: boolean;
+  guardianFieldId: string;
+  focusGuardian: () => void;
+  /** GA4 client_id, so a purchase conversion has a session to attach to. */
+  gaClientId: string;
+};
+
+const PurchaseCtx = createContext<PurchaseContext | null>(null);
+
+/**
+ * Wraps a set of rate-card rows and owns the under-18 question for all of them.
+ *
+ * WHY THE QUESTION IS HERE AND NOT ON EACH BUTTON: students are 5 to 70+, so a
+ * meaningful share of these purchases are made by a parent. A minor cannot enter
+ * a payment agreement, which makes the guardian the actual counterparty, and the
+ * guardian's email is what receipts, cancellation notices and the address for an
+ * in-person lesson have to reach. Asking once above four buy buttons is one
+ * question; asking inside each button is four, and three of them are wasted.
+ *
+ * It is a disclosure rather than a required field because the common case is an
+ * adult buying for themselves, and a mandatory "are you a child?" gate in front
+ * of every purchase would cost more sales than it protects.
+ */
+export function PurchaseScope({ children }: { children: React.ReactNode }) {
+  const [isMinor, setIsMinor] = useState(false);
+  const [guardianEmail, setGuardianEmail] = useState('');
+  const [gaClientId, setGaClientId] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const base = useId();
+  const guardianFieldId = `${base}-guardian`;
+
+  /**
+   * THE JOIN, for the purchase path.
+   *
+   * Asked for once per rate card rather than once per button. The GA4 client_id
+   * is only obtainable by asking gtag, and only after the loader has run; it goes
+   * onto the Stripe Customer at checkout so the `pack_purchased` /
+   * `plan_started` conversion fired later from the webhook has a session to
+   * attach to. Without it that conversion lands in GA4 as "(not set)" — no
+   * source, no campaign, nothing for Smart Bidding to learn from.
+   *
+   * If GA is disabled or blocked the callback never fires and this stays empty.
+   * The purchase still completes; only the attribution is lost, which is the
+   * right way round to degrade.
+   */
+  useEffect(() => {
+    if (!GA_ENABLED) return;
+    window.gtag?.('get', GA_MEASUREMENT_ID, 'client_id', (id: unknown) => {
+      if (typeof id === 'string' && id) setGaClientId(id);
+    });
+  }, []);
+
+  return (
+    <PurchaseCtx.Provider
+      value={{
+        guardianEmail: guardianEmail.trim(),
+        isMinor,
+        guardianFieldId,
+        focusGuardian: () => inputRef.current?.focus(),
+        gaClientId,
+      }}
+    >
+      {children}
+
+      <div className="buy-guardian">
+        <label className="buy-guardian-check" htmlFor={`${base}-minor`}>
+          <input
+            id={`${base}-minor`}
+            type="checkbox"
+            checked={isMinor}
+            onChange={(e) => setIsMinor(e.target.checked)}
+          />
+          <span>The student is under 18</span>
+        </label>
+        {/* One checkbox, one field, no explanation. The reasoning used to be
+            printed here in two sentences; it belongs in this comment, not on a
+            payment page. A minor cannot enter a payment agreement, so the
+            guardian is the actual counterparty and their email is what receipts,
+            cancellation notices and the in-person address have to reach. */}
+        {isMinor && (
+          <div className="buy-guardian-field">
+            <label htmlFor={guardianFieldId}>Parent or guardian email</label>
+            <input
+              ref={inputRef}
+              id={guardianFieldId}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              required
+              value={guardianEmail}
+              onChange={(e) => setGuardianEmail(e.target.value)}
+              placeholder="guardian@example.com"
+            />
+          </div>
+        )}
+      </div>
+    </PurchaseCtx.Provider>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* The buy button                                                      */
+/* ------------------------------------------------------------------ */
+
+type BuyButtonProps = {
+  /** Stable handle from content/pricing.json. NEVER an amount. */
+  lookupKey: string;
+  /** The verb — "Choose". Passed in so this file never imports lib/pricing. */
+  label: string;
+  /**
+   * The same verb plus the tier name, e.g. "Choose Monthly — 4 lessons".
+   *
+   * Every card's visible label is the same word on purpose, which is right for
+   * someone scanning the page and wrong for someone hearing the buttons read out
+   * one after another. This is what a screen reader announces instead.
+   */
+  ariaLabel?: string;
+  /**
+   * `solid` for the recommended tier, `outline` for the rest. Both are real
+   * buttons at the same size — the weighting is emphasis, not availability, and
+   * the recommendation is carried by the text label on the card, never by the
+   * button styling alone.
+   */
+  variant?: 'solid' | 'outline';
+};
+
+/**
+ * One row's purchase control.
+ *
+ * lib/pricing.ts is deliberately not imported here: this is a client component,
+ * and importing the rate card would ship the whole catalogue plus its build-time
+ * invariant block into the browser bundle. The label and the lookup key are
+ * computed on the server and handed down as strings.
+ */
+export function BuyButton({ lookupKey, label, ariaLabel, variant = 'outline' }: BuyButtonProps) {
+  const scope = useContext(PurchaseCtx);
+  if (!scope) {
+    // A buy button outside a PurchaseScope has no way to collect a guardian
+    // email, so a purchase for a minor would complete with the student as the
+    // payer. Failing loudly beats shipping that quietly.
+    throw new Error(
+      'BuyButton must be rendered inside <PurchaseScope>: the under-18 guardian ' +
+        'question lives on the scope, and a purchase for a minor cannot complete without it.',
+    );
+  }
+
+  /*
+   * Re-bound into a local so the async handler below can rely on it.
+   *
+   * `buy` is a hoisted function declaration, so TypeScript cannot prove the throw
+   * above has already run by the time it is called and keeps `scope` as possibly
+   * null inside it. Aliasing after the guard gives the closure a non-nullable
+   * binding without a `!` assertion — which would silence the checker on exactly
+   * the invariant this component throws to protect.
+   */
+  const ctx = scope;
+
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function buy() {
+    setError(null);
+
+    if (ctx.isMinor && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ctx.guardianEmail)) {
+      setError('Add a parent or guardian email first — they are the ones who pay.');
+      ctx.focusGuardian();
+      return;
+    }
+
+    setBusy(true);
+    try {
+      /**
+       * POST /api/stripe/checkout. Landed; the contract it honours is:
+       *
+       *   request   { lookupKey, email?, name?, guardianEmail?, gaClientId?,
+       *               utm_*, gclid, gbraid, wbraid }   — content-type JSON
+       *   response  200 { url, sessionId, lookupKey, amountCents }
+       *             400 unknown/unsellable lookupKey
+       *             503 Stripe not configured on this deployment
+       *             502 Stripe unreachable
+       *
+       * `lookupKey` is validated against content/pricing.json server-side and NO
+       * amount is ever accepted from here — see that route's header. So sending a
+       * key that is not in the rate card fails with a 400 rather than charging
+       * something unexpected.
+       *
+       * The `content-type: application/json` below is load-bearing: the route
+       * answers a form POST with a 303 to Stripe and a JSON POST with a JSON body,
+       * and it decides which by that header. Drop it and this fetch would follow a
+       * redirect and try to parse Stripe's HTML.
+       */
+      const res = await fetch(CHECKOUT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          lookupKey,
+          ...(ctx.isMinor ? { guardianEmail: ctx.guardianEmail } : {}),
+          // UTMs and the ad-click ids, so the sale can be attributed back to the
+          // click that paid for it. See lib/analytics.ts.
+          ...getAttribution(),
+          // Read again straight off the URL, because a click id that is not
+          // captured here is permanently unattributable. See clickIdsFromUrl.
+          ...clickIdsFromUrl(),
+          ...(ctx.gaClientId ? { gaClientId: ctx.gaClientId } : {}),
+        }),
+      });
+
+      if (!res.ok) {
+        /*
+         * The three failures the route distinguishes, kept distinct here because
+         * they need different actions from the buyer:
+         *
+         *   503  Stripe is not configured on this deployment. Nothing the visitor
+         *        can do; offer the human path.
+         *   400  the lookup key is not in the rate card — our bug, not theirs, and
+         *        one the build guards in PriceGrid are meant to make impossible.
+         *   502  Stripe was unreachable. Worth a retry.
+         */
+        setError(
+          res.status === 502
+            ? 'Checkout did not open just then. Try again in a moment, or email me.'
+            : 'Purchasing is not switched on yet. Email me and I will send you a payment link the same day.',
+        );
+        setBusy(false);
+        return;
+      }
+
+      const data = (await res.json()) as { url?: string };
+      if (!data.url) {
+        setError('Checkout did not open. Email me and I will send you a payment link.');
+        setBusy(false);
+        return;
+      }
+
+      // Full navigation, not router.push: the destination is Stripe's own host.
+      window.location.assign(data.url);
+    } catch {
+      setError('That did not go through. Check your connection, or email me and I will help.');
+      setBusy(false);
+    }
+  }
+
+  return (
+    <span className="tier-buy">
+      <button
+        type="button"
+        className={`btn tier-btn${variant === 'solid' ? ' btn--solid' : ''}`}
+        onClick={buy}
+        disabled={busy}
+        aria-busy={busy}
+        aria-label={ariaLabel}
+        aria-describedby={scope.isMinor ? scope.guardianFieldId : undefined}
+      >
+        {busy ? 'Opening checkout…' : label}
+      </button>
+
+      {/* role=alert so a failure is announced rather than silently appearing
+          under a button the visitor has already looked away from. */}
+      {error && (
+        <span className="buy-error" role="alert">
+          {error}{' '}
+          <a href={`mailto:${EMAIL}?subject=${encodeURIComponent(`Paying for lessons — ${lookupKey}`)}`}>
+            {EMAIL}
+          </a>
+        </span>
+      )}
+    </span>
+  );
+}

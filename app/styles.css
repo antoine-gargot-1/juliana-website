@@ -1331,3 +1331,915 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   align-items: start;
 }
 @media (max-width: 920px) { .epk-video { grid-template-columns: 1fr; gap: 30px; } }
+
+/* ============================================================================
+   COACHING FUNNEL — rate card, mode toggle, assessment offer, booking form,
+   sticky CTA, landing-page chrome.
+   ----------------------------------------------------------------------------
+   Appended as a self-contained block. Nothing above this line is modified:
+   every rule here is either a new class or a scoped descendant of one, so the
+   existing pages cannot shift.
+
+   TWO CONVENTIONS DIFFER FROM THE REST OF THE FILE, BOTH DELIBERATELY:
+
+   1. This section is written mobile-first (`min-width` enhancements) while the
+      rules above are desktop-first (`max-width` overrides). The pages this
+      section styles are the paid-search landing surface, where the majority of
+      traffic is a phone. Writing them phone-first means the small screen gets
+      the plain, un-overridden path rather than a stack of undone desktop rules.
+
+   2. It leans on ruled lines and serif numerals rather than cards with shadows.
+      The rate card is meant to read as a handwritten rate sheet — the same
+      `No. 01` numbering the services page already uses, the same hairline
+      `--rule` borders — and not as a three-box SaaS pricing table. A visitor
+      who arrived from an ad should not feel they left the site.
+   ============================================================================ */
+
+/* ---------- Tier cards -----------------------------------------------------
+   The pricing pattern people already know from every subscription checkout: one
+   card per purchasable tier, in a row, stacking on a phone. This replaced a
+   ruled "rate sheet" whose one emphasised row was set at 64px in the display
+   face with a paragraph of reasoning under it. That was beautiful and it was
+   slow to read, and a price page has ten seconds.
+
+   THREE RULES THIS SECTION EXISTS TO KEEP, none of them decorative:
+
+     Body text is 17px and no meaningful text uses --muted. --muted lands around
+     3.9:1 on --bg, which fails WCAG AA for small text; --ink-soft is 9:1. Most
+     students here are older than the person who designed the page.
+
+     Buttons are 48px tall and full-card-width. A 44px minimum is the floor, not
+     the target, and the button is the widest thing on the card because it is the
+     only thing to do with the card.
+
+     Cards size themselves against their CONTAINER, not the viewport. The grid
+     appears full width on /coach/pricing and inside a narrower column on the
+     lesson pages, so a viewport media query would put four cards into a 560px
+     column. @container is what makes one component correct in both places.    */
+
+.tiers-wrap { container-type: inline-size; }
+.tiers {
+  display: grid;
+  gap: 16px;
+  align-items: stretch;
+}
+@container (min-width: 620px) { .tiers { grid-template-columns: repeat(2, 1fr); } }
+@container (min-width: 1040px) { .tiers { grid-template-columns: repeat(4, 1fr); } }
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  padding: 22px 22px 24px;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+}
+/* The recommended tier. The label above says so in words; this is redundancy on
+   top of the words, never the only signal. */
+.tier.is-best {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  background: var(--bg-deep);
+}
+
+/* "Best value per lesson" is arithmetic the reader can check against the two
+   numbers below it — computed in PriceGrid over the 60-minute tiers only. Plain
+   uppercase text, no ribbon, no badge, and empty (but present) on the other
+   cards so all four tier names sit on one line. */
+.tier-flag {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0 0 12px;
+  min-height: 1em;
+}
+
+.tier-name {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 23px;
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+  margin: 0;
+  color: var(--ink);
+}
+
+/* The number, and the only place on the page where weight is spent. Set in the
+   sans at 600 rather than the display face: Italiana has one thin weight, and a
+   price a 60-year-old has to lean in for is a failed price. */
+.tier-price { margin: 10px 0 0; display: flex; align-items: baseline; gap: 4px; }
+.tier-amount {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.tier-per {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+/* The per-lesson rate: the one column the eye scans to compare four tiers of
+   different sizes. On every card, including the single lesson, where it repeats
+   the price — the comparison only works if the row is unbroken. */
+.tier-math {
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 10px 0 0;
+}
+
+/* At most one line, and absent rather than empty when there is nothing honest
+   to claim — see savingLine() in PriceGrid, which returns null for 30-minute
+   plans because no 30-minute single lesson exists to compare against. */
+.tier-save {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 6px 0 0;
+}
+
+.tier-points {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+}
+.tier-points li {
+  font-family: var(--sans);
+  font-size: 16.5px;
+  line-height: 1.35;
+  font-weight: 300;
+  color: var(--ink-soft);
+  padding: 5px 0 5px 18px;
+  position: relative;
+}
+.tier-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 7px;
+  height: 1px;
+  background: var(--accent);
+}
+
+/* ---------- Buy controls ---------------------------------------------------
+   One button per card, the same verb on all of them, pushed to the bottom edge
+   so four cards of different heights still line their buttons up. The
+   recommended card's is filled and the rest are outlined: same size, same
+   availability, same 48px target.                                            */
+
+.tier-buy { display: block; margin-top: auto; padding-top: 20px; }
+.tier-btn {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  padding: 14px 18px;
+}
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.btn:disabled:hover { background: var(--ink); color: var(--bg); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* A failed checkout has to say so where the finger already is, and has to offer
+   a way through rather than a dead end. role="alert" is on the element. */
+.buy-error {
+  display: block;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--accent);
+  margin-top: 12px;
+  max-width: 46ch;
+}
+.buy-error a { border-bottom: 1px solid var(--accent); }
+
+/* The under-18 question, asked once per rate card rather than once per button.
+   A disclosure and not a gate: the common case is an adult buying for
+   themselves, and a compulsory "are you a child?" in front of four buy buttons
+   would cost more sales than it protects. */
+.buy-guardian {
+  margin-top: 24px;
+  padding-left: 14px;
+  border-left: 1px solid var(--rule);
+  max-width: 54ch;
+}
+.buy-guardian-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.buy-guardian-check input {
+  margin: 2px 0 0;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.buy-guardian-check input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.buy-guardian-field { margin-top: 16px; }
+/* --ink-soft, not --muted: --muted is ~3.9:1 on --bg and this is a form label
+   on a payment page, which is the last place to lose a contrast argument. */
+.buy-guardian-field label {
+  display: block;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.buy-guardian-field input {
+  width: 100%;
+  max-width: 380px;
+  font-family: var(--serif);
+  font-size: 17px;
+  padding: 8px 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--ink);
+  color: var(--ink);
+}
+.buy-guardian-field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* What happens after the card is charged. This is the purchase side's
+   equivalent of the assessment's card-hold sentence — and it says the opposite
+   thing, because here the money does move. The two never appear together. */
+.tier-note {
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--bg-deep);
+  border-left: 2px solid var(--accent);
+  padding: 13px 16px;
+  margin: 24px 0 0;
+  max-width: 54ch;
+}
+/* Three short sentences, and the only prose the card is allowed. */
+.tier-foot {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin: 16px 0 0;
+  max-width: 66ch;
+}
+
+/* ---------- The three questions that stop a purchase -----------------------
+   Miss a lesson / cancel / pay upfront, one sentence each, within a thumb's
+   reach of the buttons. This is what is left of a nine-item accordion, and the
+   answers are the three that were actually being looked for.                 */
+
+.facts {
+  display: grid;
+  gap: 0;
+  margin: 34px 0 0;
+  border-top: 1px solid var(--rule);
+}
+.fact {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.fact dt {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.fact dd {
+  font-family: var(--sans);
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 5px 0 0;
+}
+@media (min-width: 900px) {
+  .facts { grid-template-columns: repeat(3, 1fr); column-gap: 40px; }
+  .fact { border-bottom: 0; }
+}
+
+/* Short phrases, one per line. Used where a list used to be six items of two
+   sentences each. */
+.plain-points {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+.plain-points li {
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 300;
+  color: var(--ink);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 720px) {
+  .plain-points { grid-template-columns: 1fr 1fr; column-gap: 40px; }
+}
+
+/* CONTRAST, ON THE PAGES WHERE MONEY CHANGES HANDS.
+   .eyebrow is --muted site-wide, which lands around 3.9:1 on --bg — under AA for
+   11px text. Rather than restyle every eyebrow on the site from here, the
+   purchase surfaces opt in: .page-plain on a page root, and the rate section on
+   the offer pages. Same size, same weight, same design; readable. */
+.page-plain .eyebrow,
+#rates .eyebrow { color: var(--ink-soft); }
+
+/* One short sentence in the sans, at reading size, for the places on the
+   purchase surfaces where a sentence is still worth its space. Deliberately not
+   .prose: that is 18px Cormorant at weight 300, which is the editorial voice,
+   and this is the plain one. */
+.lede-plain {
+  font-family: var(--sans);
+  font-size: 18px;
+  line-height: 1.55;
+  font-weight: 300;
+  color: var(--ink);
+  margin: 22px 0 0;
+  max-width: 56ch;
+}
+
+/* ---------- Purchase CTA ---------------------------------------------------
+   The primary action repeated at the end of every page that sells a plan, with
+   the same label and the same destination as the one above the fold. Headline,
+   the true note about being charged, one button. The three-sentence lede that
+   used to sit in the middle of it said nothing the note did not.             */
+
+.purchase-cta {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 40px 0;
+}
+.purchase-cta-headline {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(30px, 6vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0;
+  max-width: 22ch;
+}
+.purchase-cta-note {
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--bg-deep);
+  border-left: 2px solid var(--accent);
+  padding: 13px 16px;
+  margin: 22px 0 0;
+  max-width: 54ch;
+}
+.purchase-cta-actions { margin-top: 26px; }
+@media (min-width: 720px) { .purchase-cta { padding: 54px 0; } }
+
+/* The scroll target for every purchase CTA. Offset for the fixed nav, which
+   would otherwise sit on top of the rate card's first row after the jump. */
+#rates { scroll-margin-top: 96px; }
+@media (max-width: 860px) { #rates { scroll-margin-top: 78px; } }
+
+/* ---------- The other path -------------------------------------------------
+   Exactly one primary action per page; this is where the other one goes. Ruled
+   off, smaller type, ghost button — visibly the secondary of the two, so a
+   visitor never has to choose between two equally loud offers.
+
+   Where the aside offers the free assessment it carries the card-hold sentence
+   at reading size (.alt-path-note). Where it offers a purchase it must NOT,
+   because on a purchase the card is charged.                                 */
+
+.alt-path {
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  max-width: 62ch;
+}
+.alt-path-lede {
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 300;
+  color: var(--ink);
+  margin: 0;
+}
+.alt-path-note {
+  display: block;
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 14px 0 20px;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+}
+/* Real button, 48px, not an 11px underlined word. This is the second of two
+   offers on the page, which is a reason for it to be outlined rather than
+   filled — and not a reason for it to be hard to hit. */
+.alt-path .btn { min-height: 48px; font-size: 12.5px; }
+
+/* The compact mid-page assessment repeat, used where the assessment is the
+   page's primary action. Card-hold sentence included by construction. */
+.assess-cta-block { border-top: 1px solid var(--rule); padding-top: 26px; }
+
+/* ---------- Mode toggle ----------------------------------------------------
+   A segmented control: two options, in one bordered box, the selected one
+   filled. It used to be two 11px uppercase words with a hairline under the
+   active one, which is a navigation pattern and reads as decoration — several
+   people would not have known it was a control at all, and half the prices on
+   the page live behind it.
+
+   Still a tablist underneath, and both panels stay in the DOM (the inactive one
+   carries `hidden`), so both price sets are in the served HTML and are
+   crawlable, and the visible prices cannot disagree with the JSON-LD Offers.  */
+
+.mode-tabs {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--ink);
+  padding: 3px;
+  margin-bottom: 28px;
+  max-width: 100%;
+}
+.mode-tab {
+  flex: 1 1 auto;
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  padding: 12px 20px;
+  min-height: 46px;
+  white-space: nowrap;
+  transition: background .2s, color .2s;
+}
+.mode-tab[aria-selected='true'] { background: var(--ink); color: var(--bg); }
+.mode-tab:not([aria-selected='true']):hover { background: var(--bg-deep); }
+.mode-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 560px) {
+  /* Two long labels ("In-person · Los Angeles") will not sit side by side on a
+     narrow phone, so the control becomes full-width and stacks rather than
+     truncating either option. */
+  .mode-tabs { display: flex; flex-direction: column; width: 100%; }
+  .mode-tab { white-space: normal; text-align: left; }
+}
+
+/* ---------- Assessment offer ----------------------------------------------
+   The card-capture sentence is a first-class line of copy here, not a
+   disclaimer: telling people plainly that a card is held and nothing is
+   charged converts better than being coy about it, and it is the single
+   sentence most responsible for no-show rate.                                */
+
+.assess {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 44px 0;
+  margin: 0;
+}
+.assess-headline {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(32px, 7vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  margin: 14px 0 0;
+  max-width: 22ch;
+}
+.assess-lede {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin: 20px 0 0;
+  max-width: 54ch;
+}
+.assess-card-note {
+  display: block;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--bg-deep);
+  border-left: 2px solid var(--accent);
+  padding: 16px 18px;
+  margin: 26px 0 0;
+  max-width: 52ch;
+}
+.assess-steps {
+  list-style: none;
+  margin: 30px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+.assess-steps li {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 300;
+  color: var(--ink-soft);
+}
+.assess-steps .n {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--accent);
+}
+.assess-cta { margin-top: 30px; }
+
+/* A vocal range bar rather than a stock "FREE" badge. Purely illustrative —
+   it shows what the 30 minutes is for (finding where the voice actually sits)
+   in the vocabulary of the subject rather than of a pricing page. */
+.range-bar {
+  margin: 30px 0 0;
+  max-width: 460px;
+}
+.range-track {
+  position: relative;
+  height: 1px;
+  background: var(--rule);
+}
+.range-fill {
+  position: absolute;
+  left: 18%;
+  right: 34%;
+  top: -2px;
+  height: 5px;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.range-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+}
+.range-caption {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 14px;
+}
+@media (min-width: 720px) {
+  .assess { padding: 60px 0; }
+  .assess-steps { grid-template-columns: repeat(3, 1fr); border-top: none; }
+  .assess-steps li { border-top: 1px solid var(--rule); padding: 18px 20px 18px 0; }
+}
+
+/* ---------- Booking form ---------------------------------------------------
+   Inherits the site's underlined-input form language from the `form` rules
+   above; what is added here is what that language is missing and this page
+   cannot ship without: a visible focus ring, an error state, and a mode
+   chooser large enough to hit with a thumb.                                   */
+
+.bform { max-width: 720px; }
+.bform fieldset { border: 0; padding: 0; margin: 0 0 44px; }
+.bform legend {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(26px, 5.5vw, 34px);
+  line-height: 1.05;
+  padding: 0;
+  margin-bottom: 6px;
+}
+.bform-step {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.bform-hint {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin: 0 0 22px;
+  max-width: 52ch;
+}
+.bform input:focus-visible,
+.bform select:focus-visible,
+.bform textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-bottom-color: var(--ink);
+}
+.bform [aria-invalid='true'] { border-bottom-color: var(--accent); border-bottom-width: 2px; }
+.field-hint {
+  display: block;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.field-error {
+  display: block;
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--accent);
+  margin-top: 8px;
+}
+.bform-summary {
+  border: 1px solid var(--accent);
+  border-left-width: 2px;
+  padding: 16px 18px;
+  margin: 0 0 30px;
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.bform-summary ul { margin: 8px 0 0; padding-left: 20px; }
+
+/* Mode chooser. Two big targets, because this is the first question and the
+   two answers lead to different availability. */
+.choice-grid { display: grid; gap: 14px; }
+.choice {
+  position: relative;
+  display: block;
+  border: 1px solid var(--rule);
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: border-color .25s, background .25s;
+}
+.choice:hover { border-color: var(--ink); }
+.choice input {
+  /* Kept focusable and reachable — moved under the label text, not hidden. */
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+.choice-name {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(22px, 5vw, 28px);
+  line-height: 1.05;
+}
+.choice-note {
+  display: block;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin-top: 8px;
+}
+.choice-price {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--accent);
+  margin-top: 10px;
+}
+/* Both selectors on purpose: `:has` is the clean expression of "this card's
+   radio is checked", and the explicit class is the fallback for a browser that
+   does not support it. The selected state of the first question in a booking
+   flow is not something to leave to feature detection. */
+.choice.is-checked,
+.choice:has(input:checked) { border-color: var(--ink); background: var(--bg-deep); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (min-width: 720px) {
+  .choice-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+}
+
+/* Guardian block. Appears only for a student under 18; the border makes it
+   read as a distinct obligation rather than two more optional inputs. */
+.bform-guardian {
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  padding: 4px 20px 24px;
+  margin-top: 30px;
+  background: var(--bg-deep);
+}
+
+/* ---------- Cal.com embed -------------------------------------------------- */
+.cal-embed {
+  border: 1px solid var(--rule);
+  width: 100%;
+  min-height: 640px;
+  background: var(--bg);
+}
+.cal-fallback {
+  border: 1px solid var(--rule);
+  border-left: 2px solid var(--accent);
+  padding: 24px;
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--ink-soft);
+}
+.cal-note {
+  font-family: var(--serif);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--muted);
+  margin: 14px 0 0;
+}
+
+/* ---------- Sticky mobile CTA ---------------------------------------------
+   Mobile only, and sits at z-index 28 on purpose: under the fixed .nav (30)
+   and under the full-screen mobile menu (29), so it can never cover either.
+   It hides itself once the footer is on screen, so the end of the page is
+   never obscured, and it stays out of the way until the visitor has scrolled
+   past the first screen.                                                     */
+
+.sticky-cta {
+  display: none;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 28;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -18px 40px -30px rgba(0, 0, 0, 0.6);
+  transform: translateY(0);
+  transition: transform .35s cubic-bezier(.2, .7, .2, 1), opacity .35s;
+}
+.sticky-cta.is-hidden { transform: translateY(120%); opacity: 0; pointer-events: none; }
+.sticky-cta-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+/* The note rides along with the CTA, and is now the only text on the left: the
+   bar used to carry a headline above it that restated the button. 14px on a
+   solid ground is furniture-scale, not fine print — and it is the promise that
+   makes the click safe to make. */
+.sticky-cta-note {
+  display: block;
+  min-width: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 300;
+  color: color-mix(in oklch, var(--bg) 88%, var(--ink));
+}
+.sticky-cta .btn {
+  border-color: var(--bg);
+  color: var(--ink);
+  background: var(--bg);
+  padding: 12px 16px;
+  min-height: 46px;
+  flex-shrink: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  max-width: 46%;
+}
+.sticky-cta .btn:hover { background: var(--gold); border-color: var(--gold); }
+@media (max-width: 860px) { .sticky-cta { display: block; } }
+@media (prefers-reduced-motion: reduce) {
+  .sticky-cta { transition: none; }
+}
+
+/* ---------- Landing-page chrome -------------------------------------------
+   Keyword landing pages get their own route group and their own minimal
+   header/footer: a paid click has one job, and site navigation is a set of
+   exits. What survives is the wordmark (so the page is identifiably hers and
+   not a scraper), and a footer with a real contact route and the links a
+   trustworthy page is expected to have.                                       */
+
+.lp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--rule);
+}
+.lp-header .brand { color: var(--ink); font-size: 18px; }
+.lp-header-note {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: right;
+}
+.lp-footer {
+  border-top: 1px solid var(--rule);
+  margin-top: 60px;
+  padding: 40px 22px calc(90px + env(safe-area-inset-bottom, 0px));
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 300;
+  color: var(--muted);
+}
+.lp-footer-inner { max-width: 1320px; margin: 0 auto; display: grid; gap: 12px; }
+.lp-footer a { color: var(--ink-soft); border-bottom: 1px solid var(--rule); }
+.lp-footer a:hover { color: var(--accent); }
+
+.lp-hero { padding: 46px 0 10px; }
+.lp-hero h1 {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(42px, 11vw, 92px);
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  margin: 14px 0 0;
+}
+.lp-hero-sub {
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.55;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin: 22px 0 0;
+  max-width: 58ch;
+}
+.lp-hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 30px; }
+.lp-hero-note {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  margin: 18px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--accent);
+  max-width: 46ch;
+}
+.lp-proof { padding: 40px 0 10px; }
+.lp-grid { display: grid; gap: 40px; align-items: start; }
+@media (min-width: 920px) {
+  .lp-header { padding: 22px 40px; }
+  .lp-footer { padding: 50px 40px 60px; }
+  .lp-hero { padding: 70px 0 20px; }
+  .lp-grid { grid-template-columns: 1.15fr 1fr; gap: 70px; }
+}
+
+/* ---------- Prose + numbered lists reused by the new coach pages ---------- */
+.prose {
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.65;
+  font-weight: 300;
+  color: var(--ink-soft);
+  margin: 0 0 22px;
+  max-width: 68ch;
+}
+.prose strong { color: var(--ink); font-weight: 500; }
+.numbered { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--rule); }
+.numbered li {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  font-weight: 300;
+}
+.numbered .n { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--accent); }
+.numbered .t { display: block; font-size: 19px; color: var(--ink); margin-bottom: 4px; }
+
+/* Two-column editorial split used by the new coach pages. Mobile-first: one
+   column until there is room for two. */
+.split { display: grid; gap: 40px; align-items: start; }
+@media (min-width: 920px) { .split { grid-template-columns: 1fr 1fr; gap: 70px; } }
