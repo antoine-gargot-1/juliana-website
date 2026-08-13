@@ -92,8 +92,43 @@ export function getStripe(): Stripe {
   return client;
 }
 
-/** True when the configured key is a live-mode key. Guards destructive scripts. */
-export const isLiveMode = () => (process.env.STRIPE_SECRET_KEY ?? '').startsWith('sk_live_');
+/**
+ * Which Stripe mode the configured key belongs to: `true` live, `false` test,
+ * `null` when the key's prefix is not one Stripe currently issues.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THIS RETURNS THREE VALUES AND WHY `rk_` IS IN THE LIST
+ * ---------------------------------------------------------------------------
+ * `rk_live_` is a RESTRICTED live key — a scoped credential that writes to the
+ * live account exactly like `sk_live_` does, and moving to one is a recommended
+ * hardening step for this app. This check used to test `sk_live_` alone, which
+ * means every live-mode guard built on it would have quietly evaluated to "test
+ * mode" the moment the operator did the right thing and scoped the key down. A
+ * guard that fails open the instant you improve your key hygiene is worse than no
+ * guard, because it reads as protection.
+ *
+ * The third value exists so callers can distinguish "test" from "no idea". A
+ * webhook handler that rejects on a mode mismatch must NOT reject when it cannot
+ * determine its own mode — that would take the live funnel down over an
+ * unrecognised prefix — so `null` means "do not make a decision on this".
+ */
+export function stripeKeyLiveMode(): boolean | null {
+  const key = process.env.STRIPE_SECRET_KEY ?? '';
+  if (key.startsWith('sk_live_') || key.startsWith('rk_live_')) return true;
+  if (key.startsWith('sk_test_') || key.startsWith('rk_test_')) return false;
+  return null;
+}
+
+/**
+ * True when the configured key is a live-mode key. Guards destructive scripts.
+ *
+ * Unknown prefixes answer `false`, which is the wrong way round for a guard, so
+ * scripts that gate a destructive action MUST also handle the `null` case from
+ * stripeKeyLiveMode() rather than trusting this boolean alone. See
+ * scripts/stripe-bootstrap.ts for the pattern: it refuses to proceed on an
+ * unrecognised key rather than assuming test mode.
+ */
+export const isLiveMode = () => stripeKeyLiveMode() === true;
 
 /* ------------------------------------------------------------------ */
 /* Shape helpers for fields that moved between API versions            */

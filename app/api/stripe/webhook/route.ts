@@ -1,5 +1,5 @@
 import type Stripe from 'stripe';
-import { customerId, getStripe, subscriptionIdFromInvoice } from '@/lib/stripe';
+import { customerId, getStripe, stripeKeyLiveMode, subscriptionIdFromInvoice } from '@/lib/stripe';
 import { SETUP_KIND_ASSESSMENT, attachDefaultPaymentMethod } from '@/lib/booking';
 import {
   claimConversion,
@@ -107,6 +107,49 @@ export async function POST(request: Request): Promise<Response> {
       error,
     );
     return new Response('signature verification failed', { status: 400 });
+  }
+
+  /*
+   * ===========================================================================
+   * MODE AGREEMENT: A TEST EVENT MUST NOT BE PROCESSED BY A LIVE DEPLOYMENT.
+   * ===========================================================================
+   * A verified signature proves the sender holds the endpoint's signing secret.
+   * It does NOT prove the event describes real money. Anyone holding the secret —
+   * including this repo's own scripts/stripe-e2e.ts, which signs synthetic events
+   * with the real STRIPE_WEBHOOK_SECRET — can deliver `livemode: false` events
+   * that this handler would previously have treated as fact.
+   *
+   * The consequence is not a compromise, it is corruption of the one thing the ad
+   * budget is steered by. A synthetic `setup_intent.succeeded` fires
+   * `assessment_booked` at ~$1,150 into the real GA4 property, Smart Bidding
+   * trains on it, and the campaign bids up against a booking that never happened.
+   * It also sends real email through Resend to whatever address the payload names.
+   *
+   * The comparison is against the mode implied by the KEY this deployment is
+   * configured with, not against VERCEL_ENV: a preview deployment holding live
+   * Stripe credentials is a live-write surface regardless of what Vercel calls it,
+   * and the key is the thing that decides which account is actually touched.
+   *
+   * Returns 200, not 4xx. A mode mismatch will mismatch identically on every
+   * redelivery, so a non-2xx would only make Stripe retry for three days and then
+   * disable the endpoint — taking the live funnel with it. `handled: false` and a
+   * loud log are the honest answer.
+   *
+   * stripeKeyLiveMode() returns null on a key prefix it does not recognise, and
+   * that case is deliberately NOT rejected: refusing to process live events over
+   * an unrecognised prefix would be this check causing the outage it exists to
+   * prevent. Unknown mode means "make no decision here".
+   */
+  const expectLive = stripeKeyLiveMode();
+  if (expectLive !== null && event.livemode !== expectLive) {
+    console.error(
+      `[stripe-webhook] REFUSED ${event.type} (${event.id}): event.livemode=${event.livemode} but this ` +
+        `deployment's STRIPE_SECRET_KEY is a ${expectLive ? 'live' : 'test'}-mode key. Either a test ` +
+        'event reached the live endpoint (check scripts/stripe-e2e.ts and any locally forwarded ' +
+        '`stripe listen`), or the Dashboard webhook endpoint and the key belong to different modes. ' +
+        'Nothing was processed, so no conversion was reported and no email was sent.',
+    );
+    return Response.json({ received: true, handled: false, reason: 'livemode_mismatch' });
   }
 
   if (!(HANDLED as readonly string[]).includes(event.type)) {

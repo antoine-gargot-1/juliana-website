@@ -30,16 +30,23 @@
  *
  * Usage:
  *   npm run stripe:bootstrap -- --dry-run     # read-only; prints the plan
- *   npm run stripe:bootstrap                  # apply
+ *   npm run stripe:bootstrap                  # apply (test mode)
+ *   npm run stripe:bootstrap -- --confirm     # apply (REQUIRED against a live key)
  *   npm run stripe:bootstrap -- --skip-portal # catalog only
  */
 
 import Stripe from 'stripe';
-import { getStripe, isLiveMode } from '@/lib/stripe';
+import { getStripe, stripeKeyLiveMode } from '@/lib/stripe';
 import { PRICES, PRODUCTS, formatUsd, type Price } from '@/lib/pricing';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const SKIP_PORTAL = process.argv.includes('--skip-portal');
+/**
+ * The live-write authorisation. Not a preference — the gate in main() exits
+ * without it, so no live Product, Price or Portal configuration can be touched by
+ * a command that does not name this flag.
+ */
+const CONFIRM = process.argv.includes('--confirm');
 
 /** Marks the objects this script manages, so it can find its own Portal config. */
 const MANAGED_BY = 'juliana-website';
@@ -534,15 +541,75 @@ async function main() {
   }
 
   const stripe = getStripe();
+  const live = stripeKeyLiveMode();
 
   heading(
-    `STRIPE BOOTSTRAP — ${isLiveMode() ? '*** LIVE MODE ***' : 'test mode'}${DRY_RUN ? ' — DRY RUN' : ''}`,
+    `STRIPE BOOTSTRAP — ${live === true ? '*** LIVE MODE ***' : live === false ? 'test mode' : 'UNKNOWN MODE'}` +
+      `${DRY_RUN ? ' — DRY RUN' : ''}`,
   );
+
+  /*
+   * ===========================================================================
+   * THE LIVE-WRITE GATE. THIS IS WHAT MAKES MODE DETECTION LOAD-BEARING.
+   * ===========================================================================
+   * Before this existed, `isLiveMode()` was read only to build the banner string
+   * below: a live key printed "WRITING TO THE LIVE ACCOUNT … stop now." and then
+   * immediately did it. There was no prompt, no flag and no pause, so the warning
+   * was decoration — the operator was told what was happening in the same instant
+   * it happened, with nothing to stop between.
+   *
+   * What is reachable from one unflagged command against a live key:
+   *
+   *   products.create / update, prices.create / update    the live rate card
+   *   the immutable-field REPLACE path                    creates a new Price with
+   *                                                       transfer_lookup_key and
+   *                                                       archives the old one —
+   *                                                       re-pointing what the site
+   *                                                       actually charges
+   *   archiveOrphanedPrices()                             deactivates ANY active
+   *                                                       Price on a managed
+   *                                                       Product that is absent
+   *                                                       from content/pricing.json,
+   *                                                       which includes a bespoke
+   *                                                       or legacy price agreed
+   *                                                       with a real student
+   *
+   * Stripe cannot delete a Product or a Price, only archive it, so every one of
+   * those is permanent. `--confirm` is required because typing it is the smallest
+   * possible act that proves the operator read which account they were pointed at.
+   *
+   * An UNKNOWN key prefix is refused too, and that direction matters: assuming
+   * "not live" for a prefix we do not recognise is exactly how a guard fails open.
+   */
+  if (!DRY_RUN && live !== false) {
+    if (live === null) {
+      console.error('');
+      console.error('REFUSING TO WRITE: STRIPE_SECRET_KEY does not start with sk_test_, rk_test_,');
+      console.error('sk_live_ or rk_live_, so which account this would modify cannot be determined.');
+      console.error('Re-run with --dry-run to see the plan, and check the key.');
+      process.exit(1);
+    }
+    if (!CONFIRM) {
+      console.error('');
+      console.error('REFUSING TO WRITE TO THE LIVE ACCOUNT without --confirm.');
+      console.error('');
+      console.error('Products and Prices cannot be deleted from Stripe afterwards, only archived, and');
+      console.error('this script can re-point the live rate card (the transfer_lookup_key replace path)');
+      console.error('and archive any active Price that is not in content/pricing.json — including one');
+      console.error('agreed by hand with a real student.');
+      console.error('');
+      console.error('  1. npm run stripe:audit                      see what is actually there');
+      console.error('  2. npm run stripe:bootstrap -- --dry-run      see what would change');
+      console.error('  3. npm run stripe:bootstrap -- --confirm      apply it');
+      process.exit(1);
+    }
+  }
+
   if (DRY_RUN) {
     console.log('Nothing will be created or modified. Reads only.');
-  } else if (isLiveMode()) {
-    console.log('WRITING TO THE LIVE ACCOUNT. Products and Prices cannot be deleted afterwards,');
-    console.log('only archived. If you have not run `npm run stripe:audit` against live, stop now.');
+  } else if (live === true) {
+    console.log('WRITING TO THE LIVE ACCOUNT (--confirm given). Products and Prices cannot be deleted');
+    console.log('afterwards, only archived.');
   }
 
   await ensureProducts(stripe);

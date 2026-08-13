@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { EMAIL as PUBLIC_INBOX, SITE_NAME, SITE_URL } from '@/lib/site';
 import { modeLabel, type LessonMode } from '@/lib/pricing';
 
@@ -22,8 +23,9 @@ import { modeLabel, type LessonMode } from '@/lib/pricing';
  * ---------------------------------------------------------------------------
  * NO-OPS RATHER THAN THROWS
  * ---------------------------------------------------------------------------
- * With RESEND_API_KEY unset, send() logs a warning with the full message and
- * returns. That is deliberate in three places:
+ * With RESEND_API_KEY unset, send() logs a warning and returns — with the full
+ * message OUTSIDE production, and with the subject and body withheld inside it.
+ * That is deliberate in three places:
  *
  *   - `next build` must succeed with no env vars at all.
  *   - Local funnel testing with `stripe listen` should exercise the webhook
@@ -32,8 +34,16 @@ import { modeLabel, type LessonMode } from '@/lib/pricing';
  *     ran before the throw. An email is the least important side effect in the
  *     handler and must never be the reason billing state gets replayed.
  *
- * The warning is loud and includes the body, so a missed send is visible in the
- * Vercel logs rather than silent.
+ * The warning is loud either way, so a missed send is visible rather than silent.
+ *
+ * ---------------------------------------------------------------------------
+ * NO RECIPIENT ADDRESS IS EVER LOGGED. NOR IS A SUBJECT.
+ * ---------------------------------------------------------------------------
+ * Every log line in this file identifies the recipient by recipientTag() — a short
+ * SHA-256 prefix — and never by address. Subjects are withheld too, because half
+ * the templates here put a student's name in one. Read recipientTag's comment for
+ * why a tag is sufficient for triage; the reason it is necessary is that Vercel's
+ * log retention is not a place to accumulate a list of a teacher's students.
  */
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
@@ -67,6 +77,30 @@ export type EmailMessage = {
 export type SendResult = { sent: boolean; id?: string; error?: string };
 
 /**
+ * A stable, non-reversible tag for a recipient, for logs.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY A HASH RATHER THAN THE ADDRESS, AND WHY NOT hashEmail()
+ * ---------------------------------------------------------------------------
+ * Every failure path below used to log `message.to` verbatim, so a bad afternoon
+ * at the mail provider wrote a list of students' addresses into Vercel's log
+ * retention, readable by anyone with project access. What triage actually needs is
+ * not the address but the ANSWER TO "is this one recipient failing or all of
+ * them?" — and a stable tag answers that exactly as well: two failures carrying
+ * the same tag are the same person, two different tags are two people.
+ *
+ * Deliberately not hashEmail() from lib/ga-server.ts, even though the algorithm is
+ * the same. That function's contract is "the hash Google's Enhanced Conversions
+ * matching expects", its normalisation is dictated by Google, and importing it
+ * here would tie a log-formatting decision to an advertising API. Twelve hex
+ * characters is ~48 bits, which cannot collide meaningfully across one teacher's
+ * student list and is far too short to be worth attacking as a rainbow-table
+ * lookup of a known address — it is a correlation id, not a credential.
+ */
+const recipientTag = (email: string): string =>
+  `to#${createHash('sha256').update(email.trim().toLowerCase()).digest('hex').slice(0, 12)}`;
+
+/**
  * Send one message. Never throws.
  *
  * `idempotencyKey` maps to Resend's `Idempotency-Key` header, which suppresses a
@@ -81,11 +115,29 @@ export async function send(
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
+    /*
+     * THE BODY IS PRINTED IN DEVELOPMENT ONLY, AND THE ADDRESS NEVER IS.
+     *
+     * This branch exists so local funnel testing works without a mail account
+     * (see the file header), and dumping the whole message is genuinely the useful
+     * behaviour there — it is how you read the plan link or the dunning copy
+     * without a mailbox. In a deployed environment the same dump is a student's
+     * address plus, for a plan link, A LIVE CAPABILITY TOKEN written into Vercel's
+     * logs: the body of planLinkEmail() contains the signed URL that starts a paid
+     * subscription. RESEND_API_KEY is set in production so this should never run
+     * there, but "should never run" is not a reason to leave a credential-printing
+     * branch reachable.
+     *
+     * The subject is withheld in production for the same reason as the address:
+     * operatorAlertEmail() builds subjects like `Plan started — <student name>`, so
+     * a subject IS personal data on half the templates here.
+     */
+    const detail =
+      process.env.NODE_ENV === 'production'
+        ? '  (subject and body withheld: they can contain a student name and a signed plan link)'
+        : `  subject: ${message.subject}\n  ${message.text.replace(/\n/g, '\n  ')}`;
     console.warn(
-      `[email] RESEND_API_KEY is not set — NOT SENDING.\n` +
-        `  to:      ${message.to}\n` +
-        `  subject: ${message.subject}\n` +
-        `  ${message.text.replace(/\n/g, '\n  ')}`,
+      `[email] RESEND_API_KEY is not set — NOT SENDING.\n  ${recipientTag(message.to)}\n${detail}`,
     );
     return { sent: false, error: 'RESEND_API_KEY not set' };
   }
@@ -113,14 +165,23 @@ export async function send(
 
     if (!response.ok) {
       const detail = await response.text();
-      console.error(`[email] send failed (HTTP ${response.status}) to ${message.to}: ${detail}`);
+      // Tag, not address — see recipientTag. Resend's own error body is kept in
+      // full: it names the actual cause (unverified domain, invalid address,
+      // rate limit) and that is what makes a failed booking debuggable.
+      // Neither the address nor the subject — a subject here reads
+      // `Plan started — <name>`. WHICH email this was is already in the log: every
+      // caller wraps send() in attempt(label, …) (app/api/stripe/webhook/route.ts),
+      // and that label is printed on failure.
+      console.error(
+        `[email] send failed (HTTP ${response.status}) ${recipientTag(message.to)}: ${detail}`,
+      );
       return { sent: false, error: `HTTP ${response.status}: ${detail}` };
     }
 
     const body = (await response.json()) as { id?: string };
     return { sent: true, id: body.id };
   } catch (error) {
-    console.error(`[email] send threw for ${message.to}:`, error);
+    console.error(`[email] send threw for ${recipientTag(message.to)}:`, error);
     return { sent: false, error: String(error) };
   }
 }

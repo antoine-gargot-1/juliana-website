@@ -161,6 +161,91 @@ export function verifyCalcomSignature(rawBody: string, headers: Headers): Signat
 }
 
 /* ------------------------------------------------------------------ */
+/* Replay defence                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * How old a Cal.com delivery may be before it is refused.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THIS IS AN HOUR AND NOT STRIPE'S FIVE MINUTES
+ * ---------------------------------------------------------------------------
+ * Stripe signs `t=<unix>` INTO the signature, so its SDK can enforce a 300-second
+ * tolerance cryptographically. Cal.com signs the body and nothing else: there is
+ * no signed timestamp, so the only clock available is `createdAt` inside the
+ * payload — which is covered by the HMAC (tampering with it invalidates the
+ * signature) but is the sender's own claim about when it composed the message,
+ * not about when it sent this particular attempt.
+ *
+ * That distinction sets the window. Cal.com retries a failed delivery with
+ * backoff, and a retry carries the ORIGINAL `createdAt`, so a tolerance of five
+ * minutes would reject exactly the legitimate redeliveries this endpoint exists to
+ * absorb — and Cal.com disables an endpoint that keeps failing. An hour is long
+ * enough for every retry schedule Cal.com uses and short enough that a delivery
+ * captured today is useless tomorrow.
+ */
+export const CALCOM_MAX_DELIVERY_AGE_MS = 60 * 60 * 1000;
+
+/**
+ * Tolerance for a timestamp in the future — server clock skew, nothing more.
+ * Without it, a Cal.com host running a few seconds ahead of ours would have every
+ * delivery refused.
+ */
+const CALCOM_MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+export type FreshnessResult =
+  | { ok: true; unverifiable: boolean }
+  | { ok: false; reason: 'stale' | 'future'; ageMs: number };
+
+/**
+ * Is this delivery recent enough to act on?
+ *
+ * ---------------------------------------------------------------------------
+ * WHAT THIS STOPS, AND WHAT REMAINS UNPROTECTED. BE HONEST ABOUT BOTH.
+ * ---------------------------------------------------------------------------
+ * STOPS: indefinite replay. Before this, a `(rawBody, x-cal-signature-256)` pair
+ * captured once — from a proxy log, a misconfigured intermediary, a copied curl
+ * command — verified forever, because an HMAC over a body has no expiry. Anyone
+ * holding one pair could re-assert that booking at any point in the future.
+ *
+ * DOES NOT STOP: replay INSIDE the window. Detecting that needs a record of which
+ * `booking.uid`s have already been processed, and a record means a datastore this
+ * project does not have (Stripe is the store — see lib/students.ts — and it is not
+ * a nonce table). So a captured delivery can still be resubmitted any number of
+ * times within the hour.
+ *
+ * That residual is acceptable HERE and would not be everywhere. The Cal.com
+ * handler only patches metadata through markAssessmentConfirmed — an idempotent
+ * write of a booking uid and a slot time it already holds — and its single email
+ * is Resend-idempotency-keyed on the uid. Replaying it N times produces the same
+ * record and one email. If this handler ever gains a side effect that is not
+ * idempotent, this comment stops being sufficient and the nonce store becomes
+ * necessary.
+ *
+ * A MISSING OR UNPARSEABLE TIMESTAMP FAILS OPEN, and that is reasoned rather than
+ * lazy. `createdAt` is inside the signed body, so an attacker replaying a captured
+ * delivery cannot strip it — doing so breaks the signature. A delivery that
+ * genuinely arrived without one is therefore Cal.com's own doing (a payload shape
+ * change, a trigger that omits it), and refusing those would break real bookings
+ * to defend against nothing. The `unverifiable` flag is returned so the caller can
+ * say so in the log rather than silently accepting.
+ */
+export function checkDeliveryFreshness(
+  createdAt: string | null,
+  now: number = Date.now(),
+): FreshnessResult {
+  if (!createdAt) return { ok: true, unverifiable: true };
+
+  const sentAt = new Date(createdAt).getTime();
+  if (Number.isNaN(sentAt)) return { ok: true, unverifiable: true };
+
+  const ageMs = now - sentAt;
+  if (ageMs > CALCOM_MAX_DELIVERY_AGE_MS) return { ok: false, reason: 'stale', ageMs };
+  if (ageMs < -CALCOM_MAX_CLOCK_SKEW_MS) return { ok: false, reason: 'future', ageMs };
+  return { ok: true, unverifiable: false };
+}
+
+/* ------------------------------------------------------------------ */
 /* Types                                                              */
 /* ------------------------------------------------------------------ */
 
@@ -274,6 +359,41 @@ export function parseBooking(raw: unknown): CalBooking {
 }
 
 /**
+ * Booking fields that are composed free text and must never be read back out.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY A READ IS REFUSED RATHER THAN A WRITE BEING SANITISED
+ * ---------------------------------------------------------------------------
+ * components/coach/BookingForm.tsx builds Cal.com's `notes` field by joining
+ * several answers into one blob, and for a student under 18 that blob contains
+ * the line `Student is <age>; guardian <name>`. It is the right content for
+ * Cal.com — the teacher reads it on the calendar entry, which is where a minor's
+ * details belong, behind the scheduler's own access control.
+ *
+ * It is the wrong content for Stripe. `goals` is not among the keys BookingForm
+ * puts in Cal.com booking metadata, so /coach/book/hold's
+ * `at('goals') ?? at('notes')` fallback resolved to the blob EVERY time, and a
+ * child's age plus their guardian's name were written onto a live Stripe Customer
+ * under a field name that does not describe them — a flat key/value store
+ * returned by every API read, visible to anyone with Dashboard access, included
+ * in exports, and with no retention rule attached.
+ *
+ * So the blob stops here, at the one function every consumer reads bookings
+ * through. This is data minimisation and not masking: the information is not
+ * obscured, it simply is not copied into a second system that never needed it.
+ * The consequence to accept is that `goals` on the Stripe Customer will be empty
+ * unless a real `goals` booking question is configured on the Cal.com event type
+ * (at which point `bookingValue(booking, 'goals')` returns that answer and
+ * nothing here changes). Empty is correct: nothing in this codebase reads
+ * `student.goals`, so the field was pure retention with no consumer.
+ *
+ * `additionalNotes` is Cal.com's own identifier for the same field on some
+ * payload shapes, and `description` is the event description; both are listed so
+ * a Cal.com payload rename cannot quietly reopen this.
+ */
+const COMPOSED_FREE_TEXT_KEYS = new Set(['notes', 'additionalNotes', 'description']);
+
+/**
  * Read one value that could have arrived by any of the three routes, in order of
  * how much we can rely on it.
  *
@@ -292,6 +412,11 @@ export function parseBooking(raw: unknown): CalBooking {
  * string masking a real value further down the chain.
  */
 export function bookingValue(booking: CalBooking, key: string): string | undefined {
+  // See COMPOSED_FREE_TEXT_KEYS. Returning undefined rather than throwing keeps
+  // the caller's `?? ` chain working: a refused key behaves exactly like a key
+  // the booking never carried, which is the truthful answer for this funnel.
+  if (COMPOSED_FREE_TEXT_KEYS.has(key)) return undefined;
+
   for (const bag of [booking.metadata, booking.responses]) {
     const value = bag[key];
     if (typeof value === 'string' && value.length > 0) return value;

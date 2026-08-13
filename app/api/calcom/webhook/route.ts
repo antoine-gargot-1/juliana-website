@@ -1,4 +1,10 @@
-import { modeFromEventTypeId, parseWebhook, verifyCalcomSignature } from '@/lib/calcom';
+import {
+  CALCOM_MAX_DELIVERY_AGE_MS,
+  checkDeliveryFreshness,
+  modeFromEventTypeId,
+  parseWebhook,
+  verifyCalcomSignature,
+} from '@/lib/calcom';
 import { getStripe } from '@/lib/stripe';
 import { markAssessmentConfirmed, toStudent } from '@/lib/students';
 import { operatorAlertEmail, send } from '@/lib/email';
@@ -36,6 +42,24 @@ import { modeLabel } from '@/lib/pricing';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Make a value safe to interpolate into a log line (CWE-117).
+ *
+ * A newline inside a logged value lets its author forge whole log entries in
+ * Vercel's stream — fabricating a plausible-looking record, or pushing a real one
+ * out of view during an incident review. Values reaching this handler are inside a
+ * signature-verified body, so forging one needs CALCOM_WEBHOOK_SECRET, but the
+ * cost of being right about that is one function call and the cost of being wrong
+ * is an audit trail nobody can trust.
+ *
+ * Truncated as well as escaped: a booking uid is ~20 characters, so anything
+ * longer is either a Cal.com change or an attempt to flood the log.
+ */
+const logSafe = (value: string | null | undefined): string =>
+  value === null || value === undefined
+    ? 'unknown'
+    : JSON.stringify(value.slice(0, 120).replace(/[\x00-\x1f\x7f]/g, ' '));
+
 export async function POST(request: Request): Promise<Response> {
   // THE RAW BODY, read before anything parses it. A JSON round-trip reorders
   // keys and breaks the HMAC — see verifyCalcomSignature.
@@ -61,6 +85,35 @@ export async function POST(request: Request): Promise<Response> {
   const event = parseWebhook(rawBody);
   if (!event) return new Response('unparseable body', { status: 400 });
 
+  /*
+   * REPLAY WINDOW. The signature has no timestamp in it — see
+   * checkDeliveryFreshness in lib/calcom.ts for what this does and does not
+   * achieve, including what stays unprotected without a nonce store.
+   *
+   * 200 rather than 401 on a refusal, for the same reason the Stripe handler
+   * acknowledges a mode mismatch: a stale delivery is stale on every retry, so a
+   * non-2xx would burn Cal.com's retry budget and eventually get this endpoint
+   * disabled — losing every future booking record to defend against a replay of
+   * an idempotent metadata patch.
+   */
+  const fresh = checkDeliveryFreshness(event.createdAt);
+  if (!fresh.ok) {
+    console.warn(
+      `[calcom-webhook] REFUSED ${logSafe(event.triggerEvent)} for booking ${logSafe(event.booking.uid)}: ` +
+        `payload createdAt is ${Math.round(fresh.ageMs / 1000)}s old (limit ` +
+        `${CALCOM_MAX_DELIVERY_AGE_MS / 1000}s, reason ${fresh.reason}). Either a captured delivery is ` +
+        'being replayed, or this server and Cal.com disagree about the time.',
+    );
+    return Response.json({ received: true, handled: false, reason: `delivery_${fresh.reason}` });
+  }
+  if (fresh.unverifiable) {
+    console.warn(
+      '[calcom-webhook] this delivery carried no usable createdAt, so its age could not be checked ' +
+        'and replay protection did not apply to it. Accepted deliberately — see ' +
+        'checkDeliveryFreshness in lib/calcom.ts.',
+    );
+  }
+
   // Acknowledged rather than refused. Cal.com subscriptions are per-trigger but
   // an operator can add triggers in the dashboard at any time, and returning
   // non-2xx for those would show as failed deliveries.
@@ -75,7 +128,7 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     // Same reasoning as the Stripe handler: acknowledge, log loudly. A retry
     // would only repeat whatever already succeeded.
-    console.error(`[calcom-webhook] BOOKING_CREATED ${booking.uid} handling failed:`, error);
+    console.error(`[calcom-webhook] BOOKING_CREATED ${logSafe(booking.uid)} handling failed:`, error);
   }
 
   return Response.json({ received: true, handled: true, uid: booking.uid });
@@ -91,16 +144,30 @@ async function onBookingCreated(booking: {
 }): Promise<void> {
   const inferredMode = modeFromEventTypeId(booking.eventTypeId);
 
+  /*
+   * NO EMAIL ADDRESS IN THIS LINE. It used to log `email=<attendee>` on every
+   * single booking, which accumulated students' addresses in Vercel's log
+   * retention — readable by anyone with project access, for no debugging benefit
+   * the uid does not already provide. The uid resolves the whole booking in
+   * Cal.com and the whole customer in Stripe (it is stored as `booking_uid`
+   * metadata), so it is the strictly better identifier as well as the safer one.
+   *
+   * `hasEmail` is kept because "did this payload carry an attendee address at
+   * all" is the one thing about the email that matters when a booking fails to
+   * match a student, and it says nothing about who the student is.
+   */
   console.log(
-    `[calcom-webhook] BOOKING_CREATED uid=${booking.uid} ` +
+    `[calcom-webhook] BOOKING_CREATED uid=${logSafe(booking.uid)} ` +
       `start=${booking.start?.toISOString() ?? 'unknown'} ` +
-      `email=${booking.attendeeEmail ?? 'unknown'} ` +
+      `hasEmail=${Boolean(booking.attendeeEmail)} ` +
       `eventType=${booking.eventTypeId ?? 'unknown'} ` +
       `mode=${inferredMode ?? 'unmapped'}`,
   );
 
   if (!booking.attendeeEmail) {
-    console.warn(`[calcom-webhook] booking ${booking.uid} has no attendee email; cannot match a student.`);
+    console.warn(
+      `[calcom-webhook] booking ${logSafe(booking.uid)} has no attendee email; cannot match a student.`,
+    );
     return;
   }
 
@@ -124,10 +191,11 @@ async function onBookingCreated(booking: {
      * confirmation email, and Cal.com's own calendar entry.
      */
     console.warn(
-      `[calcom-webhook] no Stripe customer for ${booking.attendeeEmail} yet. Either the webhook beat ` +
-        '/coach/book/hold (normal, resolves itself) or the student abandoned the card hold — in ' +
-        'which case the slot is reserved with no card behind it. Check Cal.com against Stripe if ' +
-        'no confirmation email went out.',
+      `[calcom-webhook] no Stripe customer yet for booking ${logSafe(booking.uid)}. Either the webhook ` +
+        'beat /coach/book/hold (normal, resolves itself) or the student abandoned the card hold — in ' +
+        'which case the slot is reserved with no card behind it. Open that uid in Cal.com to see ' +
+        'whose it is; the address is deliberately not logged. Check Cal.com against Stripe if no ' +
+        'confirmation email went out.',
     );
     return;
   }

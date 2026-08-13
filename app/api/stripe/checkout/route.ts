@@ -85,6 +85,28 @@ const clean = (value: string | undefined): string | undefined => {
   return trimmed && trimmed.length > 0 ? trimmed.slice(0, MAX_FIELD) : undefined;
 };
 
+/**
+ * Make an attacker-supplied value safe to put in a log line (CWE-117).
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE REJECTED lookupKey NEEDED THIS
+ * ---------------------------------------------------------------------------
+ * Everything in this body is unauthenticated and arrives from any origin. `clean()`
+ * above trims and truncates but does not touch control characters, so a
+ * `lookupKey` containing `\n` used to be logged verbatim — letting the caller
+ * append entire fabricated lines to Vercel's log stream. Two concrete uses for
+ * that: burying the evidence of a burst of rejected requests under plausible
+ * noise, and planting entries that mislead whoever reads the log afterwards. The
+ * log is this project's only audit trail for this route (there is no database and
+ * no request id), so its integrity is the whole of the forensic story.
+ *
+ * JSON.stringify does the escaping — `\n` becomes a literal backslash-n and the
+ * value is visibly quoted, so an injected line cannot masquerade as a real one —
+ * and the C0 strip covers the characters JSON.stringify passes through as-is.
+ */
+const logSafe = (value: string): string =>
+  JSON.stringify(value.slice(0, MAX_FIELD).replace(/[\x00-\x1f\x7f]/g, ' '));
+
 export async function POST(request: Request): Promise<Response> {
   if (!stripeConfigured()) {
     // 503 rather than 500: this is "not yet switched on", which is a real and
@@ -120,7 +142,7 @@ export async function POST(request: Request): Promise<Response> {
    */
   if (!PRICES.some((price) => price.lookupKey === lookupKey)) {
     console.warn(
-      `[checkout] rejected unknown lookupKey "${lookupKey}". Valid keys come from ` +
+      `[checkout] rejected unknown lookupKey ${logSafe(lookupKey)}. Valid keys come from ` +
         'content/pricing.json and nowhere else — no amount is ever accepted from a client.',
     );
     return Response.json({ error: 'That package is not for sale.' }, { status: 400 });
@@ -195,7 +217,11 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     // Never surface a Stripe message to a buyer: it can name internal ids and
     // account state. Logged in full for us, one actionable sentence for them.
-    console.error(`[checkout] could not create a Checkout Session for "${lookupKey}"`, error);
+    // `lookupKey` is known-good by this point (it passed the allow-list above), but
+    // it is still escaped: the allow-list could gain a key with odd characters, and
+    // a log-sanitising rule that only applies on the failure path is one refactor
+    // away from not applying at all.
+    console.error(`[checkout] could not create a Checkout Session for ${logSafe(lookupKey)}`, error);
     return Response.json(
       { error: 'Checkout could not be opened just now. Please try again in a moment.' },
       { status: 502 },

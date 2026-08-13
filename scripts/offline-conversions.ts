@@ -22,8 +22,26 @@
  *
  * Usage:
  *   npm run conversions:export                  # CSV to stdout
- *   npm run conversions:export -- --out ltv.csv
+ *   npm run conversions:export -- --out ltv.csv # writes exports/ltv.csv, mode 0600
  *   npm run conversions:export -- --min-months 3
+ *
+ * ---------------------------------------------------------------------------
+ * THE OUTPUT OF THIS SCRIPT IS PERSONAL DATA. TREAT IT LIKE IT.
+ * ---------------------------------------------------------------------------
+ * Every row pairs a Google click id — an advertising identifier tied to one
+ * person, and personal data under GDPR and CCPA — with that person's true
+ * lifetime value and the date they first paid. The file is not anonymous
+ * aggregate reporting; it is a small, high-value list of identified customers.
+ *
+ * Three consequences are enforced below rather than left to the operator:
+ *
+ *   - `--out` writes ONLY inside EXPORT_DIR, which is gitignored. It used to take
+ *     any path, so `--out .env` or `--out ../../something` silently clobbered.
+ *   - the file is created with mode 0600 and `flag: 'wx'`, so it is not
+ *     world-readable and an existing export is never silently overwritten.
+ *   - the progress log names customer ids, never email addresses. Redirecting
+ *     stderr to a file, or running this in CI, used to put real student emails
+ *     and their LTV into a log.
  *
  * Then: Google Ads → Goals → Conversions → Uploads → upload the CSV.
  * The conversion action must already exist as an IMPORTED action named exactly
@@ -65,8 +83,9 @@
  * that is itself worth knowing.
  */
 
-import { writeFileSync } from 'node:fs';
-import { getStripe, isLiveMode } from '@/lib/stripe';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { basename, resolve, sep } from 'node:path';
+import { isLiveMode } from '@/lib/stripe';
 import { lifetimeValueCents, payingStudents, retentionMonths, firstPaidInvoice } from '@/lib/students';
 import { formatUsd } from '@/lib/pricing';
 
@@ -85,8 +104,79 @@ function arg(name: string): string | undefined {
   return index === -1 ? undefined : process.argv[index + 1];
 }
 
-const OUT = arg('out');
+/**
+ * The one directory this script may write to.
+ *
+ * Resolved from the process cwd, which for `npm run` is always the repo root.
+ * `.gitignore` has an `exports/` rule, so an export cannot be picked up by a
+ * careless `git add .` — which is the accident this constant exists to prevent,
+ * because the file contains click ids and lifetime values for named customers.
+ */
+const EXPORT_DIR = resolve(process.cwd(), 'exports');
+
+/**
+ * Where `--out` is allowed to land.
+ *
+ * `writeFileSync(arg('out'), …)` used to take the value verbatim: `--out .env`
+ * overwrote the committed env file, `--out ../../x` escaped the repo, and neither
+ * produced a warning. So the argument is reduced to its BASENAME and re-rooted
+ * inside EXPORT_DIR — `../../../etc/passwd` becomes `exports/passwd`, and there is
+ * no string a caller can pass that resolves anywhere else. The containment check
+ * after the join is belt-and-braces against a basename() edge case on a platform
+ * this has not been run on.
+ */
+function resolveOutPath(raw: string): string {
+  const name = basename(raw.trim());
+  if (!name || name === '.' || name === '..') {
+    throw new Error(`--out "${raw}" has no usable filename.`);
+  }
+  if (!name.toLowerCase().endsWith('.csv')) {
+    throw new Error(`--out "${raw}" must name a .csv file (Google Ads rejects anything else).`);
+  }
+
+  const full = resolve(EXPORT_DIR, name);
+  if (full !== EXPORT_DIR && !full.startsWith(EXPORT_DIR + sep)) {
+    throw new Error(`--out "${raw}" resolves outside ${EXPORT_DIR}, which is not allowed.`);
+  }
+  return full;
+}
+
+/*
+ * Resolved AT LOAD, before a single Stripe call. A bad --out must cost nothing:
+ * this script reads every paying student's invoice history, which is minutes of
+ * API calls, and discovering the output path was rejected at the end of that is
+ * both slow and the kind of annoyance that gets a validation removed.
+ */
+const OUT_PATH = (() => {
+  const raw = arg('out');
+  if (!raw) return undefined;
+  try {
+    return resolveOutPath(raw);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    console.error(`Exports are written inside ${EXPORT_DIR} and nowhere else — the file contains`);
+    console.error('click ids and lifetime values for named customers, and that directory is gitignored.');
+    process.exit(1);
+  }
+})();
+
+/*
+ * `Number(undefined)` is NaN, and so is `Number(arg('min-months'))` whenever the
+ * flag is passed last or non-numerically — `--min-months` with nothing after it,
+ * or `--min-months three`. Every comparison against NaN is false, so the
+ * `months < MIN_MONTHS` retention gate below silently stopped filtering and
+ * EVERY paying student was exported: over-disclosure, and a file that feeds Google
+ * Ads exactly the one-month cohort this script's header argues against. Validated
+ * rather than defaulted, because a typo'd flag must not look like it worked.
+ */
 const MIN_MONTHS = Number(arg('min-months') ?? DEFAULT_MIN_MONTHS);
+if (!Number.isFinite(MIN_MONTHS) || MIN_MONTHS < 0) {
+  console.error(
+    `--min-months must be a non-negative number, got "${arg('min-months')}". ` +
+      'Without a valid value the retention filter silently passes every student.',
+  );
+  process.exit(1);
+}
 
 /**
  * Google Ads wants "yyyy-MM-dd HH:mm:ss+|-HH:mm". Not ISO 8601 — an ISO string
@@ -101,9 +191,38 @@ function googleAdsTimestamp(date: Date): string {
   );
 }
 
-/** Minimal RFC 4180 quoting. Values here are ids and numbers, but never assume. */
-const csvCell = (value: string): string =>
-  /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+/**
+ * One CSV cell: RFC 4180 quoting, plus formula-injection neutralisation.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THE LEADING-CHARACTER GUARD IS NOT PARANOIA HERE
+ * ---------------------------------------------------------------------------
+ * The first column of every row is `gclid`, and a gclid is not an internal id —
+ * it is read off a VISITOR'S LANDING URL (`?gclid=…`), truncated to 200
+ * characters with no charset validation, posted through the booking form, and
+ * persisted to Stripe metadata. It is attacker-controlled end to end.
+ *
+ * Excel, LibreOffice and Google Sheets all interpret a cell beginning `=`, `+`,
+ * `-` or `@` as a formula, and quoting does not stop them — `"=HYPERLINK(...)"`
+ * still evaluates once the quotes are consumed by the CSV parser. So a visitor
+ * who arrives at `?gclid==HYPERLINK("http://evil.example","ok")` gets that string
+ * executed in the operator's spreadsheet the moment they open the export. A
+ * leading apostrophe is the standard neutraliser: the spreadsheet treats the cell
+ * as text, and Google Ads' upload parser is not a spreadsheet and never evaluated
+ * formulas in the first place.
+ *
+ * `\t` and `\r` are in the same guard for a different reason: a tab or a carriage
+ * return inside a value corrupts row framing on upload, which Google Ads reports
+ * as a generically useless parse error rather than as a bad row.
+ */
+const CSV_FORMULA_PREFIX = /^[=+\-@\t\r]/;
+
+const csvCell = (value: string): string => {
+  const guarded = CSV_FORMULA_PREFIX.test(value) ? `'${value}` : value;
+  // `\r` is in the quote trigger as well as the prefix guard: it can appear
+  // anywhere in the value, not only at the start.
+  return /[",\r\n]/.test(guarded) ? `"${guarded.replace(/"/g, '""')}"` : guarded;
+};
 
 async function main() {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -139,7 +258,11 @@ async function main() {
       const braid = student.gbraid ?? student.wbraid;
       if (braid) skippedBraidOnly += 1;
       log(
-        `  no gclid: ${student.email ?? student.id} (${months} months, ` +
+        // The customer id, NEVER the email address. This line is on stderr so
+        // `2>logfile` or a CI capture would otherwise persist a real student's
+        // address next to their lifetime value. A `cus_…` is enough to look the
+        // record up in the Dashboard, which is the only reason to print anything.
+        `  no gclid: ${student.id} (${months} months, ` +
           `${formatUsd(await lifetimeValueCents(student.id))}) — ` +
           (braid
             ? 'has a gbraid/wbraid, so this one IS attributable but needs the separate ' +
@@ -199,9 +322,30 @@ async function main() {
     ...rows,
   ].join('\n');
 
-  if (OUT) {
-    writeFileSync(OUT, `${csv}\n`, 'utf8');
-    log(`Wrote ${rows.length} row(s) to ${OUT}`);
+  if (OUT_PATH) {
+    mkdirSync(EXPORT_DIR, { recursive: true, mode: 0o700 });
+    try {
+      /*
+       * `wx` = create, fail if it exists. An export is a dated snapshot of who
+       * paid what; silently overwriting one destroys the record of what was
+       * actually uploaded to Google Ads, which is the only way to reconstruct a
+       * double-upload later. 0600 because the alternative on a shared or synced
+       * machine is a world-readable list of customers and their LTV.
+       */
+      writeFileSync(OUT_PATH, `${csv}\n`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'EEXIST') {
+        throw new Error(
+          `${OUT_PATH} already exists and will not be overwritten. Delete it, or pass a different ` +
+            '--out name. Exports are deliberately append-only-by-hand: each one is a record of ' +
+            'what was uploaded to Google Ads.',
+        );
+      }
+      throw error;
+    }
+    log(`Wrote ${rows.length} row(s) to ${OUT_PATH} (mode 0600)`);
+    log('That file contains click ids and lifetime values for named customers. It is gitignored;');
+    log('delete it once the upload is confirmed rather than leaving it on disk.');
   } else {
     console.log(csv);
   }

@@ -26,16 +26,37 @@
  *     CALCOM_WEBHOOK_SECRET set in .env.local
  *
  * Run with: npm run stripe:e2e
+ *   npm run stripe:e2e -- --keep      # leave the created objects in the dashboard
  *
- * It creates real test-mode Customers, Subscriptions and Test Clocks. They are
- * left behind on purpose — reading them in the dashboard afterwards is half the
- * value — and are free to delete. NEVER run this against a live key: it would
- * create live subscriptions. It does not guard on isLiveMode() because the test
- * clock API is test-mode-only and Stripe will refuse it anyway.
+ * ---------------------------------------------------------------------------
+ * CLEANUP: DELETING THE TEST CLOCK DELETES EVERYTHING HUNG OFF IT
+ * ---------------------------------------------------------------------------
+ * Every object this script creates — Customer, SetupIntent, Subscription, Invoice —
+ * is created against a Test Clock, and deleting a Test Clock deletes its associated
+ * objects with it. So cleanup is one call per scenario, in a `finally` so it runs
+ * even when an assertion throws partway.
+ *
+ * These used to be left behind on purpose, on the argument that reading them in the
+ * dashboard afterwards is half the value. That argument is preserved as `--keep`
+ * rather than as the default, because the default was accumulating a fresh Customer,
+ * Subscription and Clock on every run: a test-mode account that fills up with
+ * indistinguishable `e2e-<timestamp>` records is one where nobody can tell a
+ * genuine test-mode booking from residue, and Stripe test clocks are a capped
+ * resource that eventually refuses new ones.
+ *
+ * ---------------------------------------------------------------------------
+ * NEVER AGAINST A LIVE KEY
+ * ---------------------------------------------------------------------------
+ * This would create live subscriptions and fire real conversions. There is now an
+ * explicit isLiveMode() guard in main(). Before it, the protection was IMPLICIT and
+ * undocumented: `testClocks.create` happens before `customers.create`, and Stripe
+ * refuses the test-clock call on a live key, so the run aborted before creating
+ * anything. That ordering was load-bearing and nothing said so — reordering those
+ * two lines for readability would have silently armed the script against live.
  */
 
 import Stripe from 'stripe';
-import { getStripe, subscriptionIdFromInvoice } from '@/lib/stripe';
+import { getStripe, isLiveMode, subscriptionIdFromInvoice } from '@/lib/stripe';
 import { startPlan } from '@/lib/booking';
 import { getStudent, retentionMonths } from '@/lib/students';
 import { formatUsd } from '@/lib/pricing';
@@ -44,6 +65,28 @@ const stripe = getStripe();
 const WH = process.env.STRIPE_WEBHOOK_SECRET!;
 const URL_ = 'http://localhost:3000/api/stripe/webhook';
 const ok = (b: boolean) => (b ? 'PASS' : '**FAIL**');
+
+/** `--keep` opts out of cleanup. See the header. */
+const KEEP = process.argv.includes('--keep');
+
+/**
+ * Delete a Test Clock and, with it, every object created against it.
+ *
+ * Swallows its own failure: a cleanup error must never mask the assertion results
+ * the run exists to produce, and a leftover clock is a nuisance rather than a fault.
+ */
+async function cleanup(clockId: string) {
+  if (KEEP) {
+    console.log(`   kept ${clockId} and its objects (--keep). Delete it in the dashboard when done.`);
+    return;
+  }
+  try {
+    await stripe.testHelpers.testClocks.del(clockId);
+    console.log(`   cleaned up ${clockId} and every object created against it`);
+  } catch (error) {
+    console.log(`   cleanup of ${clockId} FAILED (delete it by hand): ${String(error)}`);
+  }
+}
 
 async function post(type: string, object: unknown, label = type) {
   const payload = JSON.stringify({
@@ -73,6 +116,20 @@ async function scenario(card: string, label: string) {
   console.log(`\n${'='.repeat(70)}\nSCENARIO: ${label} (${card})\n${'='.repeat(70)}`);
   const now = new Date();
   const clock = await stripe.testHelpers.testClocks.create({ frozen_time: Math.floor(now.getTime() / 1000), name: label });
+  /*
+   * `finally`, not a trailing call: the assertions inside throw on a genuine
+   * failure, and that is exactly the run whose leftovers are most confusing to
+   * find in the dashboard a week later.
+   */
+  try {
+    return await runScenario(card, now, clock);
+  } finally {
+    console.log('\n4) cleanup');
+    await cleanup(clock.id);
+  }
+}
+
+async function runScenario(card: string, now: Date, clock: Stripe.TestHelpers.TestClock) {
   const uid = `e2e-${Date.now()}`;
 
   const customer = await stripe.customers.create({
@@ -150,6 +207,23 @@ async function scenario(card: string, label: string) {
 }
 
 async function main() {
+  /*
+   * THE LIVE-KEY GUARD, NOW EXPLICIT.
+   *
+   * Everything below creates real objects and posts synthetic webhook events that
+   * fire real conversions and real email. Against a live key that means live
+   * subscriptions on `pm_card_visa` and fabricated `assessment_booked` conversions
+   * at ~$1,150 in the production GA4 property, which Smart Bidding would then train
+   * on. Stripe would refuse the first testClocks call anyway — but relying on that
+   * means relying on the order of two lines, which is not a guard.
+   */
+  if (isLiveMode()) {
+    console.error('REFUSING TO RUN: STRIPE_SECRET_KEY is a LIVE key.');
+    console.error('This script creates subscriptions and posts synthetic webhook events that fire real');
+    console.error('conversions and send real email. Point .env.local at sk_test_ and re-run.');
+    process.exit(1);
+  }
+
   await scenario('pm_card_visa', 'success 4242');
   await scenario('pm_card_chargeCustomerFail', 'attaches then fails on charge (dunning)');
 

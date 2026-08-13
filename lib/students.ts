@@ -186,6 +186,54 @@ function meta(entries: Record<string, string | number | null | undefined>): Stri
   return out;
 }
 
+/**
+ * Ceiling on a free-text answer, well under Stripe's 500.
+ *
+ * The three free-text fields (`goals`, `experience`, `availability`) are one-line
+ * answers to one-line questions. 200 characters is generous for that and mean for
+ * anything else, which is the point: a value that needs more room is not an answer,
+ * it is a paste.
+ */
+const FREE_TEXT_MAX = 200;
+
+/**
+ * A single free-text answer, or nothing.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY A MULTI-LINE VALUE IS DROPPED WHOLE RATHER THAN TRUNCATED
+ * ---------------------------------------------------------------------------
+ * This is the second of two layers keeping a minor's personal data out of Stripe
+ * Customer metadata. The first is COMPOSED_FREE_TEXT_KEYS in lib/calcom.ts, which
+ * stops the Cal.com `notes` blob — containing `Student is <age>; guardian <name>`
+ * for an under-18 student — from being read back as this record's `goals`.
+ *
+ * This one is here because that blob could reach us by some other route later: a
+ * booking question renamed to `goals` in the Cal.com dashboard and prefilled with
+ * the same composed text, or a future form that posts a textarea. A newline is the
+ * signature of composition — nobody types one into "what are your goals?" — so a
+ * multi-line value is treated as a blob and not stored at all.
+ *
+ * Dropping beats truncating. Truncating to the first line would keep whichever
+ * line happened to be first, which in the blob's current ordering is `Focus: …`
+ * today and could be the age line after any edit to BookingForm — a control whose
+ * correctness depends on the order of somebody else's string join is not a control.
+ * Nothing in this codebase reads `student.goals`, `student.experience` or
+ * `student.availability`, so an empty field costs a report exactly nothing; a
+ * child's age in a billing system costs a disclosure.
+ *
+ * Also strips control characters, which keeps these values safe to interpolate
+ * into a log line (CWE-117) and into the CSV that scripts/offline-conversions.ts
+ * writes.
+ */
+function freeText(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  if (/[\r\n]/.test(value)) return undefined;
+  // Strips C0 control characters and DEL. Written as escapes on purpose: a
+  // literal control character in a source file is invisible to a reviewer.
+  const cleaned = value.replace(/[\x00-\x1f\x7f]/g, ' ').trim();
+  return cleaned.length > 0 ? cleaned.slice(0, FREE_TEXT_MAX) : undefined;
+}
+
 const str = (m: Stripe.Metadata, key: string): string | null => {
   const v = m[key];
   return v && v.length > 0 ? v : null;
@@ -397,11 +445,24 @@ export async function findOrCreateStudent(
 
   const patch = meta({
     [META.mode]: intake.mode,
-    [META.goals]: intake.goals,
-    [META.experience]: intake.experience,
-    [META.availability]: intake.availability,
-    [META.guardianName]: intake.guardianName,
-    [META.guardianEmail]: intake.guardianEmail,
+    /*
+     * EVERY FREE-TEXT AND IDENTITY FIELD GOES THROUGH freeText(). Read that
+     * function's comment before removing a call: it is the layer that stops a
+     * composed Cal.com `notes` blob — which carries a minor's age and their
+     * guardian's name — from being persisted here under the name `goals`.
+     *
+     * `age` is deliberately absent from META entirely and always has been, so it
+     * has no key to land in. Nothing in this codebase reads it.
+     */
+    [META.goals]: freeText(intake.goals),
+    [META.experience]: freeText(intake.experience),
+    [META.availability]: freeText(intake.availability),
+    // Kept, unlike the three above, because it has a live consumer: for a minor
+    // the guardian is the payer and the counterparty, and the operator alerts in
+    // app/api/stripe/webhook/route.ts are read by a human who needs to know who
+    // to contact. Sanitised the same way so a newline cannot forge a log line.
+    [META.guardianName]: freeText(intake.guardianName),
+    [META.guardianEmail]: freeText(intake.guardianEmail),
     [META.gaClientId]: intake.gaClientId,
     [META.bookingUid]: intake.bookingUid,
     [META.assessmentAt]: intake.assessmentAt?.toISOString(),
