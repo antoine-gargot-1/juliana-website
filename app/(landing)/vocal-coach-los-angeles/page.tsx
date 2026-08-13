@@ -44,20 +44,20 @@ const STUDENT_CLIPS: Video[] = [];
 
 const WHY = [
   {
-    t: 'She is still doing it',
-    d: 'Touring vocalist for Amanda Miguel, original releases on Spotify editorial playlists, and still playing rooms like Hotel Café. Coaching from someone whose own voice has to survive four nights in a row is different from coaching out of a textbook.',
+    t: 'She’s still doing it',
+    d: 'Touring vocalist for Amanda Miguel, her own songs on Spotify editorial playlists, and a 47-minute headline set at Hotel Café with a four-piece band — that’s the video above. Coaching from someone whose own voice has to get through a run of shows is different from coaching out of a textbook.',
   },
   {
     t: 'Healthy technique first',
-    d: 'Range and volume come from support and release, not force. Singers who get pushed hard arrive with habits that take longer to undo than to learn properly the first time.',
+    d: 'Range and volume come out of support and release, not force. Singers who get pushed hard arrive with habits that take longer to undo than they’d have taken to learn properly.',
   },
   {
     t: 'English or Spanish',
-    d: 'Technique instructions land differently in a second language, and singing is largely about thinking in the right image. Lessons run in whichever language you think in.',
+    d: 'A technique instruction lands differently in your second language, and most of singing is thinking in the right image. Lessons run in whichever language you think in, and switching mid-sentence is normal here.',
   },
   {
     t: 'Ages five to seventy-plus',
-    d: 'Total beginners who have only ever sung in the car, teenagers preparing auditions, and adults finally doing the thing they meant to do at twenty.',
+    d: 'Total beginners who’ve only ever sung in the car, teenagers preparing auditions, and adults finally doing the thing they meant to do at twenty.',
   },
 ];
 
@@ -148,7 +148,10 @@ export default function VocalCoachLosAngelesPage() {
                 </li>
                 <li>
                   <span className="n">03</span>
-                  <span>Pitch, ear training and harmony</span>
+                  <span>
+                    Pitch, harmony, and ear training &mdash; learning to name what you&apos;re
+                    hearing
+                  </span>
                 </li>
                 <li>
                   <span className="n">04</span>
@@ -177,7 +180,7 @@ export default function VocalCoachLosAngelesPage() {
             What lessons cost
           </div>
           <p className="prose" style={{ marginBottom: 30 }}>
-            No enquiry required to see a price. Monthly plans work out from{' '}
+            You don&apos;t have to ask to see a price. Monthly plans work out from{' '}
             {formatUsd(perLessonCents(anchor))} a lesson in person, and less online.
           </p>
           {/* Opens on in-person: that is the intent this page's ads are bought
@@ -220,11 +223,11 @@ export default function VocalCoachLosAngelesPage() {
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
                 <blockquote
                   style={{
-                    fontFamily: 'var(--display)',
+                    fontFamily: 'var(--serif)',
                     fontSize: 'clamp(20px, 2vw, 28px)',
                     lineHeight: 1.2,
                     margin: 0,
-                    fontWeight: 400,
+                    fontWeight: 600,
                   }}
                 >
                   {t.quote}

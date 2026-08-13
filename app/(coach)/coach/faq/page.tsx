@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
 import { FaqAccordion } from '@/components/coach/FaqAccordion';
+import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
 import { FAQS } from '@/lib/content';
+import { ASSESSMENT, LESSONS_PER_MONTH } from '@/lib/pricing';
 import { faqPageSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
@@ -25,6 +27,16 @@ export default function FaqPage() {
           <h1>
             Asked &amp; <span className="it">answered.</span>
           </h1>
+          {/* PLAIN LEDE. The five answers people open this accordion to find,
+              in the sans face, above the accordion rather than inside it. Two of
+              them — the delayed first bill and the free pause — are the strongest
+              things the studio has to say and were previously three clicks deep. */}
+          <p className="lede-plain">
+            The short version, if you&apos;re in a hurry: the first{' '}
+            {ASSESSMENT.durationMinutes} minutes are free. {ASSESSMENT_CARD_COPY} A plan is{' '}
+            {LESSONS_PER_MONTH} lessons a month, your first bill lands a week after that free
+            session, and you can cancel any time.
+          </p>
         </section>
 
         <section className="block" style={{ paddingTop: 20 }}>
@@ -35,9 +47,12 @@ export default function FaqPage() {
 
         <section className="cta">
           <h2>
-            Still <span className="it">curious?</span>
+            Something <span className="it">not answered?</span>
           </h2>
-          <p>Send me a note — happy to answer anything before you book.</p>
+          <p>
+            Send me a note. I&apos;d rather answer an awkward question now than have you book
+            wondering about it.
+          </p>
           <div className="hero-ctas" style={{ justifyContent: 'center' }}>
             <Link className="btn btn--solid" href="/coach/contact">
               Get in touch <span className="arrow">&rarr;</span>
@@ -46,6 +61,12 @@ export default function FaqPage() {
               Book a free assessment
             </Link>
           </div>
+          {/* The card promise travels with every place the free assessment is
+              offered. No paid button on this page, so it cannot be misread as
+              applying to a purchase. */}
+          <p className="lede-plain" style={{ margin: '22px auto 0' }}>
+            {ASSESSMENT_CARD_COPY}
+          </p>
         </section>
       </div>
 

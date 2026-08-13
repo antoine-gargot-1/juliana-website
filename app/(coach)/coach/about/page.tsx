@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
+import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
 import { ASSESSMENT } from '@/lib/pricing';
 import { coachPersonSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
@@ -35,7 +36,7 @@ const STYLES = ['Pop', 'Latin Pop', 'Indie Pop', 'Singer-Songwriter', 'Acoustic'
 export const metadata: Metadata = pageMeta({
   title: 'About Juliana Beltran — Vocal Coach & Singer-Songwriter in LA',
   description:
-    'Meet Juliana Beltran: Colombian singer-songwriter, performer and music coach in Los Angeles. Technical training meets creativity, artistry and emotional expression.',
+    'Juliana Beltran is a Colombian singer-songwriter and music coach in Los Angeles. She toured as a vocalist for Amanda Miguel, releases her own songs on Spotify editorial playlists, and teaches voice, guitar, piano and songwriting in English or Spanish, ages 5 to 70+.',
   path: '/coach/about',
   image: '/img/juliana-portrait.jpg',
   imageWidth: 3365,
@@ -65,12 +66,12 @@ export default function AboutPage() {
                 lineHeight: 1.55,
                 color: 'var(--ink-soft)',
                 maxWidth: 520,
-                fontWeight: 300,
+                fontWeight: 400,
                 margin: 0,
               }}
             >
-              Colombian singer-songwriter, performer, and music coach based in Los Angeles.
-              Technical training meets creativity, artistry, and emotional expression.
+              Colombian singer-songwriter and music coach in Los Angeles. I teach voice, guitar,
+              piano and songwriting, in English or Spanish, online or in person.
             </p>
           </div>
           <div className="img reveal-clip" style={{ '--rd': '200ms' }}>
@@ -86,27 +87,40 @@ export default function AboutPage() {
 
         <section className="block" style={{ paddingTop: 40 }}>
           <div className="about-bio" style={{ maxWidth: 760, margin: '0 auto' }}>
-            <p className="reveal">
-              With years of experience teaching singers and musicians of all ages, Juliana combines
-              technical training with creativity, artistry, and emotional expression. Her approach
-              focuses on helping students feel{' '}
-              <em style={{ fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
-                confident, connected, and inspired
-              </em>{' '}
-              while building real musical skills.
+            {/* PLAIN LEDE, then the longer personal writing underneath.
+                WCAG 3.1.5 is satisfied by a plain summary alongside harder
+                prose, not by flattening the prose — so the short version comes
+                first in the sans face and her own voice keeps the rest. */}
+            <p className="lede-plain reveal" style={{ margin: '0 0 30px', maxWidth: '56ch' }}>
+              The short version: I sing for a living and I teach. Students have been as young as
+              five and as old as seventy-plus. Lessons run in English or Spanish.
             </p>
-            <p className="reveal" style={{ '--rd': '120ms' }}>
-              As an active recording artist and performer, Juliana understands the realities of
-              pursuing music professionally — and brings that experience directly into her teaching.
+            <p className="reveal" style={{ '--rd': '80ms' }}>
+              I toured as a vocalist for Amanda Miguel, my own songs sit on Spotify editorial
+              playlists, and I still play rooms like Hotel Café — a full 47-minute headline set
+              there, ten songs with a four-piece band, is on this site. That matters to your lesson
+              for one reason: I&apos;m asking my own voice to do the things I ask yours to do, so I
+              find out the same week when something I taught you doesn&apos;t hold up on a stage.
+            </p>
+            <p className="reveal" style={{ '--rd': '160ms' }}>
+              What I teach first is the boring part. Breath, support, release. Range and volume come
+              out of those rather than out of pushing, and a singer who&apos;s been pushed hard
+              arrives with habits that take longer to undo than they&apos;d have taken to learn
+              properly.
+            </p>
+            <p className="reveal" style={{ '--rd': '240ms' }}>
+              One thing that has nothing to do with your lessons: I&apos;ve been releasing music for
+              years, and &ldquo;Delusional&rdquo; in April 2026 was the first of my own records where
+              I played the guitar on it, live, in the studio. So when a singer tells me they&apos;re
+              nervous about the guitar part, I&apos;m not being kind about it. I know.
             </p>
           </div>
         </section>
 
         <div className="pull reveal">
           <blockquote>
-            Music should feel <span className="it">expressive, joyful, and personal.</span> My goal
-            is not only to help students improve technically — but to help them discover their
-            voice.
+            I&apos;d rather tell you the <span className="it">true thing</span> in the first ten
+            minutes than the encouraging thing for six months.
           </blockquote>
           <div className="eyebrow" style={{ marginTop: 30 }}>
             Teaching Philosophy
@@ -130,7 +144,7 @@ export default function AboutPage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 18,
-                      fontWeight: 300,
+                      fontWeight: 400,
                       display: 'flex',
                       gap: 18,
                     }}
@@ -139,7 +153,9 @@ export default function AboutPage() {
                       style={{
                         fontFamily: 'var(--serif)',
                         fontStyle: 'italic',
-                        color: 'var(--accent)',
+                        // --accent is 1.82:1 and cannot carry text. --accent-text
+                        // (6.67:1) is the token that can, and this is 14px.
+                        color: 'var(--accent-text)',
                         fontSize: 14,
                         minWidth: 30,
                       }}
@@ -172,9 +188,8 @@ export default function AboutPage() {
             Let&apos;s <span className="it">make</span> something.
           </h2>
           <p className="reveal" style={{ '--rd': '120ms' }}>
-            Lessons are personalized — built around your goals, your interests, and where you are
-            right now. Start with a free {ASSESSMENT.durationMinutes}-minute assessment: a card
-            holds the slot and nothing is charged.
+            Lessons are built around what you actually want to sing or write. Start with a free{' '}
+            {ASSESSMENT.durationMinutes}-minute assessment. {ASSESSMENT_CARD_COPY}
           </p>
           <Link className="btn btn--solid reveal" style={{ '--rd': '240ms' }} href="/coach/book">
             Book your free assessment <span className="arrow">&rarr;</span>

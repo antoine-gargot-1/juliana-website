@@ -17,10 +17,22 @@ import { formatUsd, monthlyPlans, perLessonCents } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * The cheapest per-lesson rate, read off the rate card rather than typed.
+ *
+ * This description used to carry a hardcoded "$70 a lesson". A price in a meta
+ * description is a price Google shows in the SERP, and a stale one is a price
+ * the visitor arrives expecting — so it comes from lib/pricing.ts like every
+ * other number on the site. Module scope, because `metadata` is evaluated
+ * before any component runs.
+ */
+const ANCHOR = monthlyPlans('online')[0];
+
 export const metadata: Metadata = pageMeta({
   title: 'Online Singing Lessons — Free 30-Minute Assessment, Any Timezone',
   description:
-    'Live one-to-one online singing lessons with a touring Colombian singer-songwriter. Real audio, live accompaniment and a recording of your own exercises. English or Spanish, ages 5 to 70+, from $70 a lesson on a monthly plan.',
+    'Live one-to-one online singing lessons with a touring Colombian singer-songwriter. She plays live underneath you instead of using a backing track, and you keep a recording of your own exercises. English or Spanish, ages 5 to 70+, from ' +
+    `${formatUsd(perLessonCents(ANCHOR))} a lesson on a monthly plan.`,
   path: '/online-singing-lessons',
 });
 
@@ -30,15 +42,23 @@ const STUDENT_CLIPS: Video[] = [];
 const OBJECTIONS = [
   {
     t: '“Does singing even work over video?”',
-    d: 'Not on default settings, no — a video call is tuned for speech, so it gates quiet notes and flattens dynamics. I run calibrated audio on my end and change three settings on yours, once, and after that breath, tone and pitch all arrive intact. Several of my longest-running students have never been in the same city as me.',
+    d: 'Not on default settings, no. A video call is tuned for speech, so it gates your quiet notes and flattens anything soft. I set my end up for music instead of speech and change three settings on yours, once, and after that breath, tone and pitch all arrive intact. Several of my longest-running students have never been in the same city as me.',
   },
   {
+    /* THE ACCOMPANIMENT CLAIM, corrected.
+       This used to say "tempo and key move with your voice in real time",
+       which consumer video cannot deliver: ensemble synchronisation needs
+       roughly 8–25ms of round-trip and a consumer call is well above 30ms.
+       On the page whose entire job is establishing that online works, an
+       overclaim a musician can hear through is the most expensive sentence
+       available. What is true is better anyway — a live instrument can change
+       key, drop tempo and loop four bars, and a backing track cannot. */
     t: '“Won’t I just be singing to a backing track?”',
-    d: 'No. I play guitar or piano live underneath you, so tempo and key move with your voice in real time. That is the part a pre-recorded track cannot do and the part that teaches you to sing with musicians.',
+    d: 'No. I play guitar or piano live underneath you, so I can drop the key, slow the tempo or loop four bars the moment you need it — none of which a pre-recorded track will do for you. Video does add a fraction of a second of delay, so we aren’t locked together the way we’d be in one room: one of us leads and the other follows, and it’s usually you.',
   },
   {
     t: '“Do I need equipment?”',
-    d: 'Wired headphones. That is the whole list. No microphone, no interface, no software to buy — bring a microphone if you own one and I will help you set it up, but nothing depends on it.',
+    d: 'Wired headphones. That’s the whole list. No microphone, no interface, no software to buy — bring a microphone if you already own one and I’ll help you set it up, but nothing depends on it.',
   },
   {
     t: '“I’m not in your timezone.”',
@@ -46,12 +66,12 @@ const OBJECTIONS = [
   },
   {
     t: '“I’ve never had a lesson.”',
-    d: 'Then the first thirty minutes is exactly the right place to start. No audition, no theory required, no expectation that you can already do the thing you are coming to learn.',
+    d: 'Then the first thirty minutes is exactly the right place to start. No audition, no theory, and no expectation that you can already do the thing you’re coming to learn.',
   },
 ];
 
 export default function OnlineSingingLessonsPage() {
-  const anchor = monthlyPlans('online')[0];
+  const anchor = ANCHOR;
 
   return (
     <div className="page-fade">
@@ -64,9 +84,9 @@ export default function OnlineSingingLessonsPage() {
           </h1>
           <p className="lp-hero-sub">
             Live one-to-one voice lessons over video with Colombian singer-songwriter Juliana
-            Beltran. Real audio instead of speech-optimised mush, live accompaniment under your
-            voice, and a recording of your own exercises to practise with. English or Spanish, in your
-            timezone.
+            Beltran, in English or Spanish and in your own timezone. She plays live underneath you
+            instead of pressing play on a track, and you leave with a recording of your own
+            exercises to practise against.
           </p>
           <div className="lp-hero-ctas">
             <Link className="btn btn--solid" href="/coach/book">
@@ -125,9 +145,9 @@ export default function OnlineSingingLessonsPage() {
                 What online lessons cost
               </div>
               <p className="prose" style={{ marginBottom: 30 }}>
-                {formatUsd(perLessonCents(anchor))} a lesson on a monthly plan for full-length weekly
-                sessions, with shorter sessions available for less. Every price is below — no enquiry
-                required.
+                {formatUsd(perLessonCents(anchor))} a lesson on a monthly plan of full-length
+                sessions, and less for the shorter ones. Every price is below. There&apos;s no form
+                to fill in first.
               </p>
               {/* buy={false}: the primary action on a paid-search landing page is
                   the free session, and buy buttons here would compete with it. The
@@ -143,18 +163,20 @@ export default function OnlineSingingLessonsPage() {
                 Who teaches
               </div>
               <p className="prose">
-                Juliana Beltran is a Colombian singer-songwriter based in Los Angeles. She has toured
-                internationally as a vocalist for Amanda Miguel, releases her own music — some of it
-                on Spotify editorial playlists — and still plays rooms like Hotel Café.
+                Juliana Beltran is a Colombian singer-songwriter based in Los Angeles. She toured
+                internationally as a vocalist for Amanda Miguel, her own songs sit on Spotify
+                editorial playlists, and she still plays rooms like Hotel Café — a full 47-minute
+                headline set there, ten songs with a four-piece band, is the video at the top of
+                this page.
               </p>
               <p className="prose">
-                She teaches healthy technique first: range and volume are the result of support and
-                release rather than force, which is what makes a voice last through a run of shows
-                and what stops a beginner building habits that take years to undo.
+                She teaches healthy technique first. Range and volume come out of support and
+                release rather than force, which is what stops a beginner building habits that take
+                years to undo.
               </p>
               <p className="prose">
-                Students have ranged from age five to seventy-plus. Lessons run in English or Spanish
-                — whichever you think in, switching mid-sentence if that is easier.
+                Students have ranged from age five to seventy-plus. Lessons run in whichever
+                language you think in, and switching mid-sentence is normal here.
               </p>
               <div className="press-strip reveal" style={{ paddingTop: 30, paddingBottom: 30 }}>
                 <span>Amanda Miguel</span>
@@ -163,7 +185,7 @@ export default function OnlineSingingLessonsPage() {
               </div>
               <p className="prose" style={{ marginTop: 26 }}>
                 Prefer to be in the same room? Lessons also run{' '}
-                <Link href="/coach/lessons/in-person" style={{ color: 'var(--accent)' }}>
+                <Link href="/coach/lessons/in-person" style={{ color: 'var(--accent-text)' }}>
                   in person in Los Angeles
                 </Link>
                 .
@@ -181,11 +203,11 @@ export default function OnlineSingingLessonsPage() {
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
                 <blockquote
                   style={{
-                    fontFamily: 'var(--display)',
+                    fontFamily: 'var(--serif)',
                     fontSize: 'clamp(20px, 2vw, 28px)',
                     lineHeight: 1.2,
                     margin: 0,
-                    fontWeight: 400,
+                    fontWeight: 600,
                   }}
                 >
                   {t.quote}

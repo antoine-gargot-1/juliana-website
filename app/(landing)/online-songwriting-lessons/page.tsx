@@ -30,23 +30,23 @@ const STUDENT_CLIPS: Video[] = [];
 const PROBLEMS = [
   {
     t: 'Fifty voice memos, nothing finished',
-    d: 'The commonest state to arrive in, and the most fixable. We go through what you already have, find the two fragments that are alive, and finish one. A finished imperfect song teaches more than nine unfinished good ones.',
+    d: 'The commonest state to arrive in, and the most fixable. We go through what you already have, find the two fragments that are alive, and finish one. A finished imperfect song teaches you more than nine unfinished good ones.',
   },
   {
     t: 'The second verse',
-    d: 'Where songs die, because you have already said the interesting thing. Prosody, structure, and how to make the second pass earn its place rather than restate the first.',
+    d: 'Where songs die, because you’ve already said the interesting thing. Structure, and prosody — whether the words land on the beats the way you’d say them out loud — and how to make the second pass earn its place instead of restating the first.',
   },
   {
     t: 'Lyrics that stay general',
-    d: 'The difference between a line that lands and one that does not is almost never vocabulary — it is specificity. Object writing, sensory detail, and the discipline of cutting the line you are proudest of when it is doing no work.',
+    d: 'The difference between a line that lands and one that doesn’t is almost never vocabulary. It’s specificity. So: object writing, which is ten minutes on one physical object using all five senses and no editing, and then the harder discipline of cutting the line you’re proudest of once you can see it’s doing no work.',
   },
   {
     t: 'Every song sounds the same',
-    d: 'Usually the same three chords and the same melodic shape. We widen both, deliberately, and give you a way to hear the option you keep not choosing.',
+    d: 'Usually the same three chords and the same melodic shape. We widen both, deliberately, and I give you a way to hear the option you keep not choosing.',
   },
   {
-    t: 'Choruses that do not lift',
-    d: 'Where the highest note goes and why. How a hook can come from a rhythm rather than a bigger note. Why your verse is already doing the chorus’s job.',
+    t: 'Choruses that don’t lift',
+    d: 'Where the highest note goes, and why. How a hook can come out of a rhythm rather than a bigger note. Why your verse is already doing the chorus’s job.',
   },
   {
     t: 'Writing in two languages',
@@ -67,9 +67,10 @@ export default function OnlineSongwritingLessonsPage() {
             Finish the songs you <span className="it">keep starting.</span>
           </h1>
           <p className="lp-hero-sub">
-            One-to-one online songwriting sessions with Juliana Beltran — a Colombian
+            One-to-one online songwriting sessions with Juliana Beltran, a Colombian
             singer-songwriter who releases her own records and plays them to rooms full of people.
             Lyrics, melody, structure, and the unglamorous craft of getting a song over the line.
+            English or Spanish.
           </p>
           <div className="lp-hero-ctas">
             <Link className="btn btn--solid" href="/coach/book">
@@ -88,7 +89,9 @@ export default function OnlineSongwritingLessonsPage() {
         <section className="lp-proof">
           <div className="video-primary-flag">
             <span className="line" />
-            <span className="eyebrow">Her own songs, in front of an audience</span>
+            <span className="eyebrow">
+              Ten songs at Hotel Caf&eacute; &middot; seven of them hers
+            </span>
           </div>
           <VideoFacade
             video={BOOKING_LIVE_VIDEO}
@@ -126,10 +129,10 @@ export default function OnlineSongwritingLessonsPage() {
             ))}
           </ul>
           <p className="prose" style={{ marginTop: 26 }}>
-            Sessions are not a workshop with a curriculum. They are two writers with one song open
-            between them — and she is the one who has finished more of them. There is a fuller account
-            of how the work tends to go on the{' '}
-            <Link href="/coach/songwriting" style={{ color: 'var(--accent)' }}>
+            Sessions aren&apos;t a workshop with a curriculum. They&apos;re two writers with one song
+            open between them, and she&apos;s the one who has finished more of them. There&apos;s a
+            fuller account of how the work tends to go on the{' '}
+            <Link href="/coach/songwriting" style={{ color: 'var(--accent-text)' }}>
               songwriting page
             </Link>
             .
@@ -143,9 +146,9 @@ export default function OnlineSongwritingLessonsPage() {
                 What sessions cost
               </div>
               <p className="prose" style={{ marginBottom: 30 }}>
-                Same rate card as every other lesson — {formatUsd(perLessonCents(anchor))} a session
-                on a monthly plan. The price is for the hour, not the subject, so a session can be
-                half lyric-writing and half voice.
+                Same rate card as every other lesson: {formatUsd(perLessonCents(anchor))} a session
+                on a monthly plan. The price is for the hour rather than the subject, so a session
+                can be half lyric-writing and half voice, and nobody has to decide in advance.
               </p>
               {/* buy={false}: on a paid-search landing page the free session is
                   the primary action and buy buttons would compete with it. The
@@ -160,17 +163,17 @@ export default function OnlineSongwritingLessonsPage() {
                 Bring one unfinished song
               </div>
               <p className="prose">
-                That is the entire preparation. A chorus with no verse, a verse with no chorus, a
-                voice note from a car — anything you have stopped being able to hear.
+                That&apos;s the entire preparation. A chorus with no verse, a verse with no chorus, a
+                voice note from a car — anything you&apos;ve stopped being able to hear.
               </p>
               <p className="prose">
-                In the first {ASSESSMENT.durationMinutes} minutes we will look at it properly, find
-                the thing that is actually stopping it, and you will leave knowing what the next move
-                is. If you decide not to carry on, you keep that.
+                In the first {ASSESSMENT.durationMinutes} minutes we&apos;ll look at it properly and
+                find the thing that&apos;s actually stopping it, and you&apos;ll leave knowing what
+                the next move is. If you decide not to carry on, you keep that.
               </p>
               <p className="prose">
-                If you do not play an instrument yet, that is fine: six chords and a strumming pattern
-                is genuinely enough to write with, and we can get you there alongside the writing.
+                Don&apos;t play an instrument yet? Six chords and one strumming pattern is genuinely
+                enough to write with, and we can get you there alongside the writing.
               </p>
               <div className="press-strip reveal" style={{ paddingTop: 30, paddingBottom: 30 }}>
                 <span>Amanda Miguel</span>
@@ -190,11 +193,11 @@ export default function OnlineSongwritingLessonsPage() {
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>
                 <blockquote
                   style={{
-                    fontFamily: 'var(--display)',
+                    fontFamily: 'var(--serif)',
                     fontSize: 'clamp(20px, 2vw, 28px)',
                     lineHeight: 1.2,
                     margin: 0,
-                    fontWeight: 400,
+                    fontWeight: 600,
                   }}
                 >
                   {t.quote}

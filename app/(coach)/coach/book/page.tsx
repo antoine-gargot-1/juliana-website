@@ -13,7 +13,7 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
 export const metadata: Metadata = pageMeta({
   title: 'Book a Free 30-Minute Vocal Assessment — Online or in Los Angeles',
   description:
-    'Book a free 30-minute vocal assessment with Juliana Beltran, online or in person in Los Angeles. No charge and no audition — we take a card to hold your slot and you are not charged for the assessment.',
+    'Book a free 30-minute vocal assessment with Juliana Beltran, online or in person in Los Angeles. No charge and no audition. We take a card to hold your slot and you won’t be charged for the assessment.',
   path: '/coach/book',
 });
 
@@ -29,10 +29,20 @@ export default function BookPage() {
           <h1>
             Let&apos;s hear your <span className="it">voice.</span>
           </h1>
-          <p className="prose" style={{ fontSize: 20, marginTop: 24, maxWidth: 640 }}>
-            Two questions and a calendar. You sing for half an hour, I tell you honestly what is in
-            the way and what a few months would change, and you decide afterwards whether to carry
-            on.
+          {/* WHAT THIS SENTENCE IS FOR, AND WHY IT COUNTS THE FIELDS.
+              It read "Two questions and a calendar" against a form that asks
+              eight — plus two more for a guardian, plus a card at the end. An
+              expectation violation at the moment of highest anxiety is the most
+              expensive kind, so the count here is the real count: online or in
+              person, name, email, age, focus, experience, goals, availability.
+              If BookingForm gains or loses a field, this number moves with it. */}
+          <p className="lede-plain" style={{ maxWidth: '54ch' }}>
+            Eight short questions, then a calendar. Under 18 adds two more, for a parent or
+            guardian. The last step takes a card to hold the slot, and it isn&apos;t charged.
+          </p>
+          <p className="prose" style={{ fontSize: 20, marginTop: 18, maxWidth: 640 }}>
+            Then you sing for half an hour, I tell you honestly what&apos;s in the way and what a
+            few months would change, and you decide afterwards whether to carry on.
           </p>
         </section>
 
@@ -74,11 +84,11 @@ export default function BookPage() {
 
               <blockquote
                 style={{
-                  fontFamily: 'var(--display)',
+                  fontFamily: 'var(--serif)',
                   fontSize: 'clamp(20px, 2.2vw, 26px)',
                   lineHeight: 1.2,
                   margin: '40px 0 0',
-                  fontWeight: 400,
+                  fontWeight: 600,
                   borderTop: '1px solid var(--rule)',
                   paddingTop: 30,
                 }}
@@ -90,8 +100,8 @@ export default function BookPage() {
               </div>
 
               <p style={{ marginTop: 40 }}>
-                Would rather just ask something first?{' '}
-                <Link href="/coach/contact" style={{ color: 'var(--accent)' }}>
+                Rather ask me something first?{' '}
+                <Link href="/coach/contact" style={{ color: 'var(--accent-text)' }}>
                   Send a note instead
                 </Link>
                 .

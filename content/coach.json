@@ -2,11 +2,15 @@
   "_note": "Coach-side content. Testimonials carry an ISO `datePublished` so they can be emitted as schema.org Review objects backing the AggregateRating on /coach.",
 
   "_faqsNote": "`faqs` is the single source for BOTH the /coach/faq accordion and the FAQPage JSON-LD on that route (faqPageSchema in lib/schema.ts), so a question added here appears in the page and in the rich result together and can never disagree with itself. Answers are plain text in Juliana's first-person voice — no HTML, no markdown, since the same string is rendered as JSX text and as schema.org `acceptedAnswer.text`. THE MONEY ANSWERS: the assessment answer must keep saying that a card is taken and nothing is charged (being coy about it converts worse and generates support email), and the billing answer must say '4 lessons a month' rather than 'every week' — 12 monthly bills cover 48 lessons while a year of true weekly lessons is ~52, so 'every week' is a promise the schedule cannot keep. See LESSONS_PER_MONTH in lib/pricing.ts. Nothing here may name a lesson address: in-person lessons happen in a private residence and the address goes out privately after booking (see content/pricing.json `_inPersonNote`). One hardcoded coupling to watch: the in-person answer names Tuesdays and Thursdays, which is IN_PERSON_DAYS in lib/pricing.ts — JSON cannot interpolate, so if that constant changes this answer has to change with it.",
+
+  "_voiceNote": "VOICE RULES, applied across this file and the pages that read it. Contractions where they sound spoken — the copy audit measured 3.04:1 uncontracted-to-contracted site-wide, and uncontracted forms are what make a sentence read as carved rather than said. No triadic lists as the default cadence, no em-dash as the default connector, no closing sentence that restates the opening, no adjective stack without a concrete noun. Banned outright: elevate, unlock, delve, seamless, robust, utilize, 'in today's fast-paced world', 'it's not just X, it's Y', 'whether you're A or B'. Jargon carries a one-clause gloss the first time a non-musician meets it — 'ear training' and 'object writing' are glossed in the service bullets here, 'calibrated' is spelled out in the online-lessons answer rather than used as a word. Unfalsifiable claims are replaced with facts that exist in this repo: the Amanda Miguel tour, the Spotify editorial placements, the Hotel Café set, ages 5 to 70+, English/Spanish, five named five-star reviews. Nothing else may be asserted about students or outcomes.",
+
+  "_pendingFromOperator": "NOT WRITEABLE FROM THIS REPO — do not let anyone infer these. (1) YEARS TEACHING. '7 years teaching' has been proposed in copy discussions and appears nowhere in this repo; no page may render a years-teaching figure until the true number is added here as a field. (2) STUDENT OUTCOMES. Zero outcomes exist anywhere on this site — the five testimonials describe warmth and patience, none describes anything that changed. A named, consented outcome ('sang at her sister's wedding after five months') is the single highest-value copy asset still missing. (3) TESTIMONIAL ENRICHMENT: for each of the five reviews, the discipline studied, months studied, online or in person, and parent-of-student or adult learner. (4) A SAFEGUARDING LINE the under-18 answer can point at (background check, parent policy). Until these arrive the copy stays with what is provably true.",
   "services": [
     {
       "n": "01",
       "name": "Voice",
-      "short": "Healthy technique, breath support, range, tone, harmony, and stage-ready confidence.",
+      "short": "Healthy technique, so range and tone hold up when you're nervous, tired or on a stage.",
       "bullets": [
         "Vocal technique",
         "Breath support",
@@ -18,12 +22,12 @@
         "Audition prep",
         "Singing while playing"
       ],
-      "lead": "For beginners, intermediates, advanced singers, and performing artists. Available online or in person."
+      "lead": "Total beginners through performing artists. Online, or in person in Los Angeles."
     },
     {
       "n": "02",
       "name": "Guitar",
-      "short": "Chords, rhythm, song accompaniment, and singing while you play — built for songwriters.",
+      "short": "Chords and rhythm, plus the harder trick of singing and playing at the same time.",
       "bullets": [
         "Basic to intermediate chords",
         "Rhythm & strumming",
@@ -32,42 +36,42 @@
         "Musical foundations",
         "Writing songs on guitar"
       ],
-      "lead": "Perfect for beginners and singer-songwriters who want to accompany themselves."
+      "lead": "For beginners, and for singers who'd rather accompany themselves than hire someone."
     },
     {
       "n": "03",
       "name": "Piano",
-      "short": "Fundamentals, chord progressions, ear training, and songwriting accompaniment.",
+      "short": "Piano from the ground up, plus ear training: learning to name what you're hearing.",
       "bullets": [
         "Piano fundamentals",
         "Chord progressions",
         "Playing contemporary songs",
-        "Ear training",
+        "Ear training — naming what you hear",
         "Songwriting accompaniment",
         "Musical confidence"
       ],
-      "lead": "Designed especially for singers and songwriters who want to accompany themselves."
+      "lead": "For singers and songwriters, and for adults coming back to an instrument they left."
     },
     {
       "n": "04",
       "name": "Songwriting",
-      "short": "Lyric writing, melody, structure, storytelling — turning ideas into finished songs.",
+      "short": "Lyrics, melody and structure, plus the unglamorous work of finishing what you start.",
       "bullets": [
         "Lyric writing",
         "Melody creation",
         "Song structure",
         "Journaling & creative exercises",
-        "Object writing",
+        "Object writing — ten minutes on one object, all five senses",
         "Emotional storytelling",
         "Writing hooks & choruses",
         "Building complete songs"
       ],
-      "lead": "For artists ready to develop their own songwriting voice — your individuality is the point."
+      "lead": "For anyone with a folder of half-finished songs. Bring the one you've stopped being able to hear."
     },
     {
       "n": "05",
       "name": "Artist Development",
-      "short": "Identity, performance, branding, release strategy — stepping fully into your artistry.",
+      "short": "Who you are as an artist, how you perform it, and a release plan you can actually follow.",
       "bullets": [
         "Artist identity",
         "Performance confidence",
@@ -78,12 +82,12 @@
         "Branding",
         "Confidence as an artist"
       ],
-      "lead": "For emerging artists ready to take their artistry seriously — and treat it like a craft."
+      "lead": "For artists who are already putting music out, or are about to."
     },
     {
       "n": "06",
       "name": "Group Classes",
-      "short": "Small group sessions in vocal confidence, harmony, performance, and songwriting.",
+      "short": "Small group sessions: harmony, performance and beginner foundations, with other singers.",
       "bullets": [
         "Vocal confidence",
         "Harmony",
@@ -91,7 +95,7 @@
         "Songwriting",
         "Beginner foundations"
       ],
-      "lead": "Perfect for friends, siblings, or collaborative creative environments."
+      "lead": "Friends, siblings, or a few people who already sing together."
     }
   ],
   "testimonials": [
@@ -129,15 +133,15 @@
   "faqs": [
     {
       "q": "Do I need experience to start?",
-      "a": "Not at all. Beginners are welcome — many of my students arrive having never sung outside their kitchen. We start exactly where you are."
+      "a": "No. Many of my students arrive having never sung outside their kitchen, and we start exactly where you are. There's no audition and nothing to prepare."
     },
     {
       "q": "What ages do you teach?",
-      "a": "I work with kids, teens, and adults. My students have ranged from age 5 to 70+."
+      "a": "Kids, teens and adults. My students have ranged from age 5 to 70+, and I don't teach the ends of that range the same way."
     },
     {
       "q": "Do you teach online?",
-      "a": "Yes — both online and in-person lessons are available. Online lessons use a calibrated setup so technique work translates clearly."
+      "a": "Yes, both. For online lessons I don't leave the audio on default video-call settings: those are tuned for speech, so they gate your quiet notes and flatten anything soft. I set my end up for music and walk you through three settings on yours, once, at the start. All you need is wired headphones."
     },
     {
       "q": "What styles do you teach?",
@@ -145,19 +149,19 @@
     },
     {
       "q": "Can you help me write original music?",
-      "a": "Absolutely. Songwriting and artist development are major parts of my coaching — from first lyric idea through a finished release."
+      "a": "Yes. Songwriting isn't a sideline here — I write and release my own records. We can start from a first lyric idea and carry on to a finished, released song, or stop wherever you want to stop."
     },
     {
       "q": "Do I need to perform to take lessons?",
-      "a": "No. Some students simply want to sing confidently and enjoy music for themselves, which is a beautiful reason to study."
+      "a": "No. Plenty of my students have no plans to sing in front of anyone, and that's a perfectly good reason to take lessons."
     },
     {
       "q": "How often should I take lessons?",
-      "a": "Weekly lessons are recommended for consistent growth. Some students do bi-weekly during busier seasons, which still works well."
+      "a": "A weekly cadence is what actually changes a voice, which is why the monthly plans are built as 4 lessons a month. Every other week still works — it just takes longer to get to the same place, and you'll spend more of each lesson remembering where we were."
     },
     {
       "q": "Do you help artists release music?",
-      "a": "Yes. Artist development sessions can include creative direction, performance coaching, branding, and a release plan."
+      "a": "Yes. Artist development sessions can cover creative direction, performance coaching, branding and a release plan — whichever of those you actually need next."
     },
     {
       "q": "What happens in the free 30-minute assessment?",
@@ -169,7 +173,7 @@
     },
     {
       "q": "How does monthly billing work?",
-      "a": "A monthly plan covers 4 lessons a month at a weekly cadence, billed once a month on the same date. I say four a month rather than 'every week' on purpose: some months have five of your weekday, and I would rather the number in your plan be the number you can hold me to. If a fifth lesson suits us both, we can add it as a single lesson."
+      "a": "A monthly plan covers 4 lessons a month at a weekly cadence, billed once a month on the same date. I say four a month rather than 'every week' on purpose: some months have five of your weekday, and I'd rather the number in your plan be the number you can hold me to. If a fifth lesson suits us both, we can add it as a single lesson."
     },
     {
       "q": "When is my first payment taken?",
@@ -189,13 +193,13 @@
     },
     {
       "q": "How much do lessons cost?",
-      "a": "Every price is published — see the pricing page. Prices are for the lesson slot, not the subject, so a 60-minute lesson costs the same whether we spend it on voice, guitar, piano or songwriting. Monthly plans work out cheaper per lesson than single lessons, because consistent weeks are what actually make a voice change."
+      "a": "Every price is on the pricing page. Nothing here is quote-on-request. Prices are for the lesson slot rather than the subject, so a 60-minute lesson costs the same whether we spend it on voice, guitar, piano or songwriting. Monthly plans work out cheaper per lesson than single lessons, because consistent weeks are what actually make a voice change."
     }
   ],
   "credits": [
     { "what": "Recording artist & vocal coach", "em": "Los Angeles, CA" },
     { "what": "Touring vocalist for Amanda Miguel", "em": "International Latin tour" },
-    { "what": "Original releases across streaming platforms", "em": "Singles, EPs, collaborations" },
+    { "what": "Original songs on Spotify editorial playlists", "em": "Singles, EPs, collaborations" },
     { "what": "Coaching singers from ages 5 to 70+", "em": "Beginners through pro artists" }
   ]
 }

@@ -101,15 +101,15 @@ export default function HomePage() {
               fontSize: 22,
               lineHeight: 1.55,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 720,
               margin: '0 0 22px',
             }}
           >
-            Colombian singer-songwriter, touring vocalist and music coach based in Los Angeles. Two
-            things live on this site: the artist &mdash; live shows, releases, press and event
-            booking &mdash; and the studio, where I teach voice, guitar, piano, songwriting and
-            artist development.
+            Colombian singer-songwriter, touring vocalist and music coach based in Los Angeles.
+            There are two halves to this site. One is the artist: live shows, releases, press and
+            event booking. The other is the studio, where I teach voice, guitar, piano, songwriting
+            and artist development.
           </p>
           <p
             className="reveal"
@@ -119,17 +119,17 @@ export default function HomePage() {
               fontSize: 19,
               lineHeight: 1.65,
               color: 'var(--ink-soft)',
-              fontWeight: 300,
+              fontWeight: 400,
               maxWidth: 720,
               margin: '0 0 40px',
             }}
           >
-            I sing in English and Spanish, I have toured internationally as a vocalist for Amanda
-            Miguel, and my songs sit on Spotify editorial playlists. If you are booking live music
-            for a wedding, quincea&ntilde;era, corporate event or venue night in Southern
-            California, start on the artist side. If you want to sing better, write your own songs,
-            or take your artistry seriously, start in the studio &mdash; every lesson price is
-            published, and the first step is a free 30-minute assessment.
+            I sing in English and Spanish, I&apos;ve toured internationally as a vocalist for Amanda
+            Miguel, and my songs sit on Spotify editorial playlists. Booking live music for a
+            wedding, quincea&ntilde;era, corporate event or venue night in Southern California? Start
+            on the artist side. Want to sing better or finish your own songs? Start in the studio.
+            Every lesson price is published there, and the first step is a free 30-minute assessment
+            where you sing and I tell you what I&apos;m hearing.
           </p>
         </div>
       </section>
@@ -166,7 +166,7 @@ export default function HomePage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     <Link href={href}>{label}</Link>
@@ -211,7 +211,7 @@ export default function HomePage() {
                       borderBottom: '1px solid var(--rule)',
                       fontFamily: 'var(--serif)',
                       fontSize: 19,
-                      fontWeight: 300,
+                      fontWeight: 400,
                     }}
                   >
                     <Link href={href}>{label}</Link>
