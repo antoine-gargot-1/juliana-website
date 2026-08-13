@@ -1,24 +1,65 @@
+/* ============================================================================
+   TOKENS
+   Ratios in the comments are computed from the oklch values: convert to sRGB,
+   linearise each channel, take Y = 0.2126R + 0.7152G + 0.0722B, then
+   (Y_light + 0.05) / (Y_dark + 0.05). Every one is against --bg unless stated.
+   ============================================================================ */
 :root {
-  --bg: oklch(0.965 0.008 80);
-  --bg-deep: oklch(0.93 0.013 75);
-  --ink: oklch(0.22 0.012 50);
-  --ink-soft: oklch(0.38 0.012 50);
-  --muted: oklch(0.58 0.012 60);
-  --rule: oklch(0.85 0.012 70);
-  --accent: oklch(0.52 0.09 45);
-  --gold: oklch(0.78 0.08 75);
-  --serif: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
-  --display: 'Italiana', 'Cormorant Garamond', serif;
+  --bg: oklch(0.965 0.008 80);          /* #f6f3ee */
+  --bg-deep: oklch(0.93 0.013 75);      /* #ede7df */
+  --ink: oklch(0.22 0.012 50);          /* 15.67:1 */
+  --ink-soft: oklch(0.38 0.012 50);     /*  9.08:1 — the default for text that is not full ink */
+  --muted: oklch(0.497 0.012 60);       /*  5.51:1 — was 0.58 L (3.88:1), which failed AA */
+  --rule: oklch(0.85 0.012 70);         /*  1.43:1 — DECORATIVE hairlines only, never a control edge */
+  --rule-strong: oklch(0.630 0.012 70); /*  3.17:1 — form borders and control edges (WCAG 1.4.11) */
+  --accent: oklch(0.52 0.09 45);        /*  5.15:1 — fills, hovers, large text */
+  --accent-text: oklch(0.46 0.09 45);   /*  6.67:1 — accent used as text under 19px */
+  --gold: oklch(0.78 0.08 75);          /*  1.82:1 on --bg → DARK GROUNDS ONLY (8.59:1 on --ink) */
+
+  --serif: 'Literata', 'Iowan Old Style', Georgia, serif;
+  --display: 'Playfair', 'Playfair Display', Georgia, serif;
   --sans: 'Manrope', system-ui, -apple-system, sans-serif;
   --script: 'Pinyon Script', cursive;
+
+  /* Type scale, in rem, so a reader who raises their browser font size gets it.
+     px equivalents at a 16px root are given for reference only. */
+  --fs-micro: 0.75rem;    /* 12px — decorative single words on the hero, uppercase, 600 */
+  --fs-label: 0.875rem;   /* 14px — uppercase eyebrows, labels, tags, 600 */
+  --fs-ui: 1rem;          /* 16px — buttons' floor, help text, hints */
+  --fs-sm: 1.0625rem;     /* 17px — dense list rows, inputs */
+  --fs-md: 1.125rem;      /* 18px — secondary prose */
+  --fs-body: 1.1875rem;   /* 19px — body */
+  --fs-lg: 1.3125rem;     /* 21px — lead-ins */
+  --fs-xl: 1.5rem;        /* 24px */
+  --fs-display-min: 1.75rem; /* 28px — HARD FLOOR for --display, see fonts.ts */
+
+  --measure: 66ch;        /* 60–70ch; anything wider loses the line return */
 }
 
-* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-weight: 300; }
-body { overflow-x: hidden; }
+* { box-sizing: border-box; }
+/* No -webkit-font-smoothing: antialiased. It thins strokes that are already
+   under a pixel wide, which is the failure mode this stylesheet exists to fix. */
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;               /* never below 400 anywhere in this file */
+  font-variant-numeric: lining-nums; /* both text faces default to old-style figures */
+}
+body { overflow-x: hidden; font-size: var(--fs-body); line-height: 1.6; }
 a { color: inherit; text-decoration: none; }
 img { display: block; max-width: 100%; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+/* Prices, dates, timecodes and figure columns: lining AND tabular, written as
+   a pair because `font-variant-numeric: tabular-nums` alone resets lining-nums
+   back to the face's default (old-style) figures. */
+.tier-amount, .tier-per, .tier-math, .tier-save,
+.choice-price, .show-day, .show-month, .release-list .yr, .credits .yr,
+.video-duration, .video-setlist-time, .stat-value, .big-num,
+.range-ticks, .foot-base, .bform-summary, .lp-hero-note {
+  font-variant-numeric: lining-nums tabular-nums;
+}
 
 /* ---------- Layout ---------- */
 .wrap { max-width: 1320px; margin: 0 auto; padding: 0 40px; }
@@ -45,31 +86,36 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: 22px 40px;
   max-width: 1500px; margin: 0 auto;
 }
+/* The wordmark is a short line of set text, not display material: at 22px the
+   display face's hairlines are 0.18px and antialias to pale grey. Literata at
+   600 keeps the same width and register with ink that actually renders. */
 .brand {
-  font-family: var(--display);
-  font-size: 22px;
-  letter-spacing: 0.14em;
+  font-family: var(--serif);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;   /* uppercase; ceiling is 0.12em */
   text-transform: uppercase;
   line-height: 1;
   color: inherit;
 }
 .brand .dot { color: var(--accent); }
-.nav-links { display: flex; gap: 38px; }
+.nav-links { display: flex; gap: 34px; }
 .nav-link {
-  font-size: 11.5px;
-  letter-spacing: 0.22em;
+  font-size: 0.8125rem;    /* 13px */
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: inherit;
-  opacity: 0.78;
-  padding: 6px 0;
+  opacity: 0.88;           /* ink at 0.88 over --bg is 10.9:1; 0.78 was 8.0:1 */
+  padding: 8px 0;
   border-bottom: 1px solid transparent;
   transition: opacity .25s, border-color .25s;
 }
 .nav-link:hover { opacity: 1; }
 .nav-link.active { opacity: 1; border-color: var(--accent); }
 .nav-cta {
-  font-size: 11.5px; letter-spacing: 0.22em; text-transform: uppercase;
-  border: 1px solid currentColor; padding: 11px 22px;
+  font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid currentColor; padding: 13px 22px;
   transition: background .25s, color .25s, border-color .25s;
   color: inherit;
 }
@@ -105,10 +151,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .nav-mobile.open { display: flex; }
 .nav-mobile a {
-  font-family: var(--display);
-  font-size: 36px;
+  font-family: var(--display);   /* 36px — above the 28px floor */
+  font-size: 2.25rem;
   color: var(--ink);
-  letter-spacing: 0.04em;
   transition: color .25s;
 }
 .nav-mobile a:hover { color: var(--accent); }
@@ -123,35 +168,76 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 /* ---------- Buttons ---------- */
 .btn {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 11.5px; letter-spacing: 0.24em; text-transform: uppercase;
-  padding: 16px 28px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 0.8125rem;      /* 13px, matching the rate card's .tier-btn */
+  letter-spacing: 0.12em;    /* was 0.24em: past ~0.12em tracking costs word shape */
+  text-transform: uppercase;
+  padding: 15px 26px;
+  min-height: 48px;
   border: 1px solid var(--ink);
   transition: all .3s ease;
-  font-weight: 500;
+  font-weight: 600;
 }
 .btn:hover { background: var(--ink); color: var(--bg); }
 .btn--solid { background: var(--ink); color: var(--bg); }
 .btn--solid:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
-.btn--ghost { border: none; padding-left: 0; padding-right: 0; border-bottom: 1px solid var(--ink); }
+/* The underline is the element's own bottom border, so the 48px target height
+   would otherwise push it 15px clear of the text. Bottom-aligned with a small
+   pad keeps the rule tight under the words and keeps the target tall. */
+.btn--ghost {
+  border: none; padding-left: 0; padding-right: 0;
+  border-bottom: 1px solid var(--ink);
+  align-items: flex-end;
+  padding-bottom: 5px;
+  min-height: 44px;
+}
 .btn--ghost:hover { background: none; color: var(--accent); border-color: var(--accent); }
 .btn .arrow { display: inline-block; transition: transform .3s; }
 .btn:hover .arrow { transform: translateX(4px); }
 
-/* ---------- Type ---------- */
+/* ---------- Type ----------
+   .eyebrow is the most-repeated element on the site (~150 instances). It was
+   11px at weight 500 in --muted, which was 3.88:1 — under AA at any size — and
+   0.32em of tracking on top. It is now 14px/600 in --ink-soft (9.08:1) with
+   tracking inside the 0.12em ceiling, everywhere, with no opt-in.
+   Sections on dark grounds override the colour locally and are fine there. */
 .eyebrow {
-  font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
-  color: var(--muted); font-weight: 500;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 600;
 }
+/* --display is Playfair and Playfair is display-only: never let this class
+   resolve under 28px. Callers set the size; the floor is the caller's job and
+   every rule in this file honours it. */
 .display {
   font-family: var(--display);
   font-weight: 400;
-  line-height: 0.98;
+  font-size: max(var(--fs-display-min), 1em);
+  line-height: 1.02;
   letter-spacing: -0.01em;
 }
-.serif { font-family: var(--serif); font-weight: 300; }
+.serif { font-family: var(--serif); font-weight: 400; }
 .script { font-family: var(--script); }
-.it { font-family: var(--serif); font-style: italic; font-weight: 300; }
+/* Used inside display-size headings, so it is never small; italic below ~17px
+   is not used anywhere in this file. */
+.it { font-family: var(--serif); font-style: italic; font-weight: 400; }
+
+/* Visually hidden, still announced. Added because several surfaces now pair a
+   glyph rating or an icon with a spoken equivalent, and every one of them was
+   about to hand-roll the same style object. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* ---------- Hero (cinematic full-bleed) ---------- */
 .hero {
@@ -204,23 +290,25 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .hero-eyebrow .line { width: 36px; height: 1px; background: var(--bg); opacity: 0.7; }
 .hero-eyebrow .eyebrow { color: inherit; }
+/* Genuine display work: 64–140px, the one place the face is doing the job it
+   was cut for. */
 .hero h1 {
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(64px, 9vw, 140px);
-  line-height: 0.9;
+  font-size: clamp(4rem, 9vw, 8.75rem);
+  line-height: 0.92;
   margin: 0 0 30px;
   letter-spacing: -0.02em;
   color: var(--bg);
 }
 .hero-sub {
   font-family: var(--serif);
-  font-size: clamp(18px, 1.4vw, 22px);
-  line-height: 1.5;
-  color: color-mix(in oklch, var(--bg) 85%, transparent);
-  max-width: 540px;
+  font-size: clamp(1.1875rem, 1.4vw, 1.375rem);
+  line-height: 1.55;
+  color: var(--bg);
+  max-width: 48ch;
   margin: 0 0 44px;
-  font-weight: 300;
+  font-weight: 400;
 }
 .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .hero .btn { border-color: var(--bg); color: var(--bg); }
@@ -228,19 +316,27 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .hero .btn--solid { background: var(--bg); color: var(--ink); border-color: var(--bg); }
 .hero .btn--solid:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 .hero .btn--ghost { border: none; padding-left: 0; padding-right: 0; border-bottom: 1px solid var(--bg); color: var(--bg); }
-.hero .btn--ghost:hover { background: none; color: var(--accent); border-color: var(--accent); }
+/* --gold, not --accent: this is text over a dark photograph, where --accent is
+   about 3:1 against the darkest parts of the image and --gold is 8.59:1
+   against --ink. */
+.hero .btn--ghost:hover { background: none; color: var(--gold); border-color: var(--gold); }
 .hero-corner {
   position: absolute;
   bottom: 40px; right: 40px;
   z-index: 2;
   display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-  color: color-mix(in oklch, var(--bg) 70%, transparent);
-  font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--bg);
+  font-size: var(--fs-micro); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
 }
 .hero-corner .mark {
-  font-family: var(--display);
+  /* Literata italic, not the display face. This is one decorative word over a
+     photograph, and it was the ONLY Playfair italic on the site — a 206 KB font
+     file for a single word, on mobile paid-search traffic, competing with the
+     preloaded hero image. Literata italic is already loaded for the site's 55
+     `.it` spans, so the italic gesture survives at zero extra bytes. */
+  font-family: var(--serif);   /* 36–60px */
   font-style: italic;
-  font-size: 60px;
+  font-size: 3.75rem;
   letter-spacing: -0.01em;
   line-height: 1;
   color: var(--bg);
@@ -252,8 +348,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   transform: translateX(-50%);
   z-index: 2;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase;
-  color: color-mix(in oklch, var(--bg) 75%, transparent);
+  font-size: var(--fs-micro); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--bg);
 }
 .hero-scroll .bar {
   width: 1px; height: 50px;
@@ -267,7 +363,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (max-width: 860px) {
   .hero-content { padding: 0 22px 70px; }
   .hero-corner { bottom: 70px; right: 22px; }
-  .hero-corner .mark { font-size: 36px; }
+  .hero-corner .mark { font-size: 2.25rem; }   /* 36px, still above the floor */
   .hero-scroll { display: none; }
 }
 
@@ -290,19 +386,24 @@ section.block { padding: 130px 0; position: relative; }
 .intro-image img { width: 100%; height: 100%; object-fit: cover; }
 .intro-text p {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--fs-body);
   line-height: 1.65;
   color: var(--ink-soft);
   margin: 0 0 22px;
-  font-weight: 300;
+  font-weight: 400;
+  max-width: var(--measure);
 }
+/* Two sentences of running text. It was set in the display face at up to 42px,
+   which is a headline treatment applied to a paragraph; the same paragraph in
+   the text face at 500 reads as emphasis without the hairlines. */
 .intro-text p.lead {
-  font-family: var(--display);
-  font-size: clamp(28px, 3vw, 42px);
-  line-height: 1.15;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+  line-height: 1.3;
   color: var(--ink);
   margin-bottom: 36px;
-  letter-spacing: -0.005em;
+  max-width: 36ch;
 }
 @media (max-width: 920px) {
   .intro { grid-template-columns: 1fr; gap: 40px; }
@@ -332,19 +433,30 @@ section.block { padding: 130px 0; position: relative; }
   border-bottom: 1px solid var(--rule);
   display: block;
 }
+/* A year: figures, so lining + tabular, and no italic at label size. */
 .credits .yr {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--accent);
+  font-family: var(--sans);
+  font-size: var(--fs-ui);
+  font-weight: 500;
+  color: var(--accent-text);
 }
 .credits .what {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--fs-body);
+  line-height: 1.5;
   color: var(--ink);
-  font-weight: 300;
+  font-weight: 400;
 }
-.credits .what em { color: var(--ink-soft); font-style: normal; font-size: 14px; display: block; margin-top: 4px; letter-spacing: 0.06em; }
+/* Tracking removed: this is a lowercase sentence fragment, and letter-spacing
+   on lowercase breaks the word shapes readers match on. */
+.credits .what em {
+  color: var(--ink-soft);
+  font-style: normal;
+  font-size: var(--fs-ui);
+  font-weight: 400;
+  display: block;
+  margin-top: 6px;
+}
 @media (max-width: 920px) {
   .why { grid-template-columns: 1fr; gap: 40px; }
 }
@@ -360,26 +472,33 @@ section.block { padding: 130px 0; position: relative; }
   padding: 0 40px;
   text-align: center;
 }
+/* Somebody's sentences, not a headline: the text face at 500, sized down a
+   little because Literata's x-height is 31.6% larger than what was here. */
 .testi-quote {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(28px, 3.5vw, 50px);
-  line-height: 1.2;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 1.3;
   margin: 0 0 40px;
-  letter-spacing: -0.005em;
   min-height: 180px;
+  max-width: 34ch;
+  margin-inline: auto;
   transition: opacity .5s;
 }
 .testi-name {
-  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--muted);
+  font-size: var(--fs-label); font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft);
 }
 .testi-nav {
   display: flex; justify-content: center; gap: 10px;
   margin-top: 50px;
 }
+/* --rule was 1.29:1 on --bg-deep, so the inactive dots were invisible as
+   controls. --muted is 4.95:1 here. The 28x1px hit area is a separate defect
+   and belongs to whoever owns the carousel component. */
 .testi-dot {
-  width: 28px; height: 1px; background: var(--rule);
+  width: 28px; height: 1px; background: var(--muted);
   cursor: pointer; transition: background .3s;
 }
 .testi-dot.active { background: var(--ink); }
@@ -390,21 +509,21 @@ section.block { padding: 130px 0; position: relative; }
   position: relative;
 }
 .cta h2 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 48–96px */
   font-weight: 400;
-  font-size: clamp(48px, 6vw, 96px);
-  line-height: 0.95;
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.98;
   margin: 0 0 30px;
   letter-spacing: -0.015em;
 }
 .cta p {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: var(--fs-body);
   color: var(--ink-soft);
-  max-width: 580px;
+  max-width: 46ch;
   margin: 0 auto 50px;
-  line-height: 1.5;
-  font-weight: 300;
+  line-height: 1.6;
+  font-weight: 400;
 }
 
 /* ---------- Footer ---------- */
@@ -420,30 +539,35 @@ footer {
   gap: 60px;
   align-items: start;
 }
+/* Column headings — two or three words of set text at 22px, which is under the
+   display floor. Text face, 600. */
 .foot h4 {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 22px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: var(--fs-lg);
+  line-height: 1.2;
   margin: 0 0 24px;
-  letter-spacing: 0.04em;
 }
 .foot .brand-big {
-  font-family: var(--display);
-  font-size: 56px;
+  font-family: var(--display);   /* 56px */
+  font-size: 3.5rem;
   line-height: 1;
   margin-bottom: 24px;
 }
+/* --gold on --ink is 8.59:1 — gold is only unsafe on the light ground. */
 .foot .brand-big .dot { color: var(--gold); }
-.foot p, .foot a { font-size: 14px; color: color-mix(in oklch, var(--bg) 70%, var(--ink)); }
-.foot ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.foot p, .foot a { font-size: var(--fs-ui); line-height: 1.6; color: color-mix(in oklch, var(--bg) 70%, var(--ink)); } /* 7.56:1 */
+.foot ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
 .foot a:hover { color: var(--gold); }
 .foot-base {
   max-width: 1320px; margin: 60px auto 0;
   padding-top: 30px;
   border-top: 1px solid color-mix(in oklch, var(--bg) 20%, var(--ink));
   display: flex; justify-content: space-between;
-  font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: color-mix(in oklch, var(--bg) 50%, var(--ink));
+  font-size: var(--fs-label); font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  /* was --bg 50% → 4.26:1, under AA at 12px. 70% is 7.56:1. */
+  color: color-mix(in oklch, var(--bg) 70%, var(--ink));
 }
 @media (max-width: 760px) {
   .foot { grid-template-columns: 1fr 1fr; gap: 40px; }
@@ -511,17 +635,16 @@ body::before {
 
 /* ---------- Big numbers ---------- */
 .big-num {
-  font-family: var(--display);
-  font-size: clamp(120px, 18vw, 280px);
+  font-family: var(--display);   /* 120–280px */
+  font-size: clamp(7.5rem, 18vw, 17.5rem);
   line-height: 0.8;
   color: var(--accent);
-  opacity: 0.95;
   letter-spacing: -0.02em;
 }
 .big-num .sm {
   font-family: var(--serif);
   font-style: italic;
-  font-size: 0.25em;
+  font-size: 0.25em;   /* 30–70px */
   color: var(--ink);
   opacity: 0.7;
   vertical-align: top;
@@ -545,21 +668,24 @@ body::before {
   align-items: center;
 }
 .listen h2 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 48–96px */
   font-weight: 400;
-  font-size: clamp(48px, 6vw, 96px);
-  line-height: 0.95;
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.98;
   margin: 16px 0 28px;
   letter-spacing: -0.015em;
 }
+/* KEPT GOLD ON PURPOSE. --gold is 1.82:1 on --bg, but this section's ground is
+   --ink, where it measures 8.59:1 — the same pairing as the gold buttons below.
+   Every gold text use in this file is inside a dark section for that reason. */
 .listen .eyebrow { color: var(--gold); }
 .listen p {
   font-family: var(--serif);
-  font-size: 20px;
-  line-height: 1.55;
-  color: color-mix(in oklch, var(--bg) 75%, var(--ink));
-  font-weight: 300;
-  max-width: 460px;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: color-mix(in oklch, var(--bg) 75%, var(--ink));   /* 8.62:1 */
+  font-weight: 400;
+  max-width: 44ch;
   margin: 0 0 36px;
 }
 .release-list { list-style: none; padding: 0; margin: 0 0 40px; border-top: 1px solid color-mix(in oklch, var(--bg) 20%, var(--ink)); }
@@ -575,10 +701,12 @@ body::before {
   cursor: pointer;
 }
 .release-list li:hover { padding-left: 14px; color: var(--gold); }
-.release-list .yr { font-style: italic; color: var(--gold); font-size: 15px; }
-.release-list .ttl { font-size: 21px; font-weight: 300; }
-.release-list .ttl em { font-style: italic; color: color-mix(in oklch, var(--bg) 55%, var(--ink)); font-size: 14px; margin-left: 8px; }
-.release-list .tag { font-size: 11px; letter-spacing: 0.24em; text-transform: uppercase; text-align: right; color: color-mix(in oklch, var(--bg) 55%, var(--ink)); }
+/* Was 15px italic. A four-digit year is figures, so it gets the sans, lining
+   tabular numerals and no italic. Gold stays: 8.59:1 on this section's ink. */
+.release-list .yr { font-family: var(--sans); font-style: normal; font-weight: 500; color: var(--gold); font-size: var(--fs-ui); }
+.release-list .ttl { font-size: var(--fs-lg); font-weight: 400; }
+.release-list .ttl em { font-style: normal; color: color-mix(in oklch, var(--bg) 70%, var(--ink)); font-size: var(--fs-ui); margin-left: 10px; }
+.release-list .tag { font-family: var(--sans); font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; text-align: right; color: color-mix(in oklch, var(--bg) 70%, var(--ink)); }
 .spotify-wrap {
   border-radius: 12px;
   overflow: hidden;
@@ -601,13 +729,16 @@ body::before {
   border-top: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
 }
+/* 20–28px straddles the display floor, and these are publication names read as
+   a row of words rather than a headline. Text face italic at 500, and the 0.75
+   opacity is gone: it took --ink-soft from 9.08:1 down to 4.59:1 for nothing. */
 .press-strip span {
-  font-family: var(--display);
-  font-size: clamp(20px, 2.2vw, 28px);
+  font-family: var(--serif);
+  font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+  line-height: 1.3;
   color: var(--ink-soft);
   font-style: italic;
-  opacity: 0.75;
-  letter-spacing: 0.01em;
+  font-weight: 500;
 }
 
 /* ---------- Teach list ---------- */
@@ -629,15 +760,14 @@ body::before {
 }
 .teach-list li:hover { padding-left: 16px; color: var(--accent); }
 .teach-name {
-  font-family: var(--display);
+  font-family: var(--display);   /* 28–44px: the clamp minimum IS the floor */
   font-weight: 400;
-  font-size: clamp(28px, 3.2vw, 44px);
-  line-height: 1;
-  letter-spacing: -0.005em;
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  line-height: 1.05;
 }
 .teach-arrow {
-  font-size: 20px;
-  color: var(--muted);
+  font-size: 1.25rem;
+  color: var(--ink-soft);
   transition: transform .3s, color .3s;
 }
 .teach-list li:hover .teach-arrow { color: var(--accent); transform: translateX(6px); }
@@ -668,17 +798,16 @@ body::before {
   padding-right: 48px;
 }
 .m-word {
-  font-family: var(--display);
+  font-family: var(--display);   /* 28–44px */
   font-weight: 400;
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: 1;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  line-height: 1.05;
   color: var(--ink);
-  letter-spacing: -0.005em;
 }
 .m-word.it {
   font-family: var(--serif);
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-soft);
 }
 .m-sep {
@@ -714,10 +843,10 @@ body::before {
   align-items: center;
 }
 .about-hero h1 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 64–140px */
   font-weight: 400;
-  font-size: clamp(64px, 9vw, 140px);
-  line-height: 0.9;
+  font-size: clamp(4rem, 9vw, 8.75rem);
+  line-height: 0.92;
   margin: 0 0 30px;
   letter-spacing: -0.02em;
 }
@@ -725,11 +854,12 @@ body::before {
 .about-hero .img img { width: 100%; height: 100%; object-fit: cover; }
 .about-bio p {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: var(--fs-body);
   line-height: 1.65;
   color: var(--ink-soft);
   margin: 0 0 22px;
-  font-weight: 300;
+  font-weight: 400;
+  max-width: var(--measure);
 }
 @media (max-width: 920px) { .about-hero { grid-template-columns: 1fr; gap: 30px; padding: 60px 0; } }
 
@@ -741,13 +871,12 @@ body::before {
   text-align: center;
 }
 .pull blockquote {
-  font-family: var(--display);
+  font-family: var(--display);   /* 32–56px: a pull quote, genuine display work */
   font-weight: 400;
-  font-size: clamp(32px, 4vw, 56px);
-  line-height: 1.15;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.2;
   margin: 0 auto;
-  max-width: 900px;
-  letter-spacing: -0.005em;
+  max-width: 32ch;
 }
 
 .styles-grid {
@@ -762,17 +891,17 @@ body::before {
   transition: background .3s, transform .3s;
 }
 .style-card:hover { background: var(--bg-deep); transform: translateY(-3px); }
-.style-card .n { font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 14px; }
-.style-card .name { font-family: var(--display); font-size: 30px; line-height: 1; }
+.style-card .n { font-family: var(--sans); font-weight: 600; color: var(--accent-text); font-size: var(--fs-ui); }
+.style-card .name { font-family: var(--display); font-size: 1.875rem; line-height: 1.05; }  /* 30px */
 @media (max-width: 760px) { .styles-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- Services page ---------- */
 .svc-page-hero { padding: 100px 0 60px; }
 .svc-page-hero h1 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 64–140px */
   font-weight: 400;
-  font-size: clamp(64px, 9vw, 140px);
-  line-height: 0.9;
+  font-size: clamp(4rem, 9vw, 8.75rem);
+  line-height: 0.92;
   margin: 16px 0 0;
   letter-spacing: -0.02em;
 }
@@ -785,21 +914,21 @@ body::before {
   align-items: start;
 }
 .svc-detail.alt { background: var(--bg-deep); margin: 0 -40px; padding-left: 40px; padding-right: 40px; }
-.svc-detail .n { font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 18px; }
+.svc-detail .n { font-family: var(--serif); font-style: italic; color: var(--accent-text); font-size: var(--fs-md); }
 .svc-detail h2 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 32–48px */
   font-weight: 400;
-  font-size: clamp(32px, 3.5vw, 48px);
+  font-size: clamp(2rem, 3.5vw, 3rem);
   margin: 0 0 18px;
-  line-height: 1;
-  letter-spacing: -0.005em;
+  line-height: 1.05;
 }
 .svc-detail .lead {
   font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.55;
+  font-size: var(--fs-body);
+  line-height: 1.6;
   color: var(--ink-soft);
-  font-weight: 300;
+  font-weight: 400;
+  max-width: var(--measure);
 }
 .svc-detail ul {
   list-style: none; padding: 0; margin: 0;
@@ -807,14 +936,15 @@ body::before {
 }
 .svc-detail ul li {
   font-family: var(--serif);
-  font-size: 16px;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
   color: var(--ink);
   padding-left: 18px;
   position: relative;
-  font-weight: 300;
+  font-weight: 400;
 }
 .svc-detail ul li::before {
-  content: ""; position: absolute; left: 0; top: 11px;
+  content: ""; position: absolute; left: 0; top: 0.8em;
   width: 8px; height: 1px; background: var(--accent);
 }
 @media (max-width: 920px) {
@@ -823,33 +953,50 @@ body::before {
   .svc-detail.alt { margin: 0 -22px; padding-left: 22px; padding-right: 22px; }
 }
 
-/* ---------- FAQ ---------- */
+/* ---------- FAQ ----------
+   The open answer used to be capped at max-height: 400px with overflow hidden,
+   which silently ate the end of any answer longer than the cap — and every
+   answer just got 19px body text, so the cap was about to start biting. The
+   collapse now runs on grid-template-rows 0fr → 1fr on the ITEM, with the
+   answer as the sized row: no magic number, nothing to truncate, and a browser
+   that will not animate the row simply snaps open. */
 .faq-list { border-top: 1px solid var(--rule); margin-top: 40px; }
-.faq-item { border-bottom: 1px solid var(--rule); }
+.faq-item {
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  grid-template-rows: auto 0fr;
+  transition: grid-template-rows .45s cubic-bezier(.2,.7,.2,1);
+}
+.faq-item.open { grid-template-rows: auto 1fr; }
+@media (prefers-reduced-motion: reduce) { .faq-item { transition: none; } }
+/* A question is a sentence. 22px in the display face is 0.18px of hairline;
+   the text face at 600 is the same size and actually renders. */
 .faq-q {
   width: 100%; text-align: left;
-  padding: 32px 0;
+  padding: 28px 0;
   display: flex; justify-content: space-between; align-items: center; gap: 24px;
-  font-family: var(--display);
-  font-size: clamp(22px, 2.5vw, 30px);
-  font-weight: 400;
-  letter-spacing: -0.005em;
+  font-family: var(--serif);
+  font-size: clamp(1.3125rem, 2.2vw, 1.5rem);
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--ink);
   transition: color .3s;
 }
 .faq-q:hover { color: var(--accent); }
-.faq-q .plus { font-family: var(--sans); font-size: 22px; color: var(--muted); transition: transform .3s, color .3s; flex-shrink: 0; }
+.faq-q .plus { font-family: var(--sans); font-size: 1.5rem; font-weight: 400; color: var(--ink-soft); transition: transform .3s, color .3s; flex-shrink: 0; }
 .faq-item.open .faq-q .plus { transform: rotate(45deg); color: var(--accent); }
 .faq-a {
-  max-height: 0; overflow: hidden;
-  transition: max-height .45s ease, padding .3s;
+  overflow: hidden;
   font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: var(--fs-body);
+  line-height: 1.65;
   color: var(--ink-soft);
   padding: 0;
-  font-weight: 300;
+  font-weight: 400;
+  max-width: var(--measure);
+  transition: padding .3s;
 }
-.faq-item.open .faq-a { max-height: 400px; padding: 0 0 32px; }
+.faq-item.open .faq-a { padding: 0 0 32px; }
 
 /* ---------- Contact ---------- */
 .contact {
@@ -861,45 +1008,69 @@ body::before {
 }
 .contact-info p {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--fs-body);
   line-height: 1.6;
   color: var(--ink-soft);
-  font-weight: 300;
+  font-weight: 400;
+  max-width: var(--measure);
 }
 .contact-info dl { margin-top: 40px; }
 .contact-info dt {
-  font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--muted); margin-top: 26px;
+  font-size: var(--fs-label); font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft); margin-top: 26px;
 }
 .contact-info dd {
   font-family: var(--serif);
-  font-size: 19px;
+  font-size: var(--fs-body);
   margin: 6px 0 0;
-  font-weight: 300;
+  font-weight: 400;
 }
 form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+/* Was 10.5px, weight 300, --muted (3.88:1), 0.3em of tracking — the smallest
+   text on the site sitting on top of the highest-anxiety moment in the funnel.
+   14px/600 in --ink-soft (9.08:1), tracking inside the ceiling. */
 form label {
   display: block;
-  font-size: 10.5px; letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--muted); margin: 26px 0 8px;
+  font-family: var(--sans);
+  font-size: var(--fs-label); font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 26px 0 8px;
 }
+/* WCAG 1.4.11: the bottom border is the ONLY thing that says "this is a field".
+   --rule is 1.43:1 and failed that outright; --rule-strong is 3.17:1. */
 form input, form select, form textarea {
   width: 100%;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid var(--rule);
-  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-strong);
+  padding: 11px 0;
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: var(--fs-md);
   color: var(--ink);
   outline: none;
   transition: border-color .3s;
-  font-weight: 300;
+  font-weight: 400;
 }
 form input:focus, form select:focus, form textarea:focus { border-color: var(--ink); }
-form textarea { resize: vertical; min-height: 80px; }
+form textarea { resize: vertical; min-height: 96px; }
+/* Fields inside a --bg-deep panel: --rule-strong is only 2.85:1 there, so the
+   boundary steps up to --ink-soft (8.17:1) rather than losing 1.4.11 by 0.15. */
+.bform-guardian input,
+.bform-guardian select,
+.bform-guardian textarea { border-bottom-color: var(--ink-soft); }
 form .submit-row { display: flex; justify-content: space-between; align-items: center; margin-top: 50px; gap: 20px; flex-wrap: wrap; }
-form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--serif); font-style: italic; }
+/* The worst single line on the old site: 12px, weight 300, italic, --muted —
+   four defects stacked, thickest stroke about 0.49px. */
+form .submit-note {
+  font-family: var(--sans);
+  font-size: var(--fs-ui);
+  line-height: 1.5;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--ink-soft);
+  max-width: 50ch;
+}
 @media (max-width: 920px) { .contact { grid-template-columns: 1fr; gap: 50px; } form .row { grid-template-columns: 1fr; } }
 
 /* ---------- Cursor ring ---------- */
@@ -936,7 +1107,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   z-index: 10;
   mix-blend-mode: difference;
 }
-.chooser-brand .brand { color: var(--bg); font-size: 20px; }
+.chooser-brand .brand { color: var(--bg); font-size: 1.25rem; }
 .chooser-side {
   position: relative;
   display: flex;
@@ -972,17 +1143,17 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   margin-bottom: 14px;
 }
 .chooser-content h2 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 48–80px */
   font-weight: 400;
-  font-size: clamp(48px, 6vw, 80px);
-  line-height: 0.95;
+  font-size: clamp(3rem, 6vw, 5rem);
+  line-height: 0.98;
   margin: 0 0 18px;
   letter-spacing: -0.015em;
 }
 .chooser-content p {
-  font-size: 17px;
-  line-height: 1.5;
-  color: color-mix(in oklch, var(--bg) 80%, transparent);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  color: var(--bg);
   margin: 0 0 30px;
 }
 .chooser-content .btn {
@@ -995,7 +1166,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 @media (max-width: 760px) {
   .chooser { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-  .chooser-content h2 { font-size: 48px; }
+  .chooser-content h2 { font-size: 3rem; }   /* 48px */
   .chooser-brand { top: 20px; }
 }
 
@@ -1032,17 +1203,18 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 .stat-cell:last-child { border-right: none; }
 .stat-value {
-  font-family: var(--display);
-  font-size: clamp(36px, 4vw, 56px);
+  font-family: var(--display);   /* 36–56px */
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   letter-spacing: -0.01em;
 }
 .stat-label {
-  font-size: 11px;
-  letter-spacing: 0.28em;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-soft);
 }
 @media (max-width: 760px) {
   .stats-grid { grid-template-columns: 1fr 1fr; row-gap: 30px; }
@@ -1076,8 +1248,8 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   align-items: center;
   padding: 20px 0;
   font-family: var(--serif);
-  font-size: 20px;
-  font-weight: 300;
+  font-size: var(--fs-lg);
+  font-weight: 400;
   transition: padding .3s, color .3s;
 }
 .playlist-list li a:hover {
@@ -1085,8 +1257,8 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   color: var(--accent);
 }
 .playlist-arrow {
-  font-size: 18px;
-  color: var(--muted);
+  font-size: 1.125rem;
+  color: var(--ink-soft);
   transition: color .3s;
 }
 .playlist-list li a:hover .playlist-arrow { color: var(--accent); }
@@ -1106,29 +1278,34 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .show-date { text-align: center; }
 .show-month {
   display: block;
-  font-size: 11px;
-  letter-spacing: 0.24em;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
 }
+/* A date. Lining tabular figures, so "12" and "13" are the same height and the
+   column of days lines up. */
 .show-day {
   display: block;
-  font-family: var(--display);
-  font-size: 36px;
-  line-height: 1;
+  font-family: var(--display);   /* 36px */
+  font-size: 2.25rem;
+  line-height: 1.05;
 }
+/* 22–32px straddles the display floor and a venue name is a short heading, not
+   a headline: text face at 600. */
 .show-venue {
-  font-family: var(--display);
-  font-size: clamp(22px, 2.5vw, 32px);
-  font-weight: 400;
-  line-height: 1;
+  font-family: var(--serif);
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.2;
 }
 .show-city {
   font-family: var(--serif);
-  font-size: 15px;
+  font-size: var(--fs-sm);
   color: var(--ink-soft);
-  font-weight: 300;
-  margin-top: 4px;
+  font-weight: 400;
+  margin-top: 5px;
 }
 .show-action { text-align: right; }
 @media (max-width: 760px) {
@@ -1175,7 +1352,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .article-row:hover { padding-left: 16px; background: var(--bg-deep); }
 .article-source { display: flex; flex-direction: column; gap: 4px; }
 .article-arrow {
-  font-size: 20px; color: var(--muted);
+  font-size: 1.25rem; color: var(--ink-soft);
   transition: color .3s, transform .3s;
   text-align: right; padding-top: 4px;
 }
@@ -1238,35 +1415,45 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .video-facade.is-primary .video-play { width: 96px; height: 96px; }
 .video-duration {
   position: absolute; right: 16px; bottom: 14px;
-  font-size: 11px; letter-spacing: 0.2em;
+  font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.08em;
   color: var(--bg);
-  opacity: 0.85;
 }
 .video-meta { padding: 18px 0 0; }
 .video-meta-head {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 20px;
 }
+/* Grid tile titles run 22–30px, i.e. mostly under the display floor, so they
+   are text face at 600. The primary player's title is 30–46px and stays
+   display — the size the face is for. */
 .video-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  line-height: 1.25;
+}
+.video-facade.is-primary .video-title {
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(22px, 2.4vw, 30px);
+  font-size: clamp(1.875rem, 3.6vw, 2.875rem);
   line-height: 1.1;
 }
-.video-facade.is-primary .video-title { font-size: clamp(30px, 3.6vw, 46px); }
 .video-year { white-space: nowrap; }
+/* Was 14px, weight 300, --muted (3.88:1). Credits are the sentence that makes
+   the video evidence rather than decoration. */
 .video-credits {
   font-family: var(--serif);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--muted);
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  font-weight: 400;
   margin: 10px 0 0;
+  max-width: var(--measure);
 }
 
 /* Setlist / chapters under a full-show player */
 .video-setlist { margin: 22px 0 0; }
-.video-setlist-head { margin-bottom: 10px; color: var(--accent); }
+.video-setlist-head { margin-bottom: 10px; color: var(--accent-text); }
 .video-setlist ol {
   list-style: none;
   margin: 0; padding: 0;
@@ -1284,21 +1471,22 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   transition: color .25s ease, padding-left .25s ease;
 }
 .video-setlist a:hover, .video-setlist a:focus-visible { color: var(--accent); padding-left: 8px; }
+/* A timecode is a link target people aim at: 16px, 500, --ink-soft, and lining
+   tabular figures so the minutes column is straight. */
 .video-setlist-time {
-  font-size: 12px; letter-spacing: 0.14em;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-ui); font-weight: 500; letter-spacing: 0.04em;
+  color: var(--ink-soft);
 }
 .video-setlist a:hover .video-setlist-time { color: var(--accent); }
 .video-setlist-title {
   font-family: var(--serif);
-  font-size: 17px;
-  font-weight: 300;
-  line-height: 1.35;
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  line-height: 1.45;
 }
 .video-setlist-tag {
-  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted);
+  font-size: var(--fs-label); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft);
   white-space: nowrap;
 }
 @media (max-width: 620px) {
@@ -1321,7 +1509,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   margin-bottom: 18px;
 }
 .video-primary-flag .line { width: 36px; height: 1px; background: var(--accent); }
-.video-primary-flag .eyebrow { color: var(--accent); }
+.video-primary-flag .eyebrow { color: var(--accent-text); }   /* 6.67:1 */
 
 /* EPK: primary video sits beside the pitch copy */
 .epk-video {
@@ -1406,21 +1594,23 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
    uppercase text, no ribbon, no badge, and empty (but present) on the other
    cards so all four tier names sit on one line. */
 .tier-flag {
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);   /* 6.67:1, and 6.01:1 on the .is-best card */
   margin: 0 0 12px;
   min-height: 1em;
 }
 
+/* The one font change in this section: 23px is under the display floor, and a
+   tier name is the label on a thing being bought. Text face at 600, same size,
+   same colour, same line box. */
 .tier-name {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: 23px;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.4375rem;
   line-height: 1.15;
-  letter-spacing: 0.005em;
   margin: 0;
   color: var(--ink);
 }
@@ -1432,14 +1622,14 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .tier-amount {
   font-family: var(--sans);
   font-weight: 600;
-  font-size: 44px;
+  font-size: 2.75rem;
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
 .tier-per {
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: var(--fs-ui);
   font-weight: 400;
   color: var(--ink-soft);
 }
@@ -1449,7 +1639,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
    the price — the comparison only works if the row is unbroken. */
 .tier-math {
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   line-height: 1.4;
   font-weight: 400;
   color: var(--ink);
@@ -1461,10 +1651,10 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
    plans because no 30-minute single lesson exists to compare against. */
 .tier-save {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--fs-ui);
   line-height: 1.4;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
   margin: 6px 0 0;
 }
 
@@ -1475,9 +1665,9 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 .tier-points li {
   font-family: var(--sans);
-  font-size: 16.5px;
-  line-height: 1.35;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  font-weight: 400;
   color: var(--ink-soft);
   padding: 5px 0 5px 18px;
   position: relative;
@@ -1503,8 +1693,8 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   width: 100%;
   min-height: 48px;
   justify-content: center;
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
   padding: 14px 18px;
 }
 .btn:disabled { opacity: 0.55; cursor: progress; }
@@ -1516,14 +1706,14 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .buy-error {
   display: block;
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--fs-ui);
   line-height: 1.45;
-  font-weight: 400;
-  color: var(--accent);
+  font-weight: 500;
+  color: var(--accent-text);
   margin-top: 12px;
   max-width: 46ch;
 }
-.buy-error a { border-bottom: 1px solid var(--accent); }
+.buy-error a { border-bottom: 1px solid var(--accent-text); }
 
 /* The under-18 question, asked once per rate card rather than once per button.
    A disclosure and not a gate: the common case is an adult buying for
@@ -1541,9 +1731,9 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   gap: 12px;
   cursor: pointer;
   font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 300;
-  line-height: 1.4;
+  font-size: var(--fs-sm);
+  font-weight: 400;
+  line-height: 1.45;
   color: var(--ink);
 }
 .buy-guardian-check input {
@@ -1560,8 +1750,8 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .buy-guardian-field label {
   display: block;
   font-family: var(--sans);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: var(--fs-ui);
+  font-weight: 600;
   color: var(--ink-soft);
   margin-bottom: 6px;
 }
@@ -1569,7 +1759,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   width: 100%;
   max-width: 380px;
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: var(--fs-md);
   padding: 8px 0;
   background: none;
   border: 0;
@@ -1583,7 +1773,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
    thing, because here the money does move. The two never appear together. */
 .tier-note {
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   font-weight: 400;
   color: var(--ink);
@@ -1596,12 +1786,12 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 /* Three short sentences, and the only prose the card is allowed. */
 .tier-foot {
   font-family: var(--sans);
-  font-size: 16px;
-  line-height: 1.55;
-  font-weight: 300;
+  font-size: var(--fs-ui);
+  line-height: 1.6;
+  font-weight: 400;
   color: var(--ink-soft);
   margin: 16px 0 0;
-  max-width: 66ch;
+  max-width: var(--measure);
 }
 
 /* ---------- The three questions that stop a purchase -----------------------
@@ -1621,15 +1811,15 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 .fact dt {
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   line-height: 1.4;
   color: var(--ink);
 }
 .fact dd {
   font-family: var(--sans);
-  font-size: 17px;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  font-weight: 400;
   line-height: 1.5;
   color: var(--ink-soft);
   margin: 5px 0 0;
@@ -1651,9 +1841,9 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 .plain-points li {
   font-family: var(--sans);
-  font-size: 17px;
-  line-height: 1.4;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  font-weight: 400;
   color: var(--ink);
   padding: 13px 0;
   border-bottom: 1px solid var(--rule);
@@ -1662,23 +1852,22 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   .plain-points { grid-template-columns: 1fr 1fr; column-gap: 40px; }
 }
 
-/* CONTRAST, ON THE PAGES WHERE MONEY CHANGES HANDS.
-   .eyebrow is --muted site-wide, which lands around 3.9:1 on --bg — under AA for
-   11px text. Rather than restyle every eyebrow on the site from here, the
-   purchase surfaces opt in: .page-plain on a page root, and the rate section on
-   the offer pages. Same size, same weight, same design; readable. */
-.page-plain .eyebrow,
-#rates .eyebrow { color: var(--ink-soft); }
+/* The .page-plain / #rates eyebrow opt-in that used to live here is gone.
+   It existed because .eyebrow was 11px in --muted (3.88:1) site-wide and the
+   purchase surfaces could not ship that, so they opted into --ink-soft. The
+   base .eyebrow rule now IS --ink-soft at 14px/600 everywhere, which makes the
+   opt-in a no-op — and the ~150 eyebrows the opt-in never reached are fixed
+   too, which was the actual problem the comment was describing. */
 
 /* One short sentence in the sans, at reading size, for the places on the
    purchase surfaces where a sentence is still worth its space. Deliberately not
-   .prose: that is 18px Cormorant at weight 300, which is the editorial voice,
-   and this is the plain one. */
+   .prose: that is the editorial voice in the text face, and this is the plain
+   one. */
 .lede-plain {
   font-family: var(--sans);
-  font-size: 18px;
-  line-height: 1.55;
-  font-weight: 300;
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  font-weight: 400;
   color: var(--ink);
   margin: 22px 0 0;
   max-width: 56ch;
@@ -1696,17 +1885,17 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   padding: 40px 0;
 }
 .purchase-cta-headline {
-  font-family: var(--display);
+  font-family: var(--display);   /* 30–48px, above the floor at both ends */
   font-weight: 400;
-  font-size: clamp(30px, 6vw, 48px);
-  line-height: 1.05;
+  font-size: clamp(1.875rem, 6vw, 3rem);
+  line-height: 1.1;
   letter-spacing: -0.01em;
   margin: 0;
   max-width: 22ch;
 }
 .purchase-cta-note {
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   font-weight: 400;
   color: var(--ink);
@@ -1741,16 +1930,16 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 }
 .alt-path-lede {
   font-family: var(--sans);
-  font-size: 17px;
-  line-height: 1.5;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  font-weight: 400;
   color: var(--ink);
   margin: 0;
 }
 .alt-path-note {
   display: block;
   font-family: var(--sans);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   line-height: 1.5;
   font-weight: 400;
   color: var(--ink);
@@ -1761,7 +1950,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 /* Real button, 48px, not an 11px underlined word. This is the second of two
    offers on the page, which is a reason for it to be outlined rather than
    filled — and not a reason for it to be hard to hit. */
-.alt-path .btn { min-height: 48px; font-size: 12.5px; }
+.alt-path .btn { min-height: 48px; font-size: 0.8125rem; }
 
 /* The compact mid-page assessment repeat, used where the assessment is the
    page's primary action. Card-hold sentence included by construction. */
@@ -1789,12 +1978,11 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .mode-tab {
   flex: 1 1 auto;
   font-family: var(--sans);
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.005em;
+  font-size: var(--fs-sm);
+  font-weight: 600;
   color: var(--ink);
   padding: 12px 20px;
-  min-height: 46px;
+  min-height: 48px;
   white-space: nowrap;
   transition: background .2s, color .2s;
 }
@@ -1822,19 +2010,19 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   margin: 0;
 }
 .assess-headline {
-  font-family: var(--display);
+  font-family: var(--display);   /* 32–56px */
   font-weight: 400;
-  font-size: clamp(32px, 7vw, 56px);
-  line-height: 1.02;
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  line-height: 1.05;
   letter-spacing: -0.01em;
   margin: 14px 0 0;
   max-width: 22ch;
 }
 .assess-lede {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--fs-body);
   line-height: 1.6;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-soft);
   margin: 20px 0 0;
   max-width: 54ch;
@@ -1842,9 +2030,9 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .assess-card-note {
   display: block;
   font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.5;
-  font-weight: 400;
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  font-weight: 500;
   color: var(--ink);
   background: var(--bg-deep);
   border-left: 2px solid var(--accent);
@@ -1867,16 +2055,16 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   padding: 14px 0;
   border-bottom: 1px solid var(--rule);
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.5;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  font-weight: 400;
   color: var(--ink-soft);
 }
 .assess-steps .n {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--accent);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: var(--fs-ui);
+  color: var(--accent-text);
 }
 .assess-cta { margin-top: 30px; }
 
@@ -1890,7 +2078,7 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 .range-track {
   position: relative;
   height: 1px;
-  background: var(--rule);
+  background: var(--rule-strong);   /* 3.17:1 — it carries information */
 }
 .range-fill {
   position: absolute;
@@ -1901,20 +2089,23 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   background: var(--accent);
   opacity: 0.85;
 }
+/* Note names and a caption: were 13px italic and 11px, both in --muted at
+   3.88:1. Sans, upright, 14px, --ink-soft. */
 .range-ticks {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 13px;
-  color: var(--muted);
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: var(--fs-ui);
+  color: var(--ink-soft);
 }
 .range-caption {
-  font-size: 11px;
-  letter-spacing: 0.24em;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-soft);
   margin-top: 14px;
 }
 @media (min-width: 720px) {
@@ -1931,29 +2122,32 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 
 .bform { max-width: 720px; }
 .bform fieldset { border: 0; padding: 0; margin: 0 0 44px; }
+/* A fieldset legend is a question put to someone filling in a form. 26px is
+   under the display floor at the small end, and this is the highest-anxiety
+   moment on the site: text face at 600. */
 .bform legend {
-  font-family: var(--display);
-  font-weight: 400;
-  font-size: clamp(26px, 5.5vw, 34px);
-  line-height: 1.05;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.5rem, 5vw, 1.875rem);
+  line-height: 1.2;
   padding: 0;
   margin-bottom: 6px;
 }
 .bform-step {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--accent);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: var(--fs-ui);
+  color: var(--accent-text);
   margin-bottom: 8px;
 }
 .bform-hint {
   font-family: var(--serif);
-  font-size: 16px;
-  line-height: 1.55;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  font-weight: 400;
   color: var(--ink-soft);
   margin: 0 0 22px;
-  max-width: 52ch;
+  max-width: 56ch;
 }
 .bform input:focus-visible,
 .bform select:focus-visible,
@@ -1963,19 +2157,27 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   border-bottom-color: var(--ink);
 }
 .bform [aria-invalid='true'] { border-bottom-color: var(--accent); border-bottom-width: 2px; }
+/* Help text on the booking flow. Was 14px italic in --muted: small, light,
+   italic and 3.88:1 all at once, on the one page where being confused costs a
+   sale. Sans, upright, 16px, --ink-soft. */
 .field-hint {
   display: block;
-  font-family: var(--serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--muted);
+  font-family: var(--sans);
+  font-size: var(--fs-ui);
+  line-height: 1.5;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--ink-soft);
   margin-top: 8px;
+  max-width: 56ch;
 }
 .field-error {
   display: block;
-  font-family: var(--serif);
-  font-size: 15px;
-  color: var(--accent);
+  font-family: var(--sans);
+  font-size: var(--fs-ui);
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--accent-text);
   margin-top: 8px;
 }
 .bform-summary {
@@ -1984,8 +2186,8 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   padding: 16px 18px;
   margin: 0 0 30px;
   font-family: var(--serif);
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
   color: var(--ink);
 }
 .bform-summary ul { margin: 8px 0 0; padding-left: 20px; }
@@ -1993,10 +2195,12 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 /* Mode chooser. Two big targets, because this is the first question and the
    two answers lead to different availability. */
 .choice-grid { display: grid; gap: 14px; }
+/* A radio card is a control, so its edge is the boundary WCAG 1.4.11 is about:
+   --rule was 1.43:1, --rule-strong is 3.17:1. */
 .choice {
   position: relative;
   display: block;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   padding: 20px 22px;
   cursor: pointer;
   transition: border-color .25s, background .25s;
@@ -2010,27 +2214,32 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   height: 1px;
   margin: 0;
 }
+/* The label on a control, at 22–28px: text face at 600, not the display face. */
 .choice-name {
   display: block;
-  font-family: var(--display);
-  font-size: clamp(22px, 5vw, 28px);
-  line-height: 1.05;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.375rem, 4.5vw, 1.625rem);
+  line-height: 1.2;
 }
 .choice-note {
   display: block;
   font-family: var(--serif);
-  font-size: 15px;
-  line-height: 1.5;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  font-weight: 400;
   color: var(--ink-soft);
   margin-top: 8px;
 }
+/* A PRICE. It was 14px Cormorant italic, whose old-style zeros rendered about
+   5.8px tall. Sans, 600, lining tabular figures, 6.67:1. */
 .choice-price {
   display: block;
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 14px;
-  color: var(--accent);
+  font-family: var(--sans);
+  font-style: normal;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  color: var(--accent-text);
   margin-top: 10px;
 }
 /* Both selectors on purpose: `:has` is the clean expression of "this card's
@@ -2056,27 +2265,30 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 
 /* ---------- Cal.com embed -------------------------------------------------- */
 .cal-embed {
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);   /* the frame around a live control */
   width: 100%;
   min-height: 640px;
   background: var(--bg);
 }
 .cal-fallback {
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   border-left: 2px solid var(--accent);
   padding: 24px;
   font-family: var(--serif);
-  font-size: 17px;
+  font-size: var(--fs-sm);
   line-height: 1.6;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-soft);
 }
 .cal-note {
-  font-family: var(--serif);
-  font-size: 14px;
-  font-style: italic;
-  color: var(--muted);
+  font-family: var(--sans);
+  font-size: var(--fs-ui);
+  line-height: 1.5;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--ink-soft);
   margin: 14px 0 0;
+  max-width: 56ch;
 }
 
 /* ---------- Sticky mobile CTA ---------------------------------------------
@@ -2115,19 +2327,19 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   display: block;
   min-width: 0;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--fs-ui);
   line-height: 1.35;
-  font-weight: 300;
-  color: color-mix(in oklch, var(--bg) 88%, var(--ink));
+  font-weight: 400;
+  color: color-mix(in oklch, var(--bg) 88%, var(--ink));   /* 11.91:1 on --ink */
 }
 .sticky-cta .btn {
   border-color: var(--bg);
   color: var(--ink);
   background: var(--bg);
   padding: 12px 16px;
-  min-height: 46px;
+  min-height: 48px;
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 0.8125rem;
   letter-spacing: 0.12em;
   text-align: center;
   max-width: 46%;
@@ -2153,51 +2365,57 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   padding: 20px 22px;
   border-bottom: 1px solid var(--rule);
 }
-.lp-header .brand { color: var(--ink); font-size: 18px; }
+.lp-header .brand { color: var(--ink); font-size: 1.125rem; }
+/* Was 10.5px in --muted with 0.22em of tracking — the smallest type on the
+   paid-traffic surface. */
 .lp-header-note {
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-soft);
   text-align: right;
 }
+/* The whole landing-page footer was 15px, weight 300, --muted (3.88:1) — the
+   legal and contact information on the pages that cost money per click. */
 .lp-footer {
   border-top: 1px solid var(--rule);
   margin-top: 60px;
   padding: 40px 22px calc(90px + env(safe-area-inset-bottom, 0px));
   font-family: var(--serif);
-  font-size: 15px;
+  font-size: var(--fs-sm);
   line-height: 1.6;
-  font-weight: 300;
-  color: var(--muted);
+  font-weight: 400;
+  color: var(--ink-soft);
 }
 .lp-footer-inner { max-width: 1320px; margin: 0 auto; display: grid; gap: 12px; }
-.lp-footer a { color: var(--ink-soft); border-bottom: 1px solid var(--rule); }
+.lp-footer a { color: var(--ink-soft); border-bottom: 1px solid var(--rule-strong); }
 .lp-footer a:hover { color: var(--accent); }
 
 .lp-hero { padding: 46px 0 10px; }
 .lp-hero h1 {
-  font-family: var(--display);
+  font-family: var(--display);   /* 42–92px */
   font-weight: 400;
-  font-size: clamp(42px, 11vw, 92px);
-  line-height: 0.94;
+  font-size: clamp(2.625rem, 11vw, 5.75rem);
+  line-height: 0.96;
   letter-spacing: -0.02em;
   margin: 14px 0 0;
 }
 .lp-hero-sub {
   font-family: var(--serif);
-  font-size: 19px;
-  line-height: 1.55;
-  font-weight: 300;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  font-weight: 400;
   color: var(--ink-soft);
   margin: 22px 0 0;
-  max-width: 58ch;
+  max-width: var(--measure);
 }
 .lp-hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-top: 30px; }
 .lp-hero-note {
   font-family: var(--serif);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  font-weight: 500;
   color: var(--ink);
   margin: 18px 0 0;
   padding-left: 14px;
@@ -2216,14 +2434,14 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
 /* ---------- Prose + numbered lists reused by the new coach pages ---------- */
 .prose {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: var(--fs-body);
   line-height: 1.65;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--ink-soft);
   margin: 0 0 22px;
-  max-width: 68ch;
+  max-width: var(--measure);
 }
-.prose strong { color: var(--ink); font-weight: 500; }
+.prose strong { color: var(--ink); font-weight: 600; }
 .numbered { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--rule); }
 .numbered li {
   display: grid;
@@ -2232,12 +2450,13 @@ form .submit-note { font-size: 12px; color: var(--muted); font-family: var(--ser
   padding: 16px 0;
   border-bottom: 1px solid var(--rule);
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.55;
-  font-weight: 300;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--ink-soft);
 }
-.numbered .n { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--accent); }
-.numbered .t { display: block; font-size: 19px; color: var(--ink); margin-bottom: 4px; }
+.numbered .n { font-family: var(--sans); font-weight: 600; font-size: var(--fs-ui); color: var(--accent-text); }
+.numbered .t { display: block; font-size: var(--fs-body); font-weight: 500; color: var(--ink); margin-bottom: 5px; }
 
 /* Two-column editorial split used by the new coach pages. Mobile-first: one
    column until there is room for two. */

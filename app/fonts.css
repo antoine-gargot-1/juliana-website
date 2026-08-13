@@ -1,12 +1,18 @@
 /*
  * Maps the self-hosted next/font families onto the design tokens defined in
  * styles.css. Doubled `:root:root` so this wins over the `:root` block in
- * styles.css regardless of stylesheet order — styles.css itself is unchanged.
- * The original fallback stacks are preserved verbatim.
+ * styles.css regardless of stylesheet order.
+ *
+ * The token NAMES are deliberately unchanged (--serif / --display / --sans /
+ * --script) because pages and components reference them inline; only the
+ * families behind them moved. --serif is now a text face and --display is
+ * display-only above 28px. Each var() expands to the next/font family plus its
+ * generated metric-adjusted fallback, so the stacks below are only the
+ * belt-and-braces case where the self-hosted files fail to load.
  */
 :root:root {
-  --serif: var(--font-cormorant), 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
-  --display: var(--font-italiana), 'Italiana', 'Cormorant Garamond', serif;
+  --serif: var(--font-literata), 'Literata', 'Iowan Old Style', 'Charter', Georgia, serif;
+  --display: var(--font-playfair), 'Playfair', 'Playfair Display', Georgia, serif;
   --sans: var(--font-manrope), 'Manrope', system-ui, -apple-system, sans-serif;
   --script: var(--font-pinyon), 'Pinyon Script', cursive;
 }
