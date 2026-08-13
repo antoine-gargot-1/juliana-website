@@ -31,15 +31,45 @@
  * ---------------------------------------------------------------------------
  * THE COST OF GA4: CONSENT
  * ---------------------------------------------------------------------------
- * GA4 sets a first-party _ga cookie, which in the EU/UK needs prior consent.
- * There is no cookie banner here. Instead the GA4 loader boots with Google
- * Consent Mode v2 defaults that deny every advertising signal and keep only
- * analytics storage (see components/SiteAnalytics.tsx). That is the correct
- * posture for a site doing analytics and no remarketing, and it is proportionate
- * for traffic that is overwhelmingly US venue bookers. It is NOT full GDPR
- * compliance: if this site ever markets into the EU, add a consent banner that
- * flips analytics_storage to 'denied' by default and calls gtag('consent',
- * 'update', ...) on accept. Nothing else in this file needs to change for that.
+ * GA4 sets a first-party _ga cookie, which in the EEA/UK needs prior consent,
+ * and there is no cookie banner on this site. So the GA4 loader boots with
+ * Google Consent Mode v2 defaults — see components/SiteAnalytics.tsx for the
+ * actual dataLayer pushes. Those defaults are REGION-SCOPED, and the region
+ * scoping is load-bearing in both directions:
+ *
+ *   EEA + UK + Switzerland   everything denied, including analytics_storage.
+ *                            Granting advertising storage to a visitor there
+ *                            without prior consent is precisely what ePrivacy
+ *                            forbids, and Consent Mode's own behavioural
+ *                            modelling covers the resulting measurement gap.
+ *   Everywhere else          everything granted.
+ *
+ * This file used to say the loader "denies every advertising signal" outright,
+ * and that it was the correct posture "for a site doing analytics and no
+ * remarketing". That was true when the site was a brochure. It stopped being
+ * true when the coaching studio started buying search traffic, and the old
+ * posture is now a launch blocker rather than a cautious default:
+ *
+ *   ad_storage: 'denied'    the gclid from an ad click is never stored, so
+ *                           Google Ads cannot attribute ANY conversion back to
+ *                           the click that produced it. The entire budget
+ *                           becomes unmeasurable — and Smart Bidding trained on
+ *                           nothing bids on nothing.
+ *   ad_user_data: 'denied'  Enhanced Conversions cannot send the hashed email,
+ *                           so the recovery path for cookie-less attribution is
+ *                           silently dead too. lib/ga-server.ts depends on this
+ *                           being granted; re-deny it and server-side matching
+ *                           stops working with no error anywhere.
+ *
+ * `ads_data_redaction` strips ad identifiers from whatever pings do leave a
+ * denied region, and `url_passthrough` keeps the gclid moving through in-site
+ * navigation when cookies are unavailable.
+ *
+ * This is still not full GDPR compliance — it is the proportionate posture for
+ * a business whose paid traffic is LA-local and US-national while its organic
+ * reach ("online singing lessons") is worldwide. If EU volume ever justifies
+ * measuring there, add a banner that calls gtag('consent','update',...) on
+ * accept. Nothing in this file needs to change for that.
  */
 
 export type ConversionEvent =
@@ -67,7 +97,49 @@ export type ConversionEvent =
   /** Coaching / studio inquiry submitted successfully. */
   | 'contact_submit'
   /** Outbound click to open.spotify.com. */
-  | 'spotify_click';
+  | 'spotify_click'
+  /**
+   * A free vocal assessment was booked and the $0 card hold succeeded.
+   *
+   * THE PRIMARY CONVERSION. This is the one Google Ads bids on, valued at
+   * ASSESSMENT_VALUE_USD[mode] from lib/pricing.ts — read that constant's
+   * comment before touching the value, it explains why it is neither $0 nor the
+   * first month's $280.
+   *
+   * Fired authoritatively from the Stripe webhook on `setup_intent.succeeded`
+   * (lib/ga-server.ts), not from the confirmation page: the browser copy is a
+   * mirror for DebugView and goes missing for 20–30% of visitors. Deliberately
+   * not named `generate_lead` — that is a GA4 recommended event with its own
+   * expected parameter schema, and a booked-and-carded assessment is a much
+   * stronger signal than a lead form, so it deserves its own name and its own
+   * value.
+   */
+  | 'assessment_booked'
+  /** A monthly plan subscription started. Valued at the first month's amount. */
+  | 'plan_started'
+  /**
+   * A 10-lesson pack was bought outright.
+   *
+   * NOTE ON NAMING: not `purchase`. `purchase` is a GA4 recommended ecommerce
+   * event and arrives with an expected schema — `transaction_id`, `items[]`,
+   * `value`, `currency` — which populates the Monetisation reports. Sending a
+   * bare value under that name yields a half-populated ecommerce report that
+   * looks broken rather than a clean custom event. Same reasoning as the
+   * `video_*` renaming above: match GA4's names only when matching their schema.
+   */
+  | 'pack_purchased'
+  /**
+   * A student paid another month. Fired on every `invoice.paid`, so it repeats
+   * per student — the count is retention months, not students.
+   *
+   * This is the event that eventually matters most and is the least useful
+   * today. Breakeven is ~2 months of retention, so the business question is not
+   * "who books" but "who stays", and only this event knows. It is Secondary in
+   * Google Ads for now because Smart Bidding cannot act on a signal that
+   * arrives 30–270 days after the click; scripts/offline-conversions.ts is what
+   * eventually feeds true retained value back to the auction.
+   */
+  | 'retained_student';
 
 export type EventParams = Record<string, string | number | boolean | null>;
 
@@ -91,7 +163,56 @@ const ATTRIBUTION_KEY = 'jb:attribution';
 
 const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const;
 
-export type Attribution = Partial<Record<(typeof UTM_KEYS)[number], string>> & {
+/**
+ * Ad-click identifiers. LATCHED ALONGSIDE THE UTMs, AND THEY MUST BE.
+ *
+ * ---------------------------------------------------------------------------
+ * THIS IS WHAT LETS A CONVERSION FIRED FROM A STRIPE WEBHOOK TIE BACK TO THE
+ * CLICK THAT PAID FOR IT.
+ * ---------------------------------------------------------------------------
+ * The chain is long and every link is in a different process:
+ *
+ *   ad click → landing page carries ?gclid=…  (THIS FILE latches it)
+ *     → /coach/book reads the latch into hidden fields (BookingForm)
+ *       → it rides through Cal.com as booking metadata
+ *         → /coach/book/hold stamps it on the Stripe Customer (lib/students.ts)
+ *           → months later scripts/offline-conversions.ts uploads
+ *             (gclid, true LTV) to Google Ads Offline Conversion Import.
+ *
+ * Google Ads Offline Conversion Import is keyed on the CLICK, not on a person:
+ * there is no email-based fallback, and a gclid cannot be recovered after the
+ * fact. So a click id that is not latched here is permanently lost, and the
+ * eventual retention-value feedback loop — the thing that finally makes Smart
+ * Bidding optimise for students who STAY rather than students who merely book —
+ * has nothing to upload no matter how many students exist.
+ *
+ * These were omitted from the latched set in the first version of this file, and
+ * the failure was invisible: click ids survived only when the visitor landed
+ * directly on /coach/book with the id still on the URL. Anyone who landed on
+ * /vocal-coach-los-angeles and then navigated to the booking form — i.e. the
+ * intended path of every campaign — arrived with nothing.
+ *
+ *   gclid   Google Ads autotagging, the normal case.
+ *   gbraid  iOS app-to-web campaigns where ATT prevents a gclid.
+ *   wbraid  web-to-app campaigns, same privacy reason.
+ *
+ * gbraid/wbraid are stored for the same reason: Google Ads accepts them as
+ * alternative Offline Conversion Import keys, and dropping them would silently
+ * exclude iOS traffic — which for a mobile-heavy local service business is a
+ * large slice of exactly the audience the budget is aimed at.
+ */
+const CLICK_ID_KEYS = ['gclid', 'gbraid', 'wbraid'] as const;
+
+/**
+ * Everything latched into sessionStorage and merged into every later conversion.
+ * Exported so BookingForm can iterate one list rather than restating the names —
+ * a hidden field that is missing here is a field the funnel silently drops.
+ */
+export const ATTRIBUTION_KEYS = [...UTM_KEYS, ...CLICK_ID_KEYS] as const;
+
+export type AttributionKey = (typeof ATTRIBUTION_KEYS)[number];
+
+export type Attribution = Partial<Record<AttributionKey, string>> & {
   landing_page?: string;
   landed_at?: string;
 };
@@ -117,19 +238,36 @@ function readStored(): Attribution {
 }
 
 /**
- * Latch UTMs from the current URL, if any. A fresh set of UTMs always wins —
- * that is a new campaign click and should re-attribute the rest of the session.
- * Returns whatever attribution is now in force.
+ * Latch UTMs and ad-click ids from the current URL, if any. A fresh set always
+ * wins — that is a new campaign click and should re-attribute the rest of the
+ * session. Returns whatever attribution is now in force.
  *
  * Called from track() as well as on navigation, so a conversion can never fire
  * before attribution has been captured regardless of effect ordering.
+ *
+ * ---------------------------------------------------------------------------
+ * "FRESH WINS WHOLESALE" IS DELIBERATE, INCLUDING FOR CLICK IDS.
+ * ---------------------------------------------------------------------------
+ * A fresh set REPLACES the stored one rather than merging into it, so arriving
+ * on an outreach email link after an earlier ad click drops the gclid. That is
+ * the correct behaviour, not a bug to fix: Google Ads attributes an offline
+ * conversion to the last click inside the lookback window, so carrying a stale
+ * gclid forward through a later non-paid entry would credit paid search for a
+ * conversion the email produced, and the campaign would look more profitable
+ * than it is. Over-crediting is worse than losing the id, because it is the
+ * error Smart Bidding acts on.
+ *
+ * Note that Google autotagging adds `gclid` and NOTHING else — no utm_* at all.
+ * So the fresh-set test has to consider click ids, or an autotagged ad click
+ * would look like "no attribution present" and never latch. That is precisely
+ * the bug this key list was extended to fix.
  */
 export function captureAttribution(): Attribution {
   if (typeof window === 'undefined') return {};
 
   const params = new URLSearchParams(window.location.search);
   const fresh: Attribution = {};
-  for (const key of UTM_KEYS) {
+  for (const key of ATTRIBUTION_KEYS) {
     const value = params.get(key);
     if (value) fresh[key] = value.slice(0, 200);
   }

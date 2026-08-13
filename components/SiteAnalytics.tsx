@@ -99,15 +99,59 @@ export function SiteAnalytics({ disabled = false }: Props) {
             'function gtag(){dataLayer.push(arguments);}',
             'window.gtag=gtag;',
             "gtag('js',new Date());",
-            // Analytics only: every advertising signal is denied up front, so no
-            // remarketing identifiers are ever collected. Flip analytics_storage
-            // to 'denied' and call gtag('consent','update',...) from a banner if
-            // this site ever markets into the EU.
+            /*
+              CONSENT MODE v2 — REGION-SCOPED DEFAULTS.
+              ------------------------------------------------------------------
+              This block previously denied every advertising signal worldwide,
+              with a comment explaining that the site did analytics and no
+              remarketing. That was correct at the time. It is no longer, because
+              the studio now runs paid search.
+              WHY IT MATTERS: with ad_storage denied, the gclid on an ad click is
+              never stored, so Google Ads cannot attribute ANY conversion back to
+              the click that produced it — the whole ad budget becomes
+              unmeasurable. With ad_user_data denied, Enhanced Conversions cannot
+              send the hashed email either. Both are load-bearing for bidding.
+              WHY REGION-SCOPED RATHER THAN JUST GRANTING EVERYTHING: there is no
+              cookie banner on this site. Granting advertising storage to an EEA
+              or UK visitor without prior consent is exactly what ePrivacy
+              forbids. Paid traffic here is LA-local and US-national, but organic
+              reaches "online singing lessons" searchers anywhere, so EU visitors
+              are a real if small share.
+              So: deny everything in the EEA, UK and Switzerland — where Consent
+              Mode's own behavioural modelling covers the gap — and grant
+              everything elsewhere. The more specific region entry wins, so the
+              denied block MUST be pushed before the global one below.
+              ads_data_redaction strips ad identifiers from the pings that do go
+              out from denied regions. url_passthrough keeps the gclid flowing
+              through in-site navigation when cookies are unavailable.
+              If EU volume ever justifies real measurement there, add a banner
+              that calls gtag('consent','update',...) on accept. Nothing else in
+              this file needs to change for that.
+            */
             "gtag('consent','default',{" +
               "ad_storage:'denied'," +
               "ad_user_data:'denied'," +
               "ad_personalization:'denied'," +
+              "analytics_storage:'denied'," +
+              'region:[' +
+              [
+                // EEA
+                'AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU',
+                'IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES',
+                'SE','IS','LI','NO',
+                // UK + Switzerland, same expectation in practice
+                'GB','CH',
+              ]
+                .map((c) => `'${c}'`)
+                .join(',') +
+              ']});',
+            "gtag('consent','default',{" +
+              "ad_storage:'granted'," +
+              "ad_user_data:'granted'," +
+              "ad_personalization:'granted'," +
               "analytics_storage:'granted'});",
+            "gtag('set','ads_data_redaction',true);",
+            "gtag('set','url_passthrough',true);",
             `gtag('config','${GA_MEASUREMENT_ID}',{send_page_view:false,anonymize_ip:true});`,
           ].join(''),
         }}
