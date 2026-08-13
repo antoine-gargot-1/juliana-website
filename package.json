@@ -5,14 +5,22 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "stripe:audit": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/stripe-audit.ts",
+    "stripe:bootstrap": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/stripe-bootstrap.ts",
+    "calcom:bootstrap": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/calcom-bootstrap.ts",
+    "stripe:e2e": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/stripe-e2e.ts",
+    "plan:start": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/start-plan.ts",
+    "conversions:export": "npx --yes tsx@4 --env-file-if-exists=.env.local scripts/offline-conversions.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "next": "^16.2.12",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "stripe": "22.4.0"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

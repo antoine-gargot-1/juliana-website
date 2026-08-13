@@ -15,5 +15,11 @@
       "has": [{ "type": "host", "value": ".*\\.vercel\\.app" }],
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/review-requests",
+      "schedule": "0 17 * * *"
+    }
   ]
 }
