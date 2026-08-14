@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
 
-import { GA_ENABLED, GA_MEASUREMENT_ID, getAttribution } from '@/lib/analytics';
+import { GA_ENABLED, GA_MEASUREMENT_ID, funnelParams, getAttribution, track } from '@/lib/analytics';
 import { EMAIL } from '@/lib/site';
 
 /**
@@ -37,9 +37,60 @@ import { EMAIL } from '@/lib/site';
  * Checkout completes → /coach/purchase/confirmed → Cal.com. Collecting the
  * money first means the slot that gets held is a paid slot; the reverse order
  * produces held calendar time for people who never complete the payment.
+ *
+ * ===========================================================================
+ * WHAT THIS FILE MEASURES, AND WHAT WAS INVISIBLE BEFORE IT DID
+ * ===========================================================================
+ * The purchase path reported exactly one thing: `pack_purchased` /
+ * `plan_started`, fired from the Stripe webhook once the money settled. Nothing
+ * recorded that a checkout had been OPENED, which made two very different
+ * situations produce identical data — nobody clicking the buy button, and
+ * everybody clicking it and abandoning Stripe's page. It also made the entire
+ * failure surface below silent: a 503 from /api/stripe/checkout means Stripe
+ * credentials are missing and every purchase on the site is failing, and the
+ * only person who ever found out was the buyer reading "Purchasing is not
+ * switched on yet".
+ *
+ * So two events fire from here:
+ *
+ *   checkout_started  a payable Checkout Session now exists. `transaction_id` is
+ *                     the Session id — the SAME identifier `pack_purchased`
+ *                     carries from the webhook — so started-versus-completed is
+ *                     a join rather than an inference.
+ *   checkout_blocked  the attempt stopped before a session existed, with the
+ *                     reason. Consent not ticked, guardian email missing, or one
+ *                     of the three server failures.
+ *
+ * Neither can double-count against a server-side conversion: both describe a
+ * moment BEFORE any money moves, and neither shares an event name with anything
+ * the webhook sends. See the warning on checkout_started in lib/analytics.ts
+ * about why it must not be imported into Google Ads.
  */
 
 const CHECKOUT_ENDPOINT = '/api/stripe/checkout';
+
+/**
+ * The delivery mode, read off the lookup key's own prefix.
+ *
+ * `mode` is one of the three dimensions every conversion here has to be
+ * sliceable by (online LTV is $2,520 against in-person's $3,240, so a blended
+ * CPA is a wrong number rather than a summary), and this component cannot get it
+ * the honest way: lib/pricing.ts is deliberately not imported into this client
+ * bundle, and adding a `mode` prop would mean editing PriceGrid and every page
+ * that renders it.
+ *
+ * The keys in content/pricing.json are `{mode}_{type}_{duration}` —
+ * `online_pack_10`, `inperson_monthly_60` — and lib/pricing.ts's build-time
+ * invariants keep that shape honest. Returns null rather than guessing if the
+ * shape ever changes, which reports as `mode: 'none'`: a visibly wrong value in
+ * a report beats a confidently wrong one, and `lookup_key` is still sent in full
+ * so the slice is recoverable either way.
+ */
+function modeFromLookupKey(lookupKey: string): 'online' | 'inperson' | null {
+  if (lookupKey.startsWith('inperson')) return 'inperson';
+  if (lookupKey.startsWith('online')) return 'online';
+  return null;
+}
 
 /**
  * Ad-click ids, read straight off the current URL and merged over the latched
@@ -283,6 +334,23 @@ export function BuyButton({
   const consentId = `renew-consent-${lookupKey}`;
   const disclosureId = `renew-terms-${lookupKey}`;
 
+  /**
+   * The three slicing dimensions plus the one this path adds.
+   *
+   * `purchase_kind` comes from the presence of `recurring` rather than from
+   * parsing the lookup key, because that prop is the authoritative answer to
+   * "is this a subscription": it is what makes the ARL disclosure render, and a
+   * plan without it would be a legal bug long before it was a reporting one.
+   */
+  const purchaseParams = {
+    ...funnelParams({
+      mode: modeFromLookupKey(lookupKey),
+      lookupKey,
+      isMinor: ctx.isMinor,
+    }),
+    purchase_kind: recurring ? 'plan' : 'one_off',
+  };
+
   async function buy() {
     setError(null);
 
@@ -291,12 +359,22 @@ export function BuyButton({
     if (recurring && !renewalConsent) {
       setError('Tick the box to confirm you understand the plan renews each month until you cancel.');
       document.getElementById(consentId)?.focus();
+      /*
+       * Worth measuring rather than assuming. The ARL tick is a legally required
+       * piece of friction on the highest-value tier, and this is the only way to
+       * know whether it is a formality people click through or a wall they stop
+       * at. If this reason dominates checkout_blocked, the fix is the disclosure's
+       * wording and placement — not the price.
+       */
+      track('checkout_blocked', { ...purchaseParams, reason: 'renewal_consent' });
       return;
     }
 
     if (ctx.isMinor && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(ctx.guardianEmail)) {
       setError('Add a parent or guardian email first — they are the ones who pay.');
       ctx.focusGuardian();
+      // The reason only, never the address that failed the test.
+      track('checkout_blocked', { ...purchaseParams, reason: 'guardian_email' });
       return;
     }
 
@@ -354,21 +432,97 @@ export function BuyButton({
             ? 'Checkout did not open just then. Try again in a moment, or email me.'
             : 'Purchasing is not switched on yet. Email me and I will send you a payment link the same day.',
         );
+        /*
+         * THE OUTAGE ALARM. Each of these three is a lost sale, and until now all
+         * three were completely silent — the buyer read a sentence offering them an
+         * email address and nobody else ever knew.
+         *
+         *   not_configured  a 503: Stripe is not configured on this deployment, so
+         *                   EVERY purchase is failing right now. If this appears in
+         *                   GA4 at all, stop reading reports and check the env vars.
+         *   unknown_tier    a 400: the lookup key is not in the rate card. Our bug,
+         *                   and one the PriceGrid build guards are meant to make
+         *                   impossible, so it is worth knowing they did not.
+         *   unreachable     a 502: Stripe was down or slow. Worth a retry, and the
+         *                   volume tells you whether the retry copy is enough.
+         */
+        track('checkout_blocked', {
+          ...purchaseParams,
+          reason:
+            res.status === 502
+              ? 'unreachable'
+              : res.status === 400
+                ? 'unknown_tier'
+                : 'not_configured',
+          http_status: res.status,
+        });
         setBusy(false);
         return;
       }
 
-      const data = (await res.json()) as { url?: string };
+      /*
+       * `sessionId` and `amountCents` are part of the route's documented response
+       * (see the contract above) and are read here rather than ignored, because
+       * they are what make this event answerable: the session id is the join key
+       * to `pack_purchased`, and the amount is what "abandoned checkout" is worth
+       * in dollars.
+       */
+      const data = (await res.json()) as { url?: string; sessionId?: string; amountCents?: number };
       if (!data.url) {
         setError('Checkout did not open. Email me and I will send you a payment link.');
+        // A 200 with no `url` should be impossible; reported rather than assumed
+        // away, because it would otherwise look identical to a buyer who simply
+        // never clicked.
+        track('checkout_blocked', { ...purchaseParams, reason: 'no_url' });
         setBusy(false);
         return;
       }
+
+      /*
+       * CHECKOUT INITIATED. Fired after the session exists and before the
+       * navigation, so it means "a payable session was created", not "a button was
+       * clicked" — the difference matters because a click that fails to produce a
+       * session is already reported above as checkout_blocked.
+       *
+       * transaction_id is the Checkout Session id, which is EXACTLY the value
+       * `pack_purchased` sends as its own transaction_id from the webhook
+       * (app/api/stripe/webhook/route.ts, the onCheckoutCompleted branch). So a
+       * started session and the sale it became are one join, and everything
+       * without a match is an abandoned Stripe page.
+       *
+       * The plan path is only half-joinable and it is worth being honest about
+       * that: `plan_started` uses the SUBSCRIPTION id as its transaction_id,
+       * because it also fires for plans that never had a Checkout Session at all.
+       * A per-session join for subscriptions needs `session_id` added to that
+       * event's params in the webhook — see docs/measurement-spec.md, which names
+       * the exact line. Until then, plan checkout abandonment is a cohort number
+       * (checkout_started where purchase_kind='plan' versus plan_started) rather
+       * than a per-buyer one.
+       *
+       * `value` is sent so abandoned checkout can be counted in dollars, and it is
+       * the reason this event MUST NOT be imported into Google Ads: alongside
+       * pack_purchased it would count the same money at session open and again at
+       * payment, and Smart Bidding would bid against revenue nobody collected.
+       * GA4 also drops `value` silently unless `currency` is beside it, so the two
+       * are set together.
+       */
+      track('checkout_started', {
+        ...purchaseParams,
+        transaction_id: data.sessionId ?? '',
+        session_id: data.sessionId ?? '',
+        ...(typeof data.amountCents === 'number'
+          ? { value: data.amountCents / 100, currency: 'USD' }
+          : {}),
+      });
 
       // Full navigation, not router.push: the destination is Stripe's own host.
       window.location.assign(data.url);
     } catch {
       setError('That did not go through. Check your connection, or email me and I will help.');
+      // Distinct from `unreachable`: this is the fetch itself failing — the
+      // visitor's connection, or a blocker sitting on our own endpoint — so no
+      // HTTP status exists to report.
+      track('checkout_blocked', { ...purchaseParams, reason: 'network' });
       setBusy(false);
     }
   }

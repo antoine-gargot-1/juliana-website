@@ -1,15 +1,19 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { CalEmbed } from '@/components/coach/CalEmbed';
 import {
   ATTRIBUTION_KEYS,
+  BOOKING_STEPS,
   GA_ENABLED,
   GA_MEASUREMENT_ID,
   type Attribution,
+  type BookingStep,
+  funnelParams,
   getAttribution,
+  track,
 } from '@/lib/analytics';
 import { ASSESSMENT, type LessonMode, IN_PERSON_DAYS, formatUsd, singleLesson } from '@/lib/pricing';
 import { EMAIL } from '@/lib/site';
@@ -82,9 +86,55 @@ import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
  * `aria-describedby`, invalid controls carry `aria-invalid`, each message is
  * associated with its field, and the submit-time summary is announced through
  * `role="alert"` before focus moves to the first offending control.
+ *
+ * ===========================================================================
+ * WHY THIS FORM REPORTS ITS OWN STEPS TO GA4
+ * ===========================================================================
+ * All three steps live on ONE URL. The status machine below swaps what is
+ * rendered without a navigation, which is right for the visitor and means a GA4
+ * funnel built on `page_path` can only ever see step 1. Before the
+ * `booking_step_view` calls below, the measured funnel was: a page_view on
+ * /coach/book, then nothing at all, then an `assessment_booked` fired from a
+ * Stripe webhook two or three minutes later. A visitor who never typed a name
+ * and a visitor who picked a slot and then balked at the card were the same
+ * number — and those two problems have opposite fixes.
+ *
+ * Four events come from this file. See the union in lib/analytics.ts for the
+ * naming constraints (`form_start` and `form_submit` are already being collected
+ * automatically on this very form by GA4's Enhanced Measurement, so those two
+ * names were unusable):
+ *
+ *   booking_step_view     each step becoming visible. Because a step is only
+ *                         reachable by finishing the one before it, this single
+ *                         event carries the whole progression.
+ *   booking_step_blocked  validation refused step 1, with the FIELD KEY that did
+ *                         it. This is what turns "they drop off on step 1" into
+ *                         "they drop off on the guardian email field".
+ *   slot_reserved         Cal.com has the slot. The one mid-funnel milestone
+ *                         worth importing into Google Ads.
+ *   booking_abandoned     they left without reaching the next step.
+ *
+ * NO PII LEAVES THIS FILE. Not the name, not the email, not the guardian's
+ * details, not the goals textarea — which is exactly the field where a visitor
+ * volunteers something about their health or their family. Only `mode`,
+ * `is_minor` as a boolean, step numbers, timings and field KEYS. See
+ * funnelParams() in lib/analytics.ts.
  */
 
 type Status = 'details' | 'scheduling' | 'handoff';
+
+/**
+ * Status → the step number on the rail.
+ *
+ * Mapped rather than inferred so the report and the visible counter cannot
+ * disagree: BOOKING_STEPS in lib/analytics.ts owns the names, this owns which
+ * internal state is which number, and STEP_LABEL/STEPS below own the wording.
+ */
+const STEP_OF: Record<Status, BookingStep> = {
+  details: 1,
+  scheduling: 2,
+  handoff: 3,
+};
 
 const EMPTY = {
   name: '',
@@ -246,6 +296,120 @@ export function BookingForm() {
    */
   const isMinor = underEighteen || ageIsMinor;
 
+  /* -------------------- funnel measurement -------------------- */
+
+  const step = STEP_OF[status];
+
+  /**
+   * The parameter set every event from this form carries.
+   *
+   * mode / is_minor come from funnelParams() so the three slicing dimensions are
+   * defined once for the whole site. `optional_open` is here because it answers a
+   * question nothing else can: whether the collapsed optional group is a quiet
+   * convenience or a thing people open, fill in and then abandon.
+   */
+  const stepParams = useCallback(
+    (forStep: BookingStep) => ({
+      ...funnelParams({ mode, isMinor }),
+      step: forStep,
+      step_name: BOOKING_STEPS[forStep],
+      optional_open: optionalOpen,
+    }),
+    [isMinor, mode, optionalOpen],
+  );
+
+  /*
+   * Refs, not state, for everything the measurement needs.
+   *
+   * Two reasons and both matter: none of it may cause a re-render of a form
+   * somebody is typing into, and the abandonment report runs from an event
+   * listener and a cleanup function, which see a stale closure of state but the
+   * current value of a ref.
+   */
+  const latestParams = useRef(stepParams);
+  latestParams.current = stepParams;
+  const stepRef = useRef<BookingStep>(step);
+  stepRef.current = step;
+  /** Steps already reported. A re-view (via "Change my answers") is not a step. */
+  const viewed = useRef<Partial<Record<BookingStep, true>>>({});
+  /** When the current step was entered, for seconds_on_step. */
+  const enteredAt = useRef(Date.now());
+  const mountedAt = useRef(Date.now());
+  const furthest = useRef<BookingStep>(step);
+  const blockedOnce = useRef(false);
+  const abandonReported = useRef(false);
+  /**
+   * The honeypot was filled. Every event from this instance is suppressed after
+   * that: a bot walking the form would otherwise report a step 2 view and inflate
+   * the denominator of the one ratio this instrumentation exists to produce.
+   */
+  const isBot = useRef(false);
+
+  // One booking_step_view per step, and the step timer reset alongside it.
+  // Depends on `step` alone deliberately — stepParams changes on every keystroke
+  // that touches the under-18 tick, and re-running this on those would reset
+  // enteredAt and make seconds_on_step meaningless.
+  useEffect(() => {
+    enteredAt.current = Date.now();
+    if (step > furthest.current) furthest.current = step;
+    if (isBot.current || viewed.current[step]) return;
+    viewed.current[step] = true;
+    track('booking_step_view', latestParams.current(step));
+  }, [step]);
+
+  /**
+   * Report leaving the flow, at most once per visit.
+   *
+   * Step 3 is deliberately NOT abandonment. By then the slot is booked and the
+   * browser is being handed to Stripe; a visitor who bails there shows up as
+   * `slot_reserved` with no `assessment_booked`, which is the card-hold
+   * abandonment number and is measured server-side, without the 20–30% loss a
+   * client-side event carries.
+   */
+  const reportAbandon = useCallback(() => {
+    if (abandonReported.current || isBot.current) return;
+    if (furthest.current === 3) return;
+    abandonReported.current = true;
+    track('booking_abandoned', {
+      ...latestParams.current(stepRef.current),
+      // Both, because they answer different questions: `step` is what was on
+      // screen when they left, `furthest_step` is how deep they ever got. Someone
+      // who reached the calendar, came back to change an answer and then left is
+      // a different story from someone who never got past the first screen.
+      furthest_step: furthest.current,
+      seconds_on_step: Math.round((Date.now() - enteredAt.current) / 1000),
+      blocked_once: blockedOnce.current,
+    });
+  }, []);
+
+  useEffect(() => {
+    /*
+     * pagehide, not beforeunload or unload. beforeunload disqualifies the page
+     * from the back/forward cache — which would slow down the exact visitor this
+     * form is trying to keep — and neither it nor unload fires reliably when
+     * mobile Safari backgrounds a tab, which is where a large share of this
+     * traffic abandons.
+     */
+    const onHide = () => reportAbandon();
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      window.removeEventListener('pagehide', onHide);
+      /*
+       * Client-side navigation away (the site's own nav, a browser back) unmounts
+       * this form with no pagehide at all, so the unmount is the other half of the
+       * signal.
+       *
+       * GUARDED ON ELAPSED TIME, and the guard is load-bearing: React Strict Mode
+       * deliberately mounts, unmounts and remounts every component in
+       * development, so without it every dev page load would post a
+       * booking_abandoned within milliseconds and the flag above would then
+       * suppress the real one. What the guard costs is a genuine sub-two-second
+       * bounce, which GA4 already counts as a bounce.
+       */
+      if (Date.now() - mountedAt.current > 2000) reportAbandon();
+    };
+  }, [reportAbandon]);
+
   const set =
     (key: keyof Fields) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -301,8 +465,11 @@ export function BookingForm() {
     e.preventDefault();
     setSubmitted(true);
 
-    // Bot. Show the scheduler-free success path and send nothing anywhere.
+    // Bot. Show the scheduler-free success path and send nothing anywhere —
+    // including to GA4, hence the flag: a bot counted as a step 2 view inflates
+    // the denominator of the step-1 completion rate.
     if (gotcha) {
+      isBot.current = true;
       setStatus('scheduling');
       return;
     }
@@ -312,6 +479,29 @@ export function BookingForm() {
 
     const firstKey = Object.keys(found)[0];
     if (firstKey) {
+      const fields = Object.entries(found)
+        .filter(([, message]) => Boolean(message))
+        .map(([key]) => key);
+
+      blockedOnce.current = true;
+      /*
+       * THE FIELD THAT COSTS THE MONEY.
+       *
+       * "Visitors drop off on step 1" is unactionable. "Visitors drop off on
+       * guardianEmail" names the fix. This is the only event in the funnel that
+       * can say which, and it is why validation failure is reported at all.
+       *
+       * FIELD KEYS ONLY — `email`, `guardianEmail`, `mode`, `age`, `name`. Never
+       * what was typed into them, and never the validation message either, which
+       * is safe today but is copy somebody will one day interpolate a value into.
+       */
+      track('booking_step_blocked', {
+        ...stepParams(1),
+        error_count: fields.length,
+        first_field: firstKey,
+        fields: fields.join(','),
+      });
+
       // Move focus to the offending control so a keyboard or screen-reader user
       // is taken to the problem rather than told one exists somewhere above.
       const id = firstKey === 'mode' ? 'mode-online' : `bf-${firstKey}`;
@@ -560,6 +750,31 @@ export function BookingForm() {
                 // push it has always been, and the hold route is idempotent on the
                 // uid, so this cannot produce a second hold.
                 const url = holdUrl(uid);
+                /*
+                 * THE MID-FUNNEL MILESTONE, fired here rather than from an effect
+                 * because router.push below can unmount this component before a
+                 * queued effect would run — and this is the last moment at which
+                 * the browser is certain to still be on this page.
+                 *
+                 * transaction_id is the Cal.com booking uid, the SAME identifier
+                 * `assessment_booked` sends from the webhook. That is NOT for
+                 * deduplication (these are two different event names, and Google
+                 * Ads only dedupes within one conversion action) — it is so a GA4
+                 * exploration can join a reserved slot to the card hold it did or
+                 * did not become. That join is card-hold abandonment, which is the
+                 * single most expensive unknown in this flow.
+                 *
+                 * Nothing here double-fires against a server-side event: the
+                 * Cal.com webhook (app/api/calcom/webhook/route.ts) sends email and
+                 * no conversion, so `slot_reserved` has no server-side twin. Which
+                 * also means it is short by the usual client-side 20–30% — read it
+                 * as a ratio, never as an absolute beside assessment_booked.
+                 */
+                track('slot_reserved', {
+                  ...stepParams(2),
+                  booking_uid: uid,
+                  transaction_id: uid,
+                });
                 setHandoff(url);
                 setStatus('handoff');
                 router.push(url);

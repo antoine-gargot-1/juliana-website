@@ -49,6 +49,43 @@ const MP_DEBUG_ENDPOINT = 'https://www.google-analytics.com/debug/mp/collect';
 
 const GA_API_SECRET = process.env.GA_API_SECRET ?? '';
 
+/**
+ * Puts server-side conversions into GA4 DebugView. OFF unless explicitly set.
+ *
+ * ---------------------------------------------------------------------------
+ * WHY THIS EXISTS: DebugView COULD NOT SEE THESE EVENTS AT ALL.
+ * ---------------------------------------------------------------------------
+ * DebugView only shows hits flagged as debug traffic. For the browser that flag
+ * comes from the Google Analytics Debugger extension or a `debug_mode` config
+ * param; for the Measurement Protocol nothing sets it implicitly, so every
+ * webhook conversion this file has ever sent was invisible there. Anyone told to
+ * "verify the pipeline in DebugView" was therefore verifying the browser mirror
+ * and concluding something about the server fire — or watching an empty report
+ * and concluding the pipeline was broken.
+ *
+ * GA_DEBUG_ENDPOINT is a different tool and does not substitute: it swaps in the
+ * validation endpoint, which checks the payload's schema and DOES NOT RECORD the
+ * event. Schema check versus delivery check.
+ *
+ * ---------------------------------------------------------------------------
+ * SET IT, VERIFY, UNSET IT. DO NOT LEAVE IT ON IN PRODUCTION.
+ * ---------------------------------------------------------------------------
+ * Two reasons, one certain and one unverified:
+ *
+ *   Certain: DebugView is a rolling near-real-time view, so this is only useful
+ *   while somebody is watching it.
+ *   UNVERIFIED HAZARD: GA4 is documented to treat debug traffic differently from
+ *   ordinary traffic, and this session could not confirm against Google's current
+ *   docs whether `debug_mode` hits are excluded from standard reports. If they
+ *   are, leaving this on would silently drop every money conversion out of
+ *   reporting — the worst possible failure for this file. So it is opt-in, it
+ *   defaults off, and docs/measurement-spec.md carries the same warning.
+ *
+ * The value is sent as `debug_mode: true` inside the event params, which is where
+ * the Measurement Protocol reads it from.
+ */
+const GA_DEBUG_MODE = process.env.GA_DEBUG_MODE === '1';
+
 /** True when a server-side conversion can actually be sent. */
 export const GA_SERVER_ENABLED = GA_ENABLED && GA_API_SECRET.length > 0;
 
@@ -77,6 +114,34 @@ type ServerConversion = {
   params?: EventParams;
   /** When the conversion happened, if not now. Backdating limit is 72 hours. */
   occurredAt?: Date;
+  /**
+   * Whether the student is a minor, emitted as the `is_minor` parameter.
+   *
+   * ---------------------------------------------------------------------------
+   * ONE OF THE THREE DIMENSIONS THAT DECIDE THE ECONOMICS, AND THE ONLY ONE THE
+   * SERVER-SIDE MONEY EVENTS DO NOT CURRENTLY SEND.
+   * ---------------------------------------------------------------------------
+   * `mode` and `lookup_key` already ride along in `params` from every webhook
+   * call site. `is_minor` does not, so today it is impossible to ask whether a
+   * booking made by a parent converts to a plan at a different rate from one made
+   * by an adult student — and it plainly does, because the person being sold to
+   * is not the person taking the lesson, which changes the ad copy, the objection
+   * and the decision time.
+   *
+   * This is a typed seam, deliberately: it is declared here so the fix is a
+   * one-line diff in a file this change did not own. Every call site in
+   * app/api/stripe/webhook/route.ts already has the Student in hand, and the
+   * record carries `guardianEmail` (lib/students.ts), so the missing line is
+   * literally `minor: Boolean(student?.guardianEmail),` beside the existing
+   * `email:` on each sendServerConversion call. docs/measurement-spec.md names
+   * all four.
+   *
+   * Until then it is undefined and the parameter is simply absent rather than
+   * being sent as a misleading `false` — an absent parameter reports as
+   * "(not set)" in GA4, which is the truth here: not known, rather than known to
+   * be an adult.
+   */
+  minor?: boolean | null;
 };
 
 /**
@@ -155,6 +220,9 @@ export async function sendServerConversion(conversion: ServerConversion): Promis
     // group client and server copies of an event by the same dimension.
     campaign: conversion.utm?.utm_campaign ?? 'none',
     ...conversion.params,
+    ...(conversion.minor === undefined || conversion.minor === null
+      ? {}
+      : { is_minor: conversion.minor }),
     // GA4 discards `value` unless `currency` accompanies it, silently. The two
     // are set together here so no call site can send a half-pair.
     ...(conversion.valueUsd === undefined
@@ -164,8 +232,65 @@ export async function sendServerConversion(conversion: ServerConversion): Promis
     // realtime and from most standard reports even though it was accepted.
     engagement_time_msec: 1,
     // Lets a report separate the authoritative fire from the browser mirror.
+    // The mirror fires under a different event NAME too (`<event>_client`, see
+    // components/coach/ConversionMirror.tsx); this stays because it is the
+    // dimension a single report can group both sides by.
     delivery: 'server',
+    // Opt-in only. See the warning on GA_DEBUG_MODE above before setting it.
+    ...(GA_DEBUG_MODE ? { debug_mode: true } : {}),
   };
+
+  /*
+   * ===========================================================================
+   * AN EMPTY transaction_id IS WORSE THAN NO transaction_id. STRIPPED HERE.
+   * ===========================================================================
+   * Two call sites send `transaction_id: bookingUid ?? ''` — the assessment
+   * branch in app/api/stripe/webhook/route.ts, and any future one that follows
+   * the same shape. The `?? ''` is there because a SetupIntent could arrive
+   * without booking metadata, which is rare but real.
+   *
+   * BE PRECISE ABOUT THE RISK, because an earlier version of this comment was
+   * not and the imprecision was itself the bug elsewhere in this codebase (see
+   * the header of components/coach/ConversionMirror.tsx): a GA4-imported key
+   * event is NOT deduplicated by Google Ads on transaction_id. GA4 hands Ads a
+   * count it has already computed, and GA4 deduplicates on transaction_id only
+   * for the ecommerce `purchase` event, which these deliberately are not. So an
+   * empty transaction_id is not collapsing conversions in the ad account today.
+   *
+   * It is stripped anyway, for three reasons that do hold:
+   *
+   *   1. '' is a shared identifier waiting for a mechanism that DOES dedupe on
+   *      it. Google Ads' own conversion tag and Offline Conversion Import both
+   *      do — and Offline Conversion Import is exactly where this funnel is
+   *      heading once ~30 students exist (scripts/offline-conversions.ts). At
+   *      that point every conversion carrying '' collapses into one and the rest
+   *      are discarded, silently.
+   *   2. It breaks the join this identifier exists for. `slot_reserved` →
+   *      `assessment_booked` and `checkout_started` → `pack_purchased` are
+   *      matched on transaction_id; rows keyed on '' match each other, so
+   *      card-hold and checkout abandonment come out wrong.
+   *   3. Omitting it is simply the truth. An absent parameter reports as
+   *      "(not set)" — identity not established — rather than as an identity
+   *      that several unrelated conversions appear to share.
+   *
+   * Dropping it cannot open a double-count: the browser mirror fires under a
+   * different event name entirely now, and refuses to fire at all without a
+   * transaction_id.
+   *
+   * The warning is loud because a rising count here means booking metadata is
+   * going missing upstream, and that is the bug worth chasing rather than this
+   * line.
+   */
+  if (params.transaction_id === '') {
+    delete params.transaction_id;
+    console.warn(
+      `[ga-server] ${conversion.event} arrived with an EMPTY transaction_id, so the parameter was ` +
+        'omitted rather than sent. "" is an identity several unrelated conversions would appear to ' +
+        'share, which breaks the slot_reserved/checkout_started joins now and will collapse rows in ' +
+        'Offline Conversion Import later. The upstream cause is missing booking/session metadata on ' +
+        'the Stripe object — chase that, not this line.',
+    );
+  }
 
   const body: Record<string, unknown> = {
     client_id: conversion.clientId ?? UNATTRIBUTED_CLIENT_ID,

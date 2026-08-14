@@ -139,7 +139,282 @@ export type ConversionEvent =
    * arrives 30–270 days after the click; scripts/offline-conversions.ts is what
    * eventually feeds true retained value back to the auction.
    */
-  | 'retained_student';
+  | 'retained_student'
+  /* =================================================================== */
+  /* BROWSER MIRRORS OF THE THREE MONEY EVENTS                            */
+  /* =================================================================== */
+  /**
+   * ---------------------------------------------------------------------------
+   * WHY THE MIRROR HAS ITS OWN NAMES. THIS FIXED A LIVE DOUBLE-COUNT.
+   * ---------------------------------------------------------------------------
+   * `assessment_booked`, `pack_purchased` and `plan_started` each fire twice by
+   * design: once authoritatively from the Stripe webhook via the Measurement
+   * Protocol, and once from the browser as a mirror for DebugView and for the
+   * case where webhook delivery is delayed. Both hits carried the SAME event name
+   * and the same `transaction_id`, and the mirror was believed safe because
+   * "Google Ads deduplicates imported conversions that share a transaction_id".
+   *
+   * THAT PREMISE WAS WRONG, and it was wrong in the expensive direction:
+   *
+   *   - GA4 performs transaction_id deduplication for the ECOMMERCE `purchase`
+   *     event specifically. These are custom event names — deliberately so, see
+   *     the naming note on `pack_purchased` — and GA4 deduplicates custom events
+   *     not at all. Two hits are two key events.
+   *   - Google Ads imports a GA4 key event as a COUNT that GA4 has already
+   *     computed. So the doubling happens upstream of anything Google Ads could
+   *     deduplicate, and the order-id dedupe that does exist applies to Google
+   *     Ads' own conversion tag and to Offline Conversion Import, not to a
+   *     GA4-imported key event.
+   *   - `claimConversion()` in the webhook is server-side idempotency. It cannot
+   *     see a browser hit.
+   *
+   * The result was Smart Bidding bidding on roughly double the true conversion
+   * volume at double the value — which is worse than under-reporting, because it
+   * looks like the campaign working. It also meant the account would appear to
+   * clear the ~15–30 conversions/30-days threshold that bidding strategies need
+   * while actually being at half that.
+   *
+   * So the mirror now fires under its own name. The ad account imports only the
+   * server-side names and can no longer be inflated by a browser hit.
+   *
+   * ---------------------------------------------------------------------------
+   * WHAT THE PAIR IS FOR NOW, AND IT IS GENUINELY USEFUL
+   * ---------------------------------------------------------------------------
+   * Same `transaction_id` on both sides, so the two are joinable. Server count
+   * minus client count MEASURES THIS SITE'S OWN BROWSER-SIDE LOSS — the real
+   * figure for this traffic, rather than the industry 20–30% estimate that every
+   * comment in this codebase currently has to assume. That number is what tells
+   * you how far to trust the client-only funnel-step events below.
+   *
+   * IMPORT NONE OF THESE THREE INTO GOOGLE ADS. Ever. They are a measurement of
+   * measurement. See docs/measurement-spec.md §4.4.
+   */
+  | 'assessment_booked_client'
+  | 'pack_purchased_client'
+  | 'plan_started_client'
+  /* =================================================================== */
+  /* FUNNEL-STEP EVENTS — the middle of the funnel                        */
+  /* =================================================================== */
+  /**
+   * ---------------------------------------------------------------------------
+   * WHY THESE SIX EXIST: THE ENDS WERE MEASURED AND THE MIDDLE WAS NOT.
+   * ---------------------------------------------------------------------------
+   * Before these, the coaching funnel reported a `page_view` on /coach/book and
+   * then, two to three minutes and three steps later, an `assessment_booked`
+   * from a Stripe webhook. Nothing in between existed. So when CPA came in high
+   * the only available answer was "people are not booking", with no way to tell
+   * a visitor who never typed a name from one who picked a slot and then balked
+   * at the card — two problems with opposite fixes (the ad promise versus the
+   * card copy), and no data to choose between them.
+   *
+   * The booking form's three steps all live on ONE URL (/coach/book): the status
+   * machine in components/coach/BookingForm.tsx swaps the rendered step without
+   * a navigation. That is deliberate and good for the visitor, and it means a
+   * GA4 funnel exploration built on `page_path` is structurally incapable of
+   * seeing steps 2 and 3. There is no configuration in GA4 that recovers this;
+   * only an event can.
+   *
+   * ---------------------------------------------------------------------------
+   * NAMING: THE SAME TRAP AS `video_start`, AND TWO MORE OF THEM.
+   * ---------------------------------------------------------------------------
+   * Read the NOTE ON NAMING on `video_play` above first — this is the same
+   * failure re-encountered. GA4 will merge an event of ours into an
+   * automatically-collected event of the same name, keep its own parameter
+   * schema, and drop ours; the breakdown then reads "(not set)" and looks like a
+   * tracking bug rather than a name collision.
+   *
+   * Three names were specifically avoided here:
+   *
+   *   form_start / form_submit  Enhanced Measurement's "Form interactions"
+   *                             collects BOTH automatically for any real <form>
+   *                             element — which BookingForm is. So GA4 is
+   *                             already firing `form_start` and `form_submit` on
+   *                             this form today, with `form_id`/`form_name` and
+   *                             nothing else: no step, no mode, no minor flag,
+   *                             and one `form_submit` for a form that has three
+   *                             steps. Useless for this funnel, and fatal to
+   *                             collide with.
+   *   begin_checkout            a GA4 RECOMMENDED ecommerce event with an
+   *                             expected `items[]` / `value` / `currency`
+   *                             schema. Same reasoning as `pack_purchased` not
+   *                             being `purchase`: match Google's names only when
+   *                             matching their schema, or the Monetisation
+   *                             reports render half-populated and look broken.
+   *
+   * None of the six uses a reserved prefix either (`_`, `firebase_`, `ga_`,
+   * `google_`, `gtag.`), which GA4 rejects outright.
+   */
+  /**
+   * A booking step became visible. `step` is 1 | 2 | 3, `step_name` is the
+   * matching BOOKING_STEPS value.
+   *
+   * THIS ONE EVENT CARRIES THE WHOLE PROGRESSION, because a step is only
+   * reachable by completing the one before it:
+   *
+   *   step_view(1)        arrived on the form
+   *   step_view(2)        step 1 completed — details validated, calendar shown
+   *   step_view(3)        step 2 completed — Cal.com has the slot
+   *   assessment_booked   step 3 completed — the $0 card hold succeeded
+   *
+   * So there is deliberately NO `booking_step_complete`: it would be the same
+   * numbers under a second name, and a duplicate event that can drift out of
+   * agreement with the first is worse than no event.
+   *
+   * CLIENT-SIDE ONLY, therefore systematically short by the usual 20–30% (ad
+   * blockers, Safari ITP). Use it for RATIOS between steps, never as an absolute
+   * count next to the server-side `assessment_booked` — the step-3-to-booked
+   * ratio will read above 100% for that reason alone.
+   */
+  | 'booking_step_view'
+  /**
+   * Step 1 was submitted and validation refused it.
+   *
+   * The point of this event is `first_field` and `fields`: it turns "people drop
+   * off on step 1" into "people drop off on the guardian email field". Those two
+   * findings have completely different fixes and the first one is unactionable.
+   *
+   * Carries FIELD KEYS ONLY — `name`, `email`, `guardianEmail`, `mode`, `age`.
+   * Never the values in them. See the PII note on getFunnelParams below.
+   */
+  | 'booking_step_blocked'
+  /**
+   * The visitor left the booking flow without reaching the next step.
+   *
+   * Redundant with the step_view ratios for counting, and not redundant at all
+   * for reading: it puts the step, the time spent on it and whether validation
+   * had already refused them once into a single row, which is what makes a
+   * drop-off attributable to a step rather than merely visible as a gap between
+   * two numbers.
+   */
+  | 'booking_abandoned'
+  /**
+   * Cal.com confirmed the slot. Fires alongside `booking_step_view` step 3.
+   *
+   * WHY IT NEEDS ITS OWN NAME RATHER THAN BEING A step_view PARAMETER. GA4's
+   * "mark as key event" and Google Ads' conversion import are both scoped to the
+   * event NAME, not to a name plus a parameter filter. Marking
+   * `booking_step_view` as a key event would count arrivals on step 1 as
+   * conversions. So the one intermediate milestone worth importing gets its own
+   * name.
+   *
+   * WHY IT IS WORTH IMPORTING: it is the only mid-funnel signal that arrives
+   * within a minute of the click AND represents a real commitment (half an hour
+   * on a real calendar). `assessment_booked` needs the card step too, and in a
+   * low-volume account Smart Bidding starves on it. See docs/measurement-spec.md
+   * for when to promote this to Primary.
+   *
+   * Carries `transaction_id` = the Cal.com booking uid, the SAME value
+   * `assessment_booked` uses. That is not for deduplication — the two are
+   * different conversion actions and Google Ads only dedupes within one — it is
+   * so a GA4 exploration can join a reserved slot to the booking it became, or
+   * fail to become, and get card-hold abandonment as a number.
+   */
+  | 'slot_reserved'
+  /**
+   * A Stripe Checkout Session was created and the browser is being sent to it.
+   *
+   * Fires from components/coach/Purchase.tsx AFTER /api/stripe/checkout has
+   * answered with a session, so it means "a real payable session exists", not
+   * "a button was clicked". Carries `transaction_id` = the Checkout Session id,
+   * which is the same identifier `pack_purchased` uses, so completed-versus-
+   * started is a join rather than a guess. A `checkout.session.completed` with
+   * no matching `checkout_started` used to be indistinguishable from a
+   * `checkout_started` that never completed — both were simply invisible.
+   *
+   * ---------------------------------------------------------------------------
+   * DO NOT IMPORT THIS INTO GOOGLE ADS AS A CONVERSION ACTION.
+   * ---------------------------------------------------------------------------
+   * It carries `value` (the amount the session is for) so that abandoned
+   * checkout can be measured in dollars. Importing it alongside
+   * `pack_purchased` would count that money twice — once when the session opens
+   * and again when it is paid — and Smart Bidding would bid against revenue that
+   * was never collected. It is a diagnostic, not a conversion.
+   */
+  | 'checkout_started'
+  /**
+   * A purchase attempt stopped before a Checkout Session existed. `reason` says
+   * why: `renewal_consent`, `guardian_email`, `not_configured`, `unreachable`,
+   * `no_url`, `network`.
+   *
+   * `not_configured` is the one to watch. It is the visitor-facing "Purchasing
+   * is not switched on yet" branch — a 503 from /api/stripe/checkout — which on
+   * a live deployment means Stripe credentials are missing and every purchase is
+   * failing. Today that state is completely silent: the buyer sees a sentence
+   * offering them an email address and nobody else ever finds out.
+   */
+  | 'checkout_blocked';
+
+/* ------------------------------------------------------------------ */
+/* Funnel vocabulary                                                   */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The three booking steps, numbered and named in ONE place.
+ *
+ * components/coach/BookingForm.tsx renders these, this file reports them, and
+ * docs/measurement-spec.md tells a human which GA4 custom dimension to build a
+ * funnel on. If the numbers and the names live in three files they will
+ * eventually disagree, and the symptom is a GA4 funnel step that silently
+ * matches nothing — which reads as "nobody reaches step 2".
+ *
+ * The names deliberately match BookingForm's own `Status` union values, except
+ * that `handoff` is reported as `hold`: what the visitor is doing at step 3 is
+ * holding the slot with a card, and the rail, the step label and the report
+ * should all call it the same thing.
+ */
+export const BOOKING_STEPS = {
+  1: 'details',
+  2: 'schedule',
+  3: 'hold',
+} as const;
+
+export type BookingStep = keyof typeof BOOKING_STEPS;
+
+/**
+ * The three dimensions every conversion in this funnel must be sliceable by,
+ * assembled in one place so no call site can forget one.
+ *
+ * WHY THESE THREE AND NOT OTHERS. They are the ones that change the economics,
+ * so a blended average across them is not a summary, it is a wrong number:
+ *
+ *   mode        online LTV is $2,520, in-person $3,240, and the assessment is
+ *               valued at $1,150 versus $1,450 (lib/pricing.ts). A CPA that is
+ *               profitable for one can be a loss on the other.
+ *   lookup_key  the tier. Per-lesson economics differ across single / monthly /
+ *               pack, and "which tier does paid traffic actually buy" cannot be
+ *               answered without it.
+ *   is_minor    a guardian pays, which changes who has to be convinced, which
+ *               ad copy speaks to them, and how long the decision takes.
+ *
+ * ---------------------------------------------------------------------------
+ * NO PII. THIS IS A HARD LINE, NOT A PREFERENCE.
+ * ---------------------------------------------------------------------------
+ * `is_minor` is a BOOLEAN, never the age, never the guardian's name or email.
+ * Nothing in this funnel may send an email address, a name, a guardian detail
+ * or the free-text goals field to GA4. Google's terms prohibit sending data
+ * that could identify an individual to Analytics, and the enforcement is
+ * property deletion rather than a warning; the goals textarea in particular is
+ * a place where a visitor may volunteer a medical or a family detail.
+ *
+ * The one sanctioned exception is the SHA-256 email hash in `user_data` for
+ * Enhanced Conversions, which happens server-side only and never through
+ * track() — see hashEmail/userData in lib/ga-server.ts. Everything on this path
+ * is a dimension, not an identity.
+ */
+export function funnelParams(input: {
+  mode?: 'online' | 'inperson' | null;
+  lookupKey?: string | null;
+  isMinor?: boolean;
+}): EventParams {
+  return {
+    // 'none' rather than omitted: an absent parameter reports as "(not set)" in
+    // GA4, which is indistinguishable from a tracking failure. A visitor who has
+    // not chosen a mode yet is a real and interesting state on step 1.
+    mode: input.mode ?? 'none',
+    lookup_key: input.lookupKey ?? '',
+    is_minor: input.isMinor ?? false,
+  };
+}
 
 export type EventParams = Record<string, string | number | boolean | null>;
 
@@ -331,6 +606,20 @@ export function track(event: ConversionEvent, params: EventParams = {}) {
 
   const attribution = getAttribution();
   const payload: EventParams = {
+    /*
+     * Which side fired this hit, defaulted here rather than at each call site.
+     *
+     * lib/ga-server.ts stamps `delivery: 'server'` on every Measurement Protocol
+     * hit, and ConversionMirror stamped 'client' on its two events, but plain
+     * track() calls sent nothing — so a GA4 report comparing the authoritative
+     * server fire against the browser mirror had one populated value and one
+     * "(not set)", and "(not set)" is also what a broken parameter looks like.
+     * With both sides labelled, "how much of my conversion volume is the browser
+     * losing" is a two-row report instead of an inference.
+     *
+     * Spread first so an explicit params.delivery still wins.
+     */
+    delivery: 'client',
     ...params,
     ...attribution,
     // Denormalised so a GA4 report can group by venue without a custom

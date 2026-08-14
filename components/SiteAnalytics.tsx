@@ -9,6 +9,39 @@ import { GA_ENABLED, GA_MEASUREMENT_ID, captureAttribution, track, trackPageView
 /**
  * GA4 loader plus the two site-wide listeners.
  *
+ * ---------------------------------------------------------------------------
+ * A CONFIGURATION DEPENDENCY THAT CANNOT BE SATISFIED FROM THIS FILE, AND THAT
+ * SILENTLY DESTROYS ATTRIBUTION ON EVERY CONVERSION IF IT IS NOT DONE.
+ * ---------------------------------------------------------------------------
+ * The booking funnel leaves this origin twice and comes back:
+ *
+ *   /coach/book  →  cal.com (iframe)  →  /coach/book/hold
+ *     →  checkout.stripe.com  →  /coach/book/confirmed
+ *
+ * When the browser returns from Stripe, the referrer is checkout.stripe.com. GA4
+ * treats a mid-visit source change as a NEW session, so the confirmation page —
+ * and the client-side conversion mirror on it — get attributed to
+ * "checkout.stripe.com / referral" instead of to the ad click that paid for the
+ * visit. The paid campaign then shows the click and none of the conversion.
+ *
+ * The fix is a GA4 admin setting and there is no code equivalent worth having:
+ *   Admin → Data Streams → the web stream → Configure tag settings →
+ *   List unwanted referrals → add `checkout.stripe.com`, `cal.com`, `app.cal.com`
+ *   and `billing.stripe.com`.
+ *
+ * Nothing in this file or in lib/analytics.ts detects that it is missing. The
+ * symptom is a healthy conversion count sitting under the wrong source, which
+ * looks like organic doing well rather than like a bug. docs/measurement-spec.md
+ * carries this as a launch-blocking step; it is recorded here too because this is
+ * the file somebody edits when attribution looks wrong.
+ *
+ * NOTE ON GA4's OWN FORM EVENTS. Enhanced Measurement collects `form_start` and
+ * `form_submit` automatically for real <form> elements, which includes the
+ * booking form. They are left enabled — they cost nothing and they no longer
+ * collide with anything, because the funnel events are deliberately named
+ * `booking_step_*`. Do not rename those to `form_*`. See the naming note in
+ * lib/analytics.ts.
+ *
  * Reads NEXT_PUBLIC_GA_MEASUREMENT_ID (a "G-XXXXXXXXXX" string) at build time;
  * the committed default lives in .env and the Vercel dashboard overrides it.
  * If it is ever unset or malformed, every branch below no-ops: no script tags
