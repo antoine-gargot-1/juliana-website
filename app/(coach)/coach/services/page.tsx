@@ -10,12 +10,43 @@ import { ASSESSMENT } from '@/lib/pricing';
 import { assessmentOfferSchema, coachingServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * "What I Teach", not "Lessons & Coaching".
+ *
+ * This page is the disciplines menu — it is what the footer already calls "What
+ * I teach" — and the generic phrase "Lessons & Coaching" put it in a title fight
+ * with /coach ("Music Lessons in Los Angeles & Online") and with
+ * /coach/lessons/online ("Online Music Lessons — Voice, Guitar, Piano &
+ * Songwriting") for no term it can win. Naming its actual job is both truer and
+ * the only one of the three that reads like a menu.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'Lessons & Coaching — Voice, Guitar, Piano, Songwriting',
+  title: 'What I Teach — Voice, Guitar, Piano & Songwriting',
   description:
-    'Six things Juliana teaches: voice, guitar, piano, songwriting, artist development and small group classes. One price for the lesson whichever we work on, online or in person in Los Angeles, in English or Spanish.',
+    'Six things Juliana teaches: voice, guitar, piano, songwriting, artist development and group classes. One price for the lesson whichever we work on.',
   path: '/coach/services',
 });
+
+/**
+ * The two disciplines that have a page of their own, mapped by SERVICES name.
+ *
+ * WHY THIS EXISTS: /coach/services was a menu with no exits. Every internal link
+ * in its body pointed at /coach/pricing or /coach/book — both already in the nav
+ * and the footer on this page — so it added no route to anything, while
+ * /coach/songwriting and /coach/voice-lessons-los-angeles were reachable only
+ * from the footer list. A menu that names six things and links to none of them
+ * is a dead end for a reader and a dead end for PageRank.
+ *
+ * Keyed by name rather than by `n` because the numbering is presentational and
+ * renumbering the list must not silently move a link onto the wrong discipline.
+ * An unmapped discipline renders nothing — Guitar, Piano, Artist Development and
+ * Group Classes have no page yet, and a link to a section anchor would be a link
+ * to this same page.
+ */
+const DISCIPLINE_PAGES: Record<string, { href: string; label: string }> = {
+  Voice: { href: '/coach/voice-lessons-los-angeles', label: 'More on voice lessons' },
+  Songwriting: { href: '/coach/songwriting', label: 'More on songwriting lessons' },
+};
 
 export default function ServicesPage() {
   return (
@@ -73,6 +104,16 @@ export default function ServicesPage() {
                   <li key={b}>{b}</li>
                 ))}
               </ul>
+              {DISCIPLINE_PAGES[s.name] && (
+                <p style={{ marginTop: 18, fontFamily: 'var(--serif)', fontSize: 17 }}>
+                  <Link
+                    href={DISCIPLINE_PAGES[s.name].href}
+                    style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+                  >
+                    {DISCIPLINE_PAGES[s.name].label} <span className="arrow">&rarr;</span>
+                  </Link>
+                </p>
+              )}
             </div>
           </section>
         ))}

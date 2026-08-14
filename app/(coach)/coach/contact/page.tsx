@@ -9,7 +9,7 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
 export const metadata: Metadata = pageMeta({
   title: 'Contact Juliana — Ask Something Before You Book',
   description:
-    'Send Juliana a question about voice, guitar, piano, songwriting or artist development lessons — or book the free 30-minute assessment straight away. Lessons in Los Angeles or online worldwide, in English or Spanish.',
+    'Ask Juliana about voice, guitar, piano or songwriting lessons — or book the free 30-minute assessment. Los Angeles or online worldwide, in English or Spanish.',
   path: '/coach/contact',
 });
 

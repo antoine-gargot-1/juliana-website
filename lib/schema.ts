@@ -527,13 +527,26 @@ const areaServedFor = (mode: LessonMode) => (mode === 'online' ? ONLINE_WORLDWID
  * carry it, so the bilingual signal is stated where a consumer will actually
  * read it instead of on a property it drops.
  *
- * `serviceUrl` is /coach/book for every channel: booking is the single entry
- * point, whatever the mode or discipline.
+ * `serviceUrl` DEFAULTS to /coach/book because that is the single entry point for
+ * every *lesson* — whatever the mode or discipline — but it is a parameter, and
+ * it has to be.
+ *
+ * THE BUG THIS PARAMETER FIXES: this helper was written when all four callers
+ * were coaching services, and the comment here said "/coach/book for every
+ * channel". liveMusicServiceSchema() was later given a channel through it and
+ * silently inherited that URL, so the Service that sells weddings,
+ * quinceañeras and corporate events told every consumer that the way to book one
+ * was the free 30-minute *vocal assessment* scheduler. The node also contradicted
+ * itself — all three of its Offers carry `url: /artist/booking` — so a consumer
+ * reading it had to pick between two answers, one of which sends a talent buyer
+ * into a singing-lesson funnel.
+ *
+ * A caller on the artist side of the domain must pass its own booking path.
  */
-const bookingChannel = (name: string) => ({
+const bookingChannel = (name: string, bookingPath = '/coach/book') => ({
   '@type': 'ServiceChannel',
   name,
-  serviceUrl: abs('/coach/book'),
+  serviceUrl: abs(bookingPath),
   availableLanguage: ['en', 'es'],
 });
 
@@ -909,8 +922,15 @@ export function liveMusicServiceSchema() {
      * quinceañeras and Latin repertoire are half the offer described above —
      * and stated in the wrong place the signal was simply not being read.
      */
+    /*
+     * /artist/booking, NOT the bookingChannel default of /coach/book. This is
+     * the events Service: its three Offers all point at /artist/booking, and the
+     * coaching default sent anyone reading this node to the free vocal
+     * assessment scheduler instead. See the note on bookingChannel.
+     */
     availableChannel: bookingChannel(
       'Live music booking for events across Southern California, in English or Spanish',
+      '/artist/booking',
     ),
     areaServed: EVENT_SERVICE_AREAS.map((name) => ({ '@type': 'AdministrativeArea', name })),
     offers: EVENT_PACKAGES.map((p) => ({

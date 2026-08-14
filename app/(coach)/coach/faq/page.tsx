@@ -11,9 +11,9 @@ import { faqPageSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
 export const metadata: Metadata = pageMeta({
-  title: 'Music Lesson FAQ — Ages, Levels, Billing, Online Lessons & Styles',
+  title: 'Music Lesson FAQ — Ages, Levels, Billing & Booking',
   description:
-    'Answers to what people ask before booking: the free 30-minute assessment and the card that holds the slot, how monthly billing works, cancelling and pausing, how in-person lessons in LA work, students under 18, ages, levels and styles.',
+    'What people ask before booking: the free 30-minute assessment and the card that holds the slot, monthly billing, cancelling and pausing, and students under 18.',
   path: '/coach/faq',
 });
 

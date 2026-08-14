@@ -15,14 +15,32 @@ import {
 } from '@/components/coach/PriceGrid';
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
 import { CREDITS, TESTIMONIALS } from '@/lib/content';
-import { formatUsd, monthlyPlans, monthlySavingVs } from '@/lib/pricing';
+import { formatUsd, monthlyPlans, monthlySavingVs, perLessonCents } from '@/lib/pricing';
 import { assessmentOfferSchema, pricingOfferCatalogSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * THE PRICE IN THIS DESCRIPTION IS COMPUTED, NOT TYPED.
+ *
+ * It used to read "from $70 a lesson" as a literal. That figure is the
+ * per-lesson rate of the cheapest full-hour online plan, and it is derived in
+ * three other places already (the /coach hero, CoachFooter, /coach/lessons/*).
+ * A price in a meta description is a price Google renders in the SERP, so a
+ * stale one is the number a visitor arrives holding you to — and this is the
+ * page they arrive at to check it. Module scope because `metadata` is evaluated
+ * before any component runs.
+ *
+ * Title also shortened: at 83 characters the "in Los Angeles" that qualified it
+ * locally was the part being truncated away, which is the one word a local
+ * pricing query needs to see.
+ */
+const FROM_PER_LESSON = formatUsd(perLessonCents(monthlyPlans('online')[0]));
+
 export const metadata: Metadata = pageMeta({
-  title: 'Lesson Prices — Voice, Guitar, Piano & Songwriting in Los Angeles',
+  title: 'Music Lesson Prices — Los Angeles & Online',
   description:
-    'Clear prices for one-to-one music lessons online and in person in Los Angeles: single lessons, monthly plans and 10-lesson packs, from $70 a lesson on a monthly plan. Buy a package and choose your times, or start with a free 30-minute vocal assessment. Cancel any time.',
+    `Single lessons, monthly plans and 10-lesson packs for music lessons online and in person in ` +
+    `Los Angeles, from ${FROM_PER_LESSON} a lesson. Cancel any time.`,
   path: '/coach/pricing',
 });
 

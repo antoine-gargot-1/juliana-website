@@ -72,7 +72,11 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry['c
     // root, not under /coach, because that is where the existing one sits and a
     // second convention would be one more thing to remember.
     { path: '/vocal-coach-los-angeles', priority: 0.9, changeFrequency: 'monthly' },
-    { path: '/online-singing-lessons', priority: 0.8, changeFrequency: 'monthly' },
+    // 0.9, not 0.8: this file's own rule is that 0.9 means "a page paid traffic
+    // or local search lands on", and marketing/google-ads/keywords.csv points 11
+    // keywords here. (Google ignores <priority> entirely; the value only has to
+    // be honest against the scale documented above.)
+    { path: '/online-singing-lessons', priority: 0.9, changeFrequency: 'monthly' },
     { path: '/online-songwriting-lessons', priority: 0.9, changeFrequency: 'monthly' },
 
     // Legal. INDEXED DELIBERATELY, which is not the default instinct for a legal
@@ -90,19 +94,43 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Entry['c
     { path: '/coach/terms', priority: 0.3, changeFrequency: 'yearly' },
   ];
 
+/**
+ * NO `lastModified`, AND THAT IS THE FIX RATHER THAN THE OMISSION.
+ * ---------------------------------------------------------------------------
+ * This file used to stamp `lastModified: new Date()` on all 30 URLs. With
+ * `revalidate = 86400` above, that regenerated daily, so the sitemap asserted
+ * every single page on the site had changed that morning — including a 2024 show
+ * page and a privacy policy nobody had touched in months.
+ *
+ * That is worse than saying nothing. Google's documented behaviour is that it
+ * uses `lastmod` only while the value looks trustworthy and ignores the signal
+ * site-wide once it does not, so a blanket "everything changed today" spent the
+ * credibility of the one field that could have told a crawler which page to
+ * re-fetch first — and spent it on no information at all, since a date that is
+ * identical across every URL cannot rank any URL above another.
+ *
+ * Omitting it is valid (`lastmod` is optional in the sitemap protocol) and
+ * leaves Google to use its own change-detection, which is what it was already
+ * doing in practice.
+ *
+ * IF SOMEONE WANTS A REAL `lastmod` LATER, it has to come from something that
+ * actually tracks content: the git author date of the page file and of the
+ * content/*.json it reads, or a per-route date committed alongside the copy.
+ * Do not reintroduce `new Date()`, and do not reach for file mtimes — a CI
+ * checkout gives every file the same timestamp, which is the same lie in a
+ * different costume.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((r) => ({
     url: abs(r.path),
-    lastModified: now,
     changeFrequency: r.changeFrequency,
     priority: r.priority,
   }));
 
   const showEntries: MetadataRoute.Sitemap = ALL_SHOWS.map((show) => ({
     url: abs(`/artist/live/${show.slug}`),
-    lastModified: now,
     changeFrequency: 'weekly',
     // Past shows still deserve to be indexed, just below the live ones.
     priority: isPast(show, now) ? 0.4 : 0.8,

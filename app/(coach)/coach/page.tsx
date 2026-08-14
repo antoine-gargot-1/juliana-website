@@ -98,13 +98,32 @@ const ONLINE_SINGLE = quoted(singleLesson('online'), 'online single lesson');
 const FROM_PER_LESSON = formatUsd(perLessonCents(ONLINE_PLAN));
 const LESSON_MINUTES = ONLINE_PLAN.duration;
 
+/**
+ * TITLE AND DESCRIPTION ARE BOTH SHORTER THAN THEY WERE, FOR TWO DIFFERENT REASONS.
+ *
+ * TITLE — was "Music Lessons in Los Angeles — Voice, Guitar, Piano &
+ * Songwriting", which the `%s | Juliana Beltran` template in app/layout.tsx took
+ * to 83 characters. Google renders roughly 600px of title, so everything from
+ * "Piano" onwards was cut, and this page was also the fourth on the site whose
+ * title claimed the instrument list. It is the hub: it should own the head term
+ * ("music lessons in Los Angeles") and leave the instrument long-tails to the
+ * two delivery-mode pages, which is where the content that answers them lives.
+ *
+ * DESCRIPTION — was 254 characters. Google shows ~155 on desktop and ~120 on a
+ * phone, and this traffic is mobile-majority, so "Start with a free 30-minute
+ * assessment" — the single most useful sentence on the page and the entry point
+ * to the entire funnel — sat past character 216 and was never rendered. Same
+ * facts, front-loaded, inside the budget.
+ *
+ * The price still comes from lib/pricing.ts. A price in a description is a price
+ * Google puts in the SERP, and a stale one is what the visitor arrives expecting.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'Music Lessons in Los Angeles — Voice, Guitar, Piano & Songwriting',
+  title: 'Music Lessons in Los Angeles & Online',
   description:
-    `One-to-one voice, guitar, piano and songwriting lessons online and in person in Los Angeles, ` +
-    `with Colombian singer-songwriter Juliana Beltran. ${LESSONS_PER_MONTH} lessons a month from ` +
-    `${FROM_PER_LESSON} a lesson, ages 5 to 70+, English or Spanish. Start with a free ` +
-    `${ASSESSMENT.durationMinutes}-minute assessment.`,
+    `Voice, guitar, piano and songwriting lessons online and in person in Los Angeles. ` +
+    `${LESSONS_PER_MONTH} a month from ${FROM_PER_LESSON} a lesson, English or Spanish. ` +
+    `Free ${ASSESSMENT.durationMinutes}-minute assessment.`,
   path: '/coach',
 });
 

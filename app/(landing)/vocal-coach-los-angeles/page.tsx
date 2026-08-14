@@ -15,14 +15,33 @@ import {
   PriceGrid,
 } from '@/components/coach/PriceGrid';
 import { AGGREGATE_RATING, BOOKING_LIVE_VIDEO, TESTIMONIALS, type Video } from '@/lib/content';
-import { ASSESSMENT, formatUsd, monthlyPlans, perLessonCents } from '@/lib/pricing';
+import { ASSESSMENT, IN_PERSON_DAYS, formatUsd, monthlyPlans, perLessonCents } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema, localBusinessSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
+
+/**
+ * TITLE UNCHANGED. This page owns the *person* noun — "vocal coach los angeles",
+ * "vocal coach near me", "vocal coach in los angeles", "singing coach los
+ * angeles" — and /coach/voice-lessons-los-angeles owns the *service* noun
+ * ("voice lessons los angeles", "singing lessons los angeles", "voice teacher
+ * los angeles"). Searchers make that distinction and so should the two titles.
+ * Do not retitle this to "Voice Lessons in Los Angeles"; see docs/seo-audit.md.
+ *
+ * "Tuesdays and Thursdays" now comes from IN_PERSON_DAYS, which is what
+ * configures Cal.com's in-person availability. It was typed, on the page 31 paid
+ * keywords land on, where a promise the scheduler cannot keep costs money
+ * directly. Description also cut from 210 characters to what Google renders.
+ */
+const IN_PERSON_DAY_LABEL = new Intl.ListFormat('en-US', {
+  style: 'long',
+  type: 'conjunction',
+}).format(IN_PERSON_DAYS.map((day) => `${day}s`));
 
 export const metadata: Metadata = pageMeta({
   title: 'Vocal Coach in Los Angeles — Free 30-Minute Assessment',
   description:
-    'Work with a touring Colombian singer-songwriter and vocal coach in Los Angeles. In person on Tuesdays and Thursdays or online anywhere, English or Spanish, ages 5 to 70+. Book a free 30-minute vocal assessment.',
+    `Voice lessons in Los Angeles with a touring Colombian singer-songwriter. In person on ` +
+    `${IN_PERSON_DAY_LABEL} or online anywhere, in English or Spanish.`,
   path: '/vocal-coach-los-angeles',
 });
 

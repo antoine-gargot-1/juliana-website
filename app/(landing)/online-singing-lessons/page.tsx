@@ -28,11 +28,25 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
  */
 const ANCHOR = monthlyPlans('online')[0];
 
+/**
+ * THIS PAGE OWNS "ONLINE SINGING LESSONS". /coach/lessons/online does not — its
+ * title used to read "Online Singing & Music Lessons" and has been changed to
+ * "Online Music Lessons" so the term has one owner instead of two half-owners.
+ * See the note above `metadata` in that file, and docs/seo-audit.md.
+ *
+ * The tail of the title ("…, Any Timezone") arrives from that page in the same
+ * swap: at 82 characters the old title was truncated anyway, and "One-to-One" is
+ * the differentiator against the group-class franchises that hold this SERP.
+ *
+ * Description cut from 266 characters. The price was past character 230 — the
+ * single most clickable fact in it, on the page bought against 11 keywords, and
+ * Google was rendering none of it.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'Online Singing Lessons — Free 30-Minute Assessment, Any Timezone',
+  title: 'Online Singing Lessons — One-to-One, Any Timezone',
   description:
-    'Live one-to-one online singing lessons with a touring Colombian singer-songwriter. She plays live underneath you instead of using a backing track, and you keep a recording of your own exercises. English or Spanish, ages 5 to 70+, from ' +
-    `${formatUsd(perLessonCents(ANCHOR))} a lesson on a monthly plan.`,
+    'Live one-to-one online singing lessons with a touring Colombian singer-songwriter — she plays live underneath you, not a backing track. From ' +
+    `${formatUsd(perLessonCents(ANCHOR))} a lesson.`,
   path: '/online-singing-lessons',
 });
 

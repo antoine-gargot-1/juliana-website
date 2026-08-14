@@ -52,10 +52,24 @@ const NEIGHBOURHOODS = [
   'Pasadena',
 ];
 
+/**
+ * TITLE UNCHANGED, DELIBERATELY. This page is the organic owner of "voice
+ * lessons los angeles", "singing lessons los angeles", "vocal lessons los
+ * angeles" and "voice teacher los angeles" — it has the exact-match slug, it was
+ * already indexed at this URL before the landing pages existed, and its title
+ * leads on the lesson noun. /vocal-coach-los-angeles owns the *person* noun
+ * ("vocal coach los angeles", "vocal coach near me", "singing coach los
+ * angeles"). Do not retitle either one onto the other's term; see
+ * docs/seo-audit.md for the full ownership map.
+ *
+ * Description trimmed from 211 characters to what Google renders. "Beginners
+ * welcome" is the line that was being cut and it is the objection this page's
+ * visitor actually has, so it stays and the coach's own résumé goes.
+ */
 export const metadata: Metadata = pageMeta({
   title: 'Voice Lessons in Los Angeles — Online & In Person',
   description:
-    'One-to-one voice lessons in Los Angeles and online with Colombian singer-songwriter and vocal coach Juliana Beltran. Healthy technique, range, tone and stage confidence, in English or Spanish. Beginners welcome.',
+    'One-to-one voice lessons in Los Angeles and online with vocal coach Juliana Beltran. Healthy technique, range, tone and stage confidence. Beginners welcome.',
   path: '/coach/voice-lessons-los-angeles',
 });
 
@@ -302,8 +316,15 @@ export default function VoiceLessonsLosAngelesPage() {
             listen to you sing, map where your range sits today, and tell you honestly how I would
             get you where you want to go. We take a card to hold the slot; nothing is charged for
             the assessment. No audition, no experience required. Plenty of people arrive having only
-            ever sung in the car. If you also write, or want to, songwriting and artist development
-            sessions can run alongside the voice work.
+            ever sung in the car. If you also write, or want to,{' '}
+            {/* The anchor was already this sentence; it just was not a link.
+                /coach/songwriting is the organic owner of the songwriting terms
+                and was reachable only from the footer, so this is a contextual
+                inbound link that costs no new copy. */}
+            <Link href="/coach/songwriting" style={{ textDecoration: 'underline' }}>
+              songwriting
+            </Link>{' '}
+            and artist development sessions can run alongside the voice work.
           </p>
           <Link className="btn btn--solid reveal" style={{ '--rd': '120ms' }} href="/coach/pricing">
             {PRICING_CTA_LABEL} <span className="arrow">&rarr;</span>

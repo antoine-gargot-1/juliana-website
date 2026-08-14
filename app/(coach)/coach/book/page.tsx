@@ -10,10 +10,20 @@ import { ASSESSMENT, IN_PERSON_DAYS } from '@/lib/pricing';
 import { assessmentOfferSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * The duration is read off ASSESSMENT rather than typed into the string, for the
+ * same reason the prices are: a title and a description are the two places a
+ * stale number gets served to somebody who has not reached the page yet.
+ *
+ * The "— Online or in Los Angeles" tail is gone from the title. At 83 characters
+ * it was past what Google renders, so it was invisible, and the description
+ * carries the same fact in the part that is visible.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'Book a Free 30-Minute Vocal Assessment — Online or in Los Angeles',
+  title: `Book a Free ${ASSESSMENT.durationMinutes}-Minute Vocal Assessment`,
   description:
-    'Book a free 30-minute vocal assessment with Juliana Beltran, online or in person in Los Angeles. No charge and no audition. We take a card to hold your slot and you won’t be charged for the assessment.',
+    `Book a free ${ASSESSMENT.durationMinutes}-minute vocal assessment with Juliana Beltran, online or in person in ` +
+    `Los Angeles. No charge, no audition. A card holds your slot.`,
   path: '/coach/book',
 });
 

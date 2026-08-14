@@ -87,9 +87,9 @@ import { EMAIL } from '@/lib/site';
  */
 
 export const metadata: Metadata = pageMeta({
-  title: 'Privacy Policy — What I Collect, Who Sees It, How to Get It Deleted',
+  title: 'Privacy Policy — What I Collect and Who Sees It',
   description:
-    "Exactly what this site collects when you book a lesson or pay for one, which companies handle it — Stripe, Cal.com, Google, Vercel — what happens to a student under 18's information, and how to ask me to change or delete any of it.",
+    "What this site collects when you book or pay for a lesson, which companies handle it, what happens to a student under 18's data, and how to get it deleted.",
   path: '/coach/privacy',
 });
 

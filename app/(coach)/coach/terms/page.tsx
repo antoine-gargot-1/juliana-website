@@ -79,9 +79,9 @@ import { EMAIL, SITE_NAME } from '@/lib/site';
  */
 
 export const metadata: Metadata = pageMeta({
-  title: 'Terms & Conditions — Lessons, Billing, Cancelling & Make-Up Lessons',
+  title: 'Terms & Conditions — Lessons, Billing & Cancelling',
   description:
-    'The terms for music lessons with Juliana Beltran: who the agreement is with, how a parent or guardian contracts for a student under 18, scheduling and 24 hours notice, make-up lessons, monthly plans, and cancelling online at any time with no notice period.',
+    'Terms for music lessons: students under 18, scheduling and 24 hours notice, make-up lessons, monthly plans, and cancelling online at any time with no notice.',
   path: '/coach/terms',
 });
 

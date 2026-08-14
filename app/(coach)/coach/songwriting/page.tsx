@@ -19,10 +19,46 @@ import { BOOKING_LIVE_VIDEO, TESTIMONIALS } from '@/lib/content';
 import { assessmentOfferSchema, songwritingServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * THIS PAGE AND /online-songwriting-lessons WERE THE SAME PAGE TO A SEARCH
+ * ENGINE. READ THIS BEFORE CHANGING THE TITLE OR THE H1 BACK.
+ * ---------------------------------------------------------------------------
+ * Both shipped with the identical H1 — "Finish the songs you keep starting." —
+ * and titles that both opened on the phrase "…Songwriting Lessons — Online".
+ * They also both emit the same `songwritingServiceSchema()` node, whose `url` is
+ * this page. Two URLs asserting one heading, one lead phrase and one entity is
+ * the textbook shape of keyword cannibalisation, and it was happening on the one
+ * cluster this studio can realistically win: songwriting terms are materially
+ * less contested than voice terms.
+ *
+ * The split, stated in full in docs/seo-audit.md:
+ *
+ *   THIS PAGE                     owns the unqualified and the local terms —
+ *                                 "songwriting lessons", "songwriting coach",
+ *                                 "songwriting teacher", "songwriting mentor",
+ *                                 "learn to write songs", "songwriting lessons
+ *                                 los angeles". It is the depth page, it is in
+ *                                 the footer of every coach page, and it holds
+ *                                 the six-part arc.
+ *
+ *   /online-songwriting-lessons   owns the online-qualified terms — "online
+ *                                 songwriting lessons", "songwriting lessons
+ *                                 online". Exact-match slug, and where all 11
+ *                                 songwriting keywords in
+ *                                 marketing/google-ads/keywords.csv point.
+ *
+ * So the word "Online" comes out of this title's lead and "in Los Angeles" moves
+ * into it, and the conversion headline "Finish the songs you keep starting."
+ * stays on the landing page — which is the page whose job is conversion — while
+ * this one takes the plain descriptive H1 its four sibling /coach pages use
+ * ("Voice lessons in Los Angeles.", "In-person lessons in Los Angeles."). That
+ * also fixes a real gap: this page's H1 previously contained neither the word
+ * "songwriting" nor a location.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'Songwriting Lessons — Online & In Person in Los Angeles',
+  title: 'Songwriting Lessons in Los Angeles & Online',
   description:
-    'Songwriting lessons with a working, released singer-songwriter. Lyrics, melody, structure, co-writing and finishing songs you have abandoned — online anywhere or in person in Los Angeles. Free 30-minute session to start.',
+    'Songwriting lessons in Los Angeles and online with a released, touring singer-songwriter. Lyrics, melody, structure, and finishing what you start.',
   path: '/coach/songwriting',
 });
 
@@ -78,8 +114,13 @@ export default function SongwritingPage() {
       <div className="wrap">
         <section className="svc-page-hero">
           <div className="eyebrow">Songwriting &middot; online &amp; in person in LA</div>
+          {/* "Finish the songs you keep starting." moved to
+              /online-songwriting-lessons, where it was already the H1 too — see
+              the note above `metadata`. Two URLs cannot share one H1. This is the
+              house style for a /coach/* service page and it puts the discipline
+              and the city in the heading, which the old one did neither of. */}
           <h1>
-            Finish the songs you <span className="it">keep starting.</span>
+            Songwriting lessons in <span className="it">Los Angeles.</span>
           </h1>
           <p className="prose" style={{ fontSize: 20, marginTop: 24, maxWidth: 700 }}>
             Songwriting lessons with someone who releases her own records and plays them to rooms
@@ -193,6 +234,19 @@ export default function SongwritingPage() {
                   all six disciplines
                 </Link>
                 .
+              </p>
+              {/* Reciprocal link to /online-songwriting-lessons, which had one
+                  internal link pointing at it (the chooser list on the home page)
+                  and links back here already. Songwriting is the winnable
+                  cluster, so the two pages in it should be one click apart, and
+                  this is the honest division of labour between them: this page is
+                  mode-agnostic, that one answers "will this work over video". */}
+              <p className="prose">
+                Not in Los Angeles? Everything here runs over video, and{' '}
+                <Link href="/online-songwriting-lessons" style={{ color: 'var(--accent)' }}>
+                  how the online songwriting sessions work
+                </Link>{' '}
+                has a page of its own.
               </p>
             </div>
           </div>

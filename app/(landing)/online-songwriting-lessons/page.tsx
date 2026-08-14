@@ -17,10 +17,23 @@ import { ASSESSMENT, formatUsd, monthlyPlans, perLessonCents } from '@/lib/prici
 import { assessmentOfferSchema, songwritingServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * TITLE AND H1 UNCHANGED, AND THEY ARE THE ONES THAT KEEP THE CONVERSION
+ * HEADLINE. /coach/songwriting shipped with the identical H1 ("Finish the songs
+ * you keep starting.") and a title that also opened on "Songwriting Lessons —
+ * Online"; it has been retitled to lead on "Songwriting Lessons in Los Angeles"
+ * and given a plain descriptive H1, so this page keeps the line and owns the
+ * online-qualified terms. Full ownership map in docs/seo-audit.md. Do not put
+ * "Finish the songs you keep starting." back on the other page.
+ *
+ * Description trimmed to what Google renders; "Free 30-minute first session" is
+ * the CTA and it sat past the truncation point, so it moves forward and the
+ * bilingual note — which the visible hero copy states twice — comes out.
+ */
 export const metadata: Metadata = pageMeta({
   title: 'Online Songwriting Lessons — Finish the Songs You Start',
   description:
-    'One-to-one online songwriting lessons with a released, touring singer-songwriter. Lyrics, melody, structure, second verses and actually finishing songs. English or Spanish. Free 30-minute first session.',
+    'One-to-one online songwriting lessons with a released, touring singer-songwriter. Lyrics, melody, structure, second verses. Free 30-minute first session.',
   path: '/online-songwriting-lessons',
 });
 

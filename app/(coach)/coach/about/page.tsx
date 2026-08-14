@@ -33,10 +33,19 @@ const BACKGROUND = [
 
 const STYLES = ['Pop', 'Latin Pop', 'Indie Pop', 'Singer-Songwriter', 'Acoustic', 'Alternative'];
 
+/**
+ * "Vocal Coach in Los Angeles", not "Vocal Coach & Singer-Songwriter in LA".
+ *
+ * The singer-songwriter identity is what /artist and /artist/press are for, and
+ * naming it here made this the third page competing on it. This is the coaching
+ * side's about page: the credential a parent is checking is the coaching one.
+ * "Los Angeles" spelled out rather than "LA" because that is how the query is
+ * typed. Description cut from 266 characters to fit what Google actually renders.
+ */
 export const metadata: Metadata = pageMeta({
-  title: 'About Juliana Beltran — Vocal Coach & Singer-Songwriter in LA',
+  title: 'About Juliana Beltran — Vocal Coach in Los Angeles',
   description:
-    'Juliana Beltran is a Colombian singer-songwriter and music coach in Los Angeles. She toured as a vocalist for Amanda Miguel, releases her own songs on Spotify editorial playlists, and teaches voice, guitar, piano and songwriting in English or Spanish, ages 5 to 70+.',
+    'Colombian singer-songwriter and vocal coach in Los Angeles. Toured with Amanda Miguel, songs on Spotify editorial playlists, teaches ages 5 to 70+.',
   path: '/coach/about',
   image: '/img/juliana-portrait.jpg',
   imageWidth: 3365,

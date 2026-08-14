@@ -15,13 +15,50 @@ import {
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
 import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
 import { BOOKING_LIVE_VIDEO, TESTIMONIALS } from '@/lib/content';
+import { formatUsd, monthlyPlans, perLessonCents } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * "Online Music Lessons", NOT "Online Singing & Music Lessons". READ THIS BEFORE
+ * PUTTING "SINGING" BACK IN THE TITLE.
+ * ---------------------------------------------------------------------------
+ * Three pages could plausibly claim "online singing lessons": this one,
+ * /online-singing-lessons and /coach/voice-lessons-los-angeles. Two of them
+ * claiming it in the <title> is not two chances at the term, it is one term with
+ * its links, its clicks and its relevance signals split across two URLs, and
+ * Google picking whichever it likes for any given query.
+ *
+ * The split, which docs/seo-audit.md states in full:
+ *
+ *   /online-singing-lessons   owns SINGING over video — "online singing
+ *                             lessons", "online voice lessons", "virtual voice
+ *                             lessons", "online vocal coach". It has the
+ *                             exact-match slug and it is where all 11 of the
+ *                             matching keywords in marketing/google-ads/
+ *                             keywords.csv already point.
+ *
+ *   THIS PAGE                 owns online lessons as a DELIVERY MODE across the
+ *                             instruments — "online music lessons", "online
+ *                             guitar lessons", "online piano lessons" — and the
+ *                             question intent, "do online singing lessons
+ *                             actually work". Which is what the page is: audio
+ *                             calibration, turn-taking accompaniment, the
+ *                             Journal of Voice split of what video carries and
+ *                             what it doesn't. None of that is on the landing
+ *                             page and all of it answers a different query.
+ *
+ * THE PRICE IS COMPUTED NOW. It was the literal "$70". Same rule as everywhere
+ * else on the site: a number in a description is a number Google shows in the
+ * SERP, and lib/pricing.ts is the only place it may come from.
+ */
+const FROM_PER_LESSON = formatUsd(perLessonCents(monthlyPlans('online')[0]));
+
 export const metadata: Metadata = pageMeta({
-  title: 'Online Singing & Music Lessons — One-to-One, Any Timezone',
+  title: 'Online Music Lessons — Voice, Guitar, Piano & Songwriting',
   description:
-    'Live one-to-one online voice, guitar, piano and songwriting lessons with Colombian singer-songwriter Juliana Beltran. English or Spanish, ages 5 to 70+, from $70 a lesson. Start with a free 30-minute vocal assessment.',
+    `Live one-to-one voice, guitar, piano and songwriting lessons over video. Real audio, live ` +
+    `accompaniment, from ${FROM_PER_LESSON} a lesson. English or Spanish.`,
   path: '/coach/lessons/online',
 });
 
@@ -282,6 +319,21 @@ export default function OnlineLessonsPage() {
               in person in Los Angeles
             </Link>{' '}
             instead. Most students mix the two.
+          </p>
+          {/* Contextual link to /online-singing-lessons, which had exactly one
+              internal link pointing at it (the chooser list on the home page)
+              before this. It is the page that owns "online singing lessons"
+              organically — see the note above `metadata` — and this page is where
+              a reader who has just decided video works goes looking for the
+              voice-specific version. Not a footer entry: the footer is on every
+              coach page and would put a near-duplicate of this page's own topic
+              next to it 20 times over. */}
+          <p className="prose" style={{ maxWidth: 700 }}>
+            If it is specifically singing you came for, there is a page just about{' '}
+            <Link href="/online-singing-lessons" style={{ color: 'var(--accent)' }}>
+              online singing lessons
+            </Link>{' '}
+            — same rate card, the voice side on its own.
           </p>
         </section>
 

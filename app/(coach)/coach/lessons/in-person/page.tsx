@@ -20,10 +20,27 @@ import { IN_PERSON_DAYS, formatUsd, singleLesson } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema, localBusinessSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 
+/**
+ * Title was 93 characters with the `| Juliana Beltran` template applied — the
+ * longest on the site, and Google renders roughly 600px, so every one of the
+ * four instruments it listed was cut off. The instruments are in the description
+ * and in the H2s; the local qualifier is the part that has to survive.
+ *
+ * "Tuesdays and Thursdays" is generated from IN_PERSON_DAYS rather than typed,
+ * for the same reason the body copy on this page is: those two days configure
+ * Cal.com's in-person availability, and a description promising days the
+ * scheduler does not offer sends people to a booking page with no slots on it.
+ */
+const IN_PERSON_DAY_LABEL = new Intl.ListFormat('en-US', {
+  style: 'long',
+  type: 'conjunction',
+}).format(IN_PERSON_DAYS.map((day) => `${day}s`));
+
 export const metadata: Metadata = pageMeta({
-  title: 'In-Person Music Lessons in Los Angeles — Voice, Guitar, Piano & Songwriting',
+  title: 'In-Person Music Lessons in Los Angeles',
   description:
-    'One-to-one in-person voice, guitar, piano and songwriting lessons in Los Angeles with Colombian singer-songwriter Juliana Beltran. Tuesdays and Thursdays, English or Spanish, ages 5 to 70+. Free 30-minute vocal assessment.',
+    `One-to-one voice, guitar, piano and songwriting lessons in person in Los Angeles on ` +
+    `${IN_PERSON_DAY_LABEL}. English or Spanish, ages 5 to 70+.`,
   path: '/coach/lessons/in-person',
 });
 
@@ -146,6 +163,21 @@ export default function InPersonLessonsPage() {
                   online lessons page
                 </Link>
                 .
+              </p>
+              {/* Contextual link to /vocal-coach-los-angeles, which had exactly
+                  one internal link pointing at it (the chooser list on the home
+                  page) before this. It is the page that owns the *person* noun —
+                  "vocal coach los angeles", "vocal coach near me" — and it opens
+                  on the in-person rate card, so it is the closest neighbour this
+                  page has. Not a footer entry: the footer already carries
+                  /coach/voice-lessons-los-angeles, and two near-identical voice
+                  links in one column would help nobody. */}
+              <p className="prose">
+                Coming for the voice specifically? There is more on working with a{' '}
+                <Link href="/vocal-coach-los-angeles" style={{ color: 'var(--accent)' }}>
+                  vocal coach in Los Angeles
+                </Link>{' '}
+                — what the sessions sound like, and why she still sings for a living.
               </p>
             </div>
             <div>
