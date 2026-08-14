@@ -132,11 +132,13 @@ unqualified before they book:
 |---|---|---|
 | Free 30-minute vocal assessment | Free | The lead offer. Card held, never charged. |
 | Voice lesson, 60 min (online) | $85 | |
-| Voice lesson, 60 min (in person) | $105 | Label "In person · Los Angeles". |
+| Voice lesson, 60 min (in person) | $110 | Label "In person · Los Angeles". |
 | Monthly plan, 4 × 60 min (online) | $280/mo | |
 | Monthly plan, 4 × 60 min (in person) | $360/mo | |
 | Monthly plan, 4 × 30 min (online) | $170/mo | Good for younger students. |
+| Monthly plan, 4 × 30 min (in person) | $210/mo | Was missing from this table. |
 | 10-lesson pack (online) | $700 | |
+| 10-lesson pack (in person) | $900 | Was missing from this table. |
 | Songwriting lessons | from $85 | |
 | Guitar lessons · Piano lessons | from $85 | |
 | Artist development | from $85 | |
