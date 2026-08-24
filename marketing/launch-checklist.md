@@ -115,7 +115,12 @@ If 5% of those book    → ~5 booked assessments/month → ~$100 per booked asse
 If 2% of those book    → ~2 booked assessments/month → ~$250 per booked assessment
 ```
 
-Two things follow. First, the $250 target CPA is a *ceiling*, not a goal. Second, at
+Note what that second line now means: at a 2% booking rate the campaign lands at **$250,
+which is above the $230 ceiling.** That is the useful reading of this arithmetic — the
+pessimistic case does not merely underperform, it fails the economics. The lever is the
+booking rate on the landing page, not the bid.
+
+Two things follow. First, the $230 target CPA is a *ceiling*, not a goal. Second, at
 2–5 conversions a month this campaign will sit far below the ~30-conversions-per-30-days
 that Smart Bidding wants for a stable Target CPA — see gate 2.
 
@@ -126,10 +131,16 @@ that Smart Bidding wants for a stable Target CPA — see gate 2.
 | When | Strategy | Rule |
 |---|---|---|
 | Weeks 1–4 | **Maximize Conversions, no target** | Gather data. Do not touch it. It will spend the full daily budget; that is what it is for. |
-| Week 5+ | **Target CPA, $250** | $250 = cost per *booked assessment*, not per student. |
+| Week 5+ | **Target CPA, $230** | $230 = cost per *booked assessment*, not per student. Derived below. |
 | Ongoing | Target CPA adjustments | **Never more than once per two weeks. Never by more than 20%.** |
 
-$250 ± 20% means one move is $200 or $300. Then wait two full weeks. The reason is
+**Where $230 comes from, since the number matters more than it looks.**
+CAC = CPA ÷ (show rate × assessment-to-plan rate) = CPA ÷ (0.85 × 0.45) = CPA × 2.61.
+So a $600 all-in CAC ceiling implies **$230 CPA maximum**, and the $250 this document
+carried previously would have produced $654 — over the ceiling before any tooling cost.
+The two targets were never compatible; $230 is the one that satisfies both.
+
+$230 ± 20% means one move is $184 or $276. Then wait two full weeks. The reason is
 mechanical, not stylistic: each change re-enters the learning period, and a campaign
 producing a handful of conversions a month needs every one of those two weeks to say
 anything statistically. Adjusting weekly means the strategy is permanently learning and
@@ -208,7 +219,7 @@ mattering.
 ## Gate 5 — Campaigns 2–4
 
 Only after **Campaign 1 shows a workable CPA** — a real cost per booked assessment under
-$250, over a minimum of 4 weeks *and* at least 5 booked assessments. One cheap conversion in
+$230, over a minimum of 4 weeks *and* at least 5 booked assessments. One cheap conversion in
 week 2 is not a workable CPA.
 
 Then, in this order, one at a time, two weeks apart:
@@ -230,7 +241,7 @@ Never send ad traffic to the homepage except Campaign 4.
 
 | Metric | Target | Where it comes from |
 |---|---|---|
-| Cost per booked assessment | **< $250** | Google Ads, `assessment_booked` |
+| Cost per booked assessment | **< $230** | Google Ads, `assessment_booked` |
 | Assessment show rate | **> 85%** | Cal.com attended vs booked |
 | Assessment → plan | **> 45%** | Stripe subscriptions ÷ assessments delivered |
 | All-in CAC | **< $600** | (ad spend + tooling) ÷ students started |

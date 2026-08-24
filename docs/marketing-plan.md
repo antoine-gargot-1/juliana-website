@@ -247,7 +247,7 @@ is a page, not a project.
 | When | Strategy | Rule |
 |---|---|---|
 | Weeks 1–4 | Maximize Conversions, no target | Do not touch it. It will spend the full daily budget; that is what it is for |
-| Week 5+ | Target CPA ~$250 | $250 is cost per *booked assessment*, not per student. It is a **ceiling, not a goal** |
+| Week 5+ | Target CPA **$230** | Cost per *booked assessment*, not per student. A **ceiling, not a goal**. $230 because CAC = CPA x 2.61 at the planned 85% show and 45% plan rates, so $600 CAC implies $230 CPA — the $250 this table carried would have produced $654 |
 | Ongoing | Adjustments | **Never more than once per fortnight. Never by more than 20%.** $250 ± 20% is one move to $200 or $300, then two full weeks of silence |
 
 The fortnight rule is mechanical, not stylistic: every change re-enters the learning period, and a
@@ -570,11 +570,11 @@ nothing.
 
 | Observed signal | Diagnosis | Do this | Do NOT | Wait before judging |
 |---|---|---|---|---|
-| **CPA > $250, search terms dirty** | Wasted spend | Negatives, exhaustively. Tighten match types. Check Presence and radius | Touch the bid strategy — you would be optimising against noise | 1 week |
-| **CPA > $250, terms clean, `booking_step_view` step 1 healthy, step 2 low** | The **details form** is the leak | Read `booking_step_blocked.first_field` — it names the field. Then fix that field, not the page. Also fix the "two questions and a calendar" expectation gap | Reduce fields blindly | 2 weeks |
+| **CPA > $230, search terms dirty** | Wasted spend | Negatives, exhaustively. Tighten match types. Check Presence and radius | Touch the bid strategy — you would be optimising against noise | 1 week |
+| **CPA > $230, terms clean, `booking_step_view` step 1 healthy, step 2 low** | The **details form** is the leak | Read `booking_step_blocked.first_field` — it names the field. Then fix that field, not the page. Also fix the "two questions and a calendar" expectation gap | Reduce fields blindly | 2 weeks |
 | **Step 2 healthy, step 3 / `slot_reserved` low** | The **calendar** is the leak | Check available slots exist and are soon enough. In-person clusters on Tue/Thu (`IN_PERSON_DAYS`) — an empty calendar reads as "she has no time for me" | Blame the form | 2 weeks |
 | **`slot_reserved` healthy, `assessment_booked` low** | The **card hold** is the leak | Make "you will see a $0 hold and no payment" impossible to miss. The FAQ answer already says it well; the booking flow should say it at the card step | Remove the card hold — it is the qualifying mechanism | 2 weeks |
-| **CPA > $250, clean terms, low click-through** | Ad copy or the term is wrong for the offer | Rotate RSA assets. Pause the most informational-intent keyword (`learn to write songs` is the flagged candidate) | Add keywords | 2 weeks |
+| **CPA > $230, clean terms, low click-through** | Ad copy or the term is wrong for the offer | Rotate RSA assets. Pause the most informational-intent keyword (`learn to write songs` is the flagged candidate) | Add keywords | 2 weeks |
 | **CPA > $400 at week 8, everything clean** | **LA voice terms may be unwinnable at this budget** | Move the money to Campaign 2 (Songwriting), where competition is lowest | Raise the budget to "give it a chance" | Act at week 8 |
 | **Zero bookings after a full $500 month, clean terms** | Landing page or the offer, not the bid | Pause Campaign 1. Fix the page. Relaunch | Increase spend | Act immediately |
 | **Show rate 60–85%** | Reminder cadence, or too long between booking and slot | Reminder at 24h and 2h. Restate that nothing is charged. Offer sooner slots | Change bids. This is not a bidding problem | 2 weeks |
@@ -693,7 +693,7 @@ CAC = cost-per-booked-assessment ÷ (show rate × assessment→plan rate). At th
 **A $250 CPA does not deliver a $600 CAC; it delivers $653, before any tooling cost** — and
 `launch-checklist.md` defines all-in CAC as *(ad spend + tooling) ÷ students started*, so Cal.com,
 Resend, Vercel and Stripe fees push it higher still. Two coherent resolutions, and a choice has to
-be made rather than left ambiguous: either **the real CPA ceiling is ~$225**, or **the CAC target
+be made rather than left ambiguous: either **the real CPA ceiling is $230** (600 x 0.85 x 0.45 = 229.50, rounded up), or **the CAC target
 is ~$650**. The first is honest and harder; the second is honest and admits a longer payback
 (2.3 months instead of 2.1). Do not carry both numbers forward as if they agreed.
 
@@ -764,7 +764,7 @@ Consequences, in order:
 
 At $950/mo this business needs roughly **1.6 new plan students a month** to hold CAC under $600 —
 and at the plan's own show and conversion targets, that requires a cost per booked assessment of
-**~$225, not $250**. Whether LA voice terms can deliver that is unknown and unknowable from here.
+**$230, not $250** — decided by the operator 2026-08-14. Whether LA voice terms can deliver that is unknown and unknowable from here.
 What *is* knowable: the conversion rates that decide it are gated on proof she has not yet
 supplied, the show rate that determines whether a paid conversion is worth anything is still
 counted by hand, and the review engine that compounds independently of all of it is switched off
