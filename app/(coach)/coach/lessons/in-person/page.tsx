@@ -16,6 +16,7 @@ import {
 import { PURCHASE_NOTE } from '@/components/coach/Purchase';
 import { TestimonialCarousel } from '@/components/coach/TestimonialCarousel';
 import { TESTIMONIALS } from '@/lib/content';
+import { RESCHEDULE_NOTICE_HOURS } from '@/lib/policy';
 import { IN_PERSON_DAYS, formatUsd, singleLesson } from '@/lib/pricing';
 import { assessmentOfferSchema, lessonsServiceSchema, localBusinessSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
@@ -111,15 +112,15 @@ export default function InPersonLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="split">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Why in person, if online works
-              </div>
+              </h2>
               <ul className="numbered">
                 {WHY_IN_PERSON.map((w, i) => (
                   <li key={w.t} className="reveal" style={{ '--rd': `${i * 60}ms` }}>
                     <span className="n">{String(i + 1).padStart(2, '0')}</span>
                     <span>
-                      <span className="t">{w.t}</span>
+                      <h3 className="t">{w.t}</h3>
                       {w.d}
                     </span>
                   </li>
@@ -147,9 +148,9 @@ export default function InPersonLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="split">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Days and scheduling
-              </div>
+              </h2>
               <p className="prose">
                 In-person lessons run on <strong>{IN_PERSON_DAYS.join('s and ')}s</strong>. Keeping
                 them on two fixed days means consecutive slots and a predictable week, which is what
@@ -181,14 +182,14 @@ export default function InPersonLessonsPage() {
               </p>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Practical details
-              </div>
+              </h2>
               <ul className="numbered">
                 <li>
                   <span className="n">01</span>
                   <span>
-                    <span className="t">Where</span>
+                    <h3 className="t">Where</h3>
                     Los Angeles. The exact address is shared privately once your lesson is confirmed
                     — it&rsquo;s a private space, not a walk-in one.
                   </span>
@@ -196,7 +197,7 @@ export default function InPersonLessonsPage() {
                 <li>
                   <span className="n">02</span>
                   <span>
-                    <span className="t">Under 18</span>
+                    <h3 className="t">Under 18</h3>
                     A parent or guardian books, is on the confirmation, and is welcome to sit in for
                     the whole lesson.
                   </span>
@@ -204,15 +205,16 @@ export default function InPersonLessonsPage() {
                 <li>
                   <span className="n">03</span>
                   <span>
-                    <span className="t">Rescheduling</span>
-                    24 hours&rsquo; notice moves a lesson at no cost. Illness is illness — tell me and
-                    we&rsquo;ll sort it out.
+                    <h3 className="t">Rescheduling</h3>
+                    {RESCHEDULE_NOTICE_HOURS} hours&rsquo; notice moves a lesson at no cost. Later
+                    than that we&rsquo;ll do it online instead, same length &mdash; and if
+                    you&rsquo;re ill, that&rsquo;s exactly what we do.
                   </span>
                 </li>
                 <li>
                   <span className="n">04</span>
                   <span>
-                    <span className="t">Languages</span>
+                    <h3 className="t">Languages</h3>
                     English or Spanish, switching mid-sentence if that is how you think.
                   </span>
                 </li>
@@ -226,9 +228,9 @@ export default function InPersonLessonsPage() {
             four prices in two rows is measurably harder than comparing them in
             one — on the page whose only job is that comparison. */}
         <section id="rates" className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 20 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 20 }}>
             In-person rates
-          </div>
+          </h2>
           <PriceGrid mode="inperson" footnote={<>{IN_PERSON_DAYS_SENTENCE}</>} />
           <PurchaseFacts />
           <p className="lede-plain" style={{ marginTop: 26 }}>
@@ -244,9 +246,9 @@ export default function InPersonLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           {/* ALL FIVE, with the aggregate line the component renders for itself.
               lessonsServiceSchema('inperson') attaches aggregateRating with
               reviewCount 5 to this page, and three quotes with no rating meant

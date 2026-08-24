@@ -24,6 +24,7 @@ import {
   TESTIMONIALS,
   monthYear,
 } from '@/lib/content';
+import { RESCHEDULE_NOTICE_HOURS } from '@/lib/policy';
 import {
   ASSESSMENT,
   IN_PERSON_DAYS,
@@ -613,7 +614,11 @@ export default function CoachHomePage() {
             </div>
             <div className="fact">
               <dt>A day&apos;s notice moves a lesson</dt>
-              <dd>Tell me 24 hours ahead and we move it, at no cost.</dd>
+              <dd>
+                Tell me {RESCHEDULE_NOTICE_HOURS} hours ahead and we&apos;ll move it, at no cost.
+                Later than that we can usually still do it online, so you keep the lesson rather
+                than lose it.
+              </dd>
             </div>
           </dl>
           {/* Required beside the free assessment, verbatim, at reading size. */}

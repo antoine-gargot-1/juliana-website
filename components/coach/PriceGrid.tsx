@@ -556,7 +556,25 @@ function freeLessonsPhrase(saving: NonNullable<ReturnType<typeof packSavingVs>>)
 const PURCHASE_FACTS: { q: string; a: string }[] = [
   {
     q: 'What if I miss a lesson?',
-    a: 'Tell me 24 hours ahead and we move it, at no cost.',
+    /*
+     * TWO CLAUSES, AND THE SECOND ONE IS THE POINT.
+     *
+     * 24 hours is the modal notice period for independent teachers, so the
+     * first clause is the norm. The second is the part almost nobody offers and
+     * that this studio is unusually well placed to: a late cancellation becomes
+     * an online lesson rather than a forfeited one.
+     *
+     * It works here because in-person capacity is genuinely tiny — two days a
+     * week, one student per clock hour, nothing past 8pm — so a Tuesday 4pm
+     * cancelled at 2pm cannot be refilled and cannot realistically be
+     * rescheduled either. "Counts as taught" is the honest fallback and it is
+     * what most studios do, but she already teaches online at the same length,
+     * so the hour can be kept instead of lost. Confirmed with the operator
+     * 2026-08-14 before publishing: this commits her to sitting down at a
+     * computer at the original time, which is a real obligation and not a
+     * marketing line.
+     */
+    a: 'Tell me 24 hours ahead and we’ll move it, free. Later than that, we can usually still do it online rather than lose it.',
   },
   {
     q: 'Can I cancel?',
@@ -622,6 +640,16 @@ export function PurchaseFacts() {
  * /coach/account, and the 24-hour reschedule is on the in-person page and in
  * PURCHASE_FACTS.
  *
+ * ON THE RESCHEDULE LINE SPECIFICALLY, because it has already been wrong once.
+ * The 24-hour window, the make-up policy and the refund terms were originally
+ * written by an AI agent and published on five surfaces without anyone asking
+ * the teacher — the terms page's own "where each term comes from" provenance
+ * table lists eleven terms and pointedly has no row for those three. They were
+ * researched against real studio policies and confirmed with the operator on
+ * 2026-08-14. The full version, including the two-pending/30-day make-up cap,
+ * lives on /coach/terms; this line and PURCHASE_FACTS[0] are its short forms and
+ * all three must agree. If you change one, grep "24 hour" and change them all.
+ *
  * NO CARD-HOLD SENTENCE HERE, DELIBERATELY. This block states that the
  * assessment is free; it does not offer it and carries no link to it, so nobody
  * can reach a card field from here. The offer itself — AssessmentCta or
@@ -634,7 +662,14 @@ const RISK_REVERSAL: string[] = [
   'Start there and the first bill comes a week later, after a real lesson',
   'Cancel a monthly plan yourself, from your billing page',
   'Pause one month a year at no charge, with your slot held',
-  '24 hours’ notice moves a lesson, free',
+  /*
+   * Deliberately still ONE string, so the array stays at five and the doc
+   * comment above it ("five facts") remains true. The illness clause earns its
+   * place over a shorter phrasing because being ill is the single most common
+   * reason a lesson moves, and "it moves online" is a better answer than either
+   * "it's forfeited" or vague goodwill.
+   */
+  '24 hours’ notice moves a lesson, free — and being ill moves it online',
 ];
 
 /** The block itself. One per page, directly under PURCHASE_NOTE. */

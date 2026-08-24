@@ -5,6 +5,12 @@ import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
 import { ASSESSMENT_CARD_COPY } from '@/components/coach/PriceGrid';
 import legal from '@/content/legal.json';
+import {
+  FEEDBACK_TURNAROUND_HOURS,
+  MAKEUP_WINDOW_DAYS,
+  MAX_PENDING_MAKEUPS,
+  RESCHEDULE_NOTICE_HOURS,
+} from '@/lib/policy';
 import { ASSESSMENT, IN_PERSON_DAYS, LESSONS_PER_MONTH } from '@/lib/pricing';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
 import { EMAIL, SITE_NAME } from '@/lib/site';
@@ -65,6 +71,21 @@ import { EMAIL, SITE_NAME } from '@/lib/site';
  *   one review request, no reward        lib/email.ts reviewRequestEmail(),
  *                                       app/api/cron/review-requests/route.ts
  *   packs: one payment, no renewal      components/coach/PriceGrid.tsx bullets
+ *   24h notice, the online fallback,    lib/policy.ts — researched against real
+ *     the 2-pending/30-day make-up cap,   independent-studio policies and CONFIRMED
+ *     the 48h video turnaround            WITH THE OPERATOR 2026-08-14
+ *   pack does not expire                lib/policy.ts PACK_EXPIRES (and the
+ *                                       Civ. Code §1749.5 reasoning there)
+ *   refund arithmetic on a part-used    #refunds below, stated as a formula
+ *     pack                              rather than "we'll be fair"
+ *
+ * THE FOUR ROWS ABOVE ARE WHY THIS TABLE EXISTS. Until 2026-08-14 the 24-hour
+ * rule, the make-up policy and the refund terms were the ONLY substantive terms
+ * on this page with no row here — because an AI agent wrote them and they were
+ * published, across five surfaces, without anyone asking the teacher. The gap in
+ * this table is what caught it. So: if you add a term and cannot fill in the
+ * right-hand column, that is the signal to go and ask, not to leave the column
+ * blank.
  *
  * NO PRICES ARE TYPED HERE. Not one figure. The rate card is
  * content/pricing.json via lib/pricing.ts and it is rendered on
@@ -91,8 +112,11 @@ const SECTIONS: [string, string][] = [
   ['under-18', 'Students under 18'],
   ['assessment', 'The free assessment'],
   ['where', 'Where lessons happen'],
-  ['moving-a-lesson', 'If you need to move a lesson'],
+  // Her obligation before the student's — same order as the sections below.
+  // The ToC is generated from this array, so swapping one without the other
+  // produces links that jump backwards up the page.
   ['if-i-move-one', 'If I need to move a lesson'],
+  ['moving-a-lesson', 'If you need to move a lesson'],
   ['plans', 'Monthly plans'],
   ['cancelling', 'Cancelling'],
   ['pausing', 'Pausing'],
@@ -224,42 +248,89 @@ export default function TermsPage() {
               deliberate. If those two days don&apos;t work for you, online is the same lesson.
             </p>
 
-            {/* ---------------- rescheduling ---------------- */}
+            {/*
+              ---------------- rescheduling ----------------
+              MY OBLIGATION IS PRINTED BEFORE YOURS, AND THAT ORDER IS THE POINT.
+              These two sections used to run the other way round, so the first
+              thing a parent read about cancellation was what happens when THEY
+              cancel. Every studio policy that reads as fair rather than punitive
+              leads with the teacher's own commitment; it costs nothing and it is
+              the cheapest change available here. Do not swap them back.
+
+              The substance below was researched against real studio policies and
+              CONFIRMED WITH THE OPERATOR on 2026-08-14. That matters because the
+              previous version of this section was written by an AI agent and
+              published on five surfaces without anyone asking the teacher — which
+              is visible in the provenance table at the top of this file, where
+              eleven terms have a source and these three had none.
+            */}
+            <h2 id="if-i-move-one">If I need to move a lesson</h2>
+            <p>
+              Then it&apos;s on me to fix it, and you shouldn&apos;t be out of pocket for it.
+              I&apos;ll give you as much notice as I can, and you can have the lesson back at a time
+              that works for you or the money back &mdash; your choice, and I&apos;ll offer you both
+              rather than wait for you to ask for one. I&apos;m a working musician, so once in a
+              while a show or a session moves a lesson. That&apos;s my problem to solve, not a cost
+              I&apos;ll pass to you.
+            </p>
+
             <h2 id="moving-a-lesson">If you need to move a lesson</h2>
             <p>
               Life happens, and I&apos;d much rather move a lesson than have you push through one
-              badly.
+              badly. This is the whole thing:
             </p>
             <ul>
               <li>
-                <strong>With at least 24 hours&apos; notice</strong>, tell me and we&apos;ll find
-                another time that week or the next. Nothing is lost.
+                <strong>{RESCHEDULE_NOTICE_HOURS} hours&apos; notice or more &mdash; we move it,
+                free.</strong>{' '}
+                Tell me and we&apos;ll find another time in the next {MAKEUP_WINDOW_DAYS} days.
+                Nothing is lost and nothing is charged.
+              </li>
+              {/*
+                THE ONLINE FALLBACK IS A REAL COMMITMENT, NOT A SOFTENER.
+                It means that when a Tuesday 4pm cancels at 2pm, she sits down at a
+                computer at 4pm. Confirmed with the operator before publishing.
+                It exists because in-person capacity here is genuinely tiny — two
+                days a week, one student per clock hour, nothing past 8pm — so a
+                late cancellation can neither be refilled nor realistically
+                rescheduled. Most studios forfeit the hour; she can teach it
+                instead. If this ever stops being true, it has to come off the page
+                the same day.
+              */}
+              <li>
+                <strong>Less than {RESCHEDULE_NOTICE_HOURS} hours &mdash; we move it online.</strong>{' '}
+                I&apos;ve held the hour and I can&apos;t fill it that late, so I can&apos;t hand it
+                back. What I can do is teach it: same length, same lesson, over video, at the time
+                we&apos;d already agreed or another one that week if I&apos;ve got it. You lose the
+                room, not the lesson.
               </li>
               <li>
-                <strong>With less than 24 hours&apos; notice</strong>, or if a lesson is missed
-                without a message, that lesson counts as taught. I&apos;ve held the time and
-                can&apos;t sell it to anyone else at that point.
+                <strong>A lesson missed with no message counts as taught.</strong> That&apos;s the
+                one case where the hour is gone. It isn&apos;t a fine &mdash; there&apos;s nothing
+                extra to pay &mdash; it&apos;s that the hour existed and I sat in it.
               </li>
               <li>
-                <strong>If you&apos;re ill, or something serious happens, just tell me.</strong>{' '}The
-                24 hours is there to protect a teaching week from casual no-shows, not to fine
-                someone for having a bad week. I&apos;d rather use judgement than a rule, and in
-                practice that means I&apos;ll usually move it anyway.
+                <strong>If you&apos;re ill, or something serious has happened, tell me.</strong> Ill
+                but up to singing: we do it online. Ill and not up to anything: send me a short video
+                of where you got to in the week and I&apos;ll write back with notes within{' '}
+                {FEEDBACK_TURNAROUND_HOURS} hours, and that counts as the lesson. Something genuinely
+                serious: just say so, and I&apos;ll deal with it like a person rather than a policy.
               </li>
             </ul>
             <p>
-              A make-up lesson is a lesson moved, not a lesson banked. If they start piling up
-              we&apos;ll talk about whether the schedule is the wrong shape, rather than carrying a
-              growing balance neither of us can honour.
+              Two practical limits, so this stays something I can actually honour rather than a
+              promise that quietly fails. I&apos;ll carry <strong>at most {MAX_PENDING_MAKEUPS}</strong>{' '}
+              moved lessons for you at a time, and a moved lesson wants using{' '}
+              <strong>within {MAKEUP_WINDOW_DAYS} days</strong> &mdash; after that I can&apos;t keep
+              holding it against a schedule that&apos;s moved on. If we&apos;re bumping into either
+              of those, the slot is probably the wrong shape, and I&apos;d rather change the slot
+              than run a balance neither of us can clear.
             </p>
-
-            <h2 id="if-i-move-one">If I need to move a lesson</h2>
             <p>
-              Then it&apos;s on me to fix it. I&apos;ll give you as much notice as I can, and
-              you&apos;ll get the lesson back at a time that works for you &mdash; or, if that
-              can&apos;t be arranged, credited so you&apos;re not paying for a lesson I didn&apos;t
-              teach. I&apos;m a working musician, so occasionally a show or a session moves a lesson;
-              that&apos;s my problem to solve and not a cost I&apos;ll pass to you.
+              One thing worth saying plainly, because it&apos;s the sort of thing that turns into an
+              argument later: <strong>a moved lesson is one of the {LESSONS_PER_MONTH} you&apos;ve
+              already paid for, taught on a different day.</strong> It doesn&apos;t come out of next
+              month&apos;s {LESSONS_PER_MONTH}, and it doesn&apos;t add a charge.
             </p>
 
             {/* ---------------- plans ---------------- */}
@@ -336,10 +407,31 @@ export default function TermsPage() {
               <strong>it does not renew</strong>{' '}&mdash; nothing recurring starts when you buy one,
               and there is nothing to cancel.
             </p>
+            {/*
+              "DOES NOT EXPIRE" IS A DELIBERATE LEGAL POSITION, NOT GENEROSITY.
+              California Civil Code §1749.5 makes it unlawful to sell a gift
+              certificate with an expiration date, and §1749.45 defines "gift
+              certificate" inclusively — it says what the term includes and never
+              says what it is. Whether a prepaid block of lessons falls inside it
+              is unresolved, no California case decides it, and §1749.5 attracts
+              active class-action filings. Carrying no expiry means the question
+              never has to be answered. See PACK_EXPIRES in lib/policy.ts.
+            */}
             <p>
-              Lessons in a pack are yours to use at your own pace, and we&apos;ll schedule them
-              between us as we go. The 24-hour rule above applies to a pack lesson the same way it
-              applies to any other.
+              <strong>A pack doesn&apos;t expire.</strong> There&apos;s no clock on it and no lessons
+              that quietly disappear &mdash; under California law a prepaid thing you&apos;ve bought
+              outright shouldn&apos;t come with a deadline attached, and I don&apos;t want one on it
+              anyway.
+            </p>
+            <p>
+              I&apos;d still rather we kept them on a schedule than on a shelf, because ten lessons
+              across two years won&apos;t do what ten across ten weeks will. So we&apos;ll book them
+              as we go, and if a few months pass with nothing in the diary I&apos;ll check in.
+              That&apos;s a nudge, not a deadline.
+            </p>
+            <p>
+              The rules above about moving a lesson apply to a pack lesson exactly as they do to any
+              other.
             </p>
 
             {/* ---------------- refunds ---------------- */}
@@ -360,9 +452,22 @@ export default function TermsPage() {
                 stops future payments rather than reversing past ones. That&apos;s the trade for
                 there being no notice period and no minimum term.
               </li>
+              {/*
+                THE FORMULA IS STATED BECAUSE VAGUENESS IS WHAT TURNS A REFUND
+                INTO A NEGOTIATION. "We'll sort it out fairly" — the previous
+                wording — leaves the number to be argued at the worst possible
+                moment. Charging taken lessons at the ordinary single rate also
+                closes the obvious arbitrage: take nine of ten at the pack rate,
+                then refund the tenth and keep the bulk discount on the nine.
+              */}
               <li>
-                <strong>Part-used pack?</strong>{' '}Tell me and we&apos;ll sort out the unused lessons
-                fairly. I&apos;d rather do that than have you sitting on lessons you don&apos;t want.
+                <strong>Part-used pack?</strong>{' '}Refundable whenever you like, and here&apos;s the
+                arithmetic so it isn&apos;t a negotiation: I refund what you paid, less the lessons
+                you&apos;ve already had, charged at my ordinary single-lesson rate &mdash;{' '}
+                <Link href="/coach/pricing">it&apos;s on the pricing page</Link>. That means the
+                discount belonged to the ten lessons rather than to the three you took. If
+                you&apos;ve taken most of the pack it can come out at nothing at all, so I&apos;ll do
+                the sum and tell you the number before you decide anything.
               </li>
             </ul>
             <p>
