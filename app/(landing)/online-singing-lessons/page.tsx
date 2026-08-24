@@ -118,7 +118,7 @@ export default function OnlineSingingLessonsPage() {
         <section className="lp-proof">
           <div className="video-primary-flag">
             <span className="line" />
-            <span className="eyebrow">This is the voice teaching you</span>
+            <h2 className="eyebrow">This is the voice teaching you</h2>
           </div>
           <VideoFacade
             video={BOOKING_LIVE_VIDEO}
@@ -136,15 +136,15 @@ export default function OnlineSingingLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 60, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             The five things everyone asks first
-          </div>
+          </h2>
           <ul className="numbered">
             {OBJECTIONS.map((o, i) => (
               <li key={o.t} className="reveal" style={{ '--rd': `${i * 50}ms` }}>
                 <span className="n">{String(i + 1).padStart(2, '0')}</span>
                 <span>
-                  <span className="t">{o.t}</span>
+                  <h3 className="t">{o.t}</h3>
                   {o.d}
                 </span>
               </li>
@@ -155,9 +155,9 @@ export default function OnlineSingingLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="lp-grid">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 10 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 10 }}>
                 What online lessons cost
-              </div>
+              </h2>
               <p className="prose" style={{ marginBottom: 30 }}>
                 {formatUsd(perLessonCents(anchor))} a lesson on a monthly plan of full-length
                 sessions, and less for the shorter ones. Every price is below. There&apos;s no form
@@ -173,9 +173,9 @@ export default function OnlineSingingLessonsPage() {
               </div>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Who teaches
-              </div>
+              </h2>
               <p className="prose">
                 Juliana Beltran is a Colombian singer-songwriter based in Los Angeles. She toured
                 internationally as a vocalist for Amanda Miguel, her own songs sit on Spotify
@@ -209,9 +209,9 @@ export default function OnlineSingingLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           <div className="press-quotes-grid">
             {TESTIMONIALS.slice(1, 4).map((t, i) => (
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>

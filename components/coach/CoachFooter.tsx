@@ -46,7 +46,7 @@ export function CoachFooter() {
             first thing in this column any more and no longer holds the word
             "Lessons" on its own. */}
         <div>
-          <h4>Studio</h4>
+          <h2>Studio</h2>
           <ul>
             <li>
               <Link href="/coach/lessons/online">Online Lessons</Link>
@@ -78,7 +78,7 @@ export function CoachFooter() {
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
+          <h2>Contact</h2>
           <ul>
             <li>
               <Link href="/coach/book">Book a free assessment</Link>
@@ -100,7 +100,11 @@ export function CoachFooter() {
           </ul>
         </div>
         <div>
-          <h4>Listen &amp; watch</h4>
+          {/* h2, not h4 — see the note on .foot h4/.foot h2 in app/styles.css.
+              These three columns sat at h4 directly under the page's last h2,
+              which is a skipped level on every coach route. The rule styles both
+              elements identically, so nothing moves. */}
+          <h2>Listen &amp; watch</h2>
           <ul>
             <li>
               <a href={SOCIAL.spotify} target="_blank" rel="noopener noreferrer">

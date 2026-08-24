@@ -117,7 +117,7 @@ export default function VocalCoachLosAngelesPage() {
         <section className="lp-proof">
           <div className="video-primary-flag">
             <span className="line" />
-            <span className="eyebrow">Listen before you decide</span>
+            <h2 className="eyebrow">Listen before you decide</h2>
           </div>
           <VideoFacade
             video={BOOKING_LIVE_VIDEO}
@@ -137,15 +137,15 @@ export default function VocalCoachLosAngelesPage() {
         <section className="block" style={{ paddingTop: 60, paddingBottom: 40 }}>
           <div className="lp-grid">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Why work with her
-              </div>
+              </h2>
               <ul className="numbered">
                 {WHY.map((w, i) => (
                   <li key={w.t} className="reveal" style={{ '--rd': `${i * 60}ms` }}>
                     <span className="n">{String(i + 1).padStart(2, '0')}</span>
                     <span>
-                      <span className="t">{w.t}</span>
+                      <h3 className="t">{w.t}</h3>
                       {w.d}
                     </span>
                   </li>
@@ -153,9 +153,9 @@ export default function VocalCoachLosAngelesPage() {
               </ul>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 What we work on
-              </div>
+              </h2>
               <ul className="numbered">
                 <li>
                   <span className="n">01</span>
@@ -195,9 +195,9 @@ export default function VocalCoachLosAngelesPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 10 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 10 }}>
             What lessons cost
-          </div>
+          </h2>
           <p className="prose" style={{ marginBottom: 30 }}>
             You don&apos;t have to ask to see a price. Monthly plans work out from{' '}
             {formatUsd(perLessonCents(anchor))} a lesson in person, and less online.
@@ -234,9 +234,9 @@ export default function VocalCoachLosAngelesPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           <div className="press-quotes-grid">
             {TESTIMONIALS.slice(0, 3).map((t, i) => (
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>

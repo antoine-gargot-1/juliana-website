@@ -189,7 +189,7 @@ export default function OnlineLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="video-primary-flag reveal">
             <span className="line" />
-            <span className="eyebrow">Hear it first</span>
+            <h2 className="eyebrow">Hear it first</h2>
           </div>
           <div className="split">
             <VideoFacade video={BOOKING_LIVE_VIDEO} placement="coach-lessons-online" primary />
@@ -215,15 +215,15 @@ export default function OnlineLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="split">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 How an online lesson runs
-              </div>
+              </h2>
               <ul className="numbered">
                 {HOW.map((h, i) => (
                   <li key={h.t} className="reveal" style={{ '--rd': `${i * 60}ms` }}>
                     <span className="n">{String(i + 1).padStart(2, '0')}</span>
                     <span>
-                      <span className="t">{h.t}</span>
+                      <h3 className="t">{h.t}</h3>
                       {h.d}
                     </span>
                   </li>
@@ -231,9 +231,9 @@ export default function OnlineLessonsPage() {
               </ul>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 What you need
-              </div>
+              </h2>
               <ul className="numbered">
                 {NEED.map((n, i) => (
                   <li key={n} className="reveal" style={{ '--rd': `${i * 60}ms` }}>
@@ -258,14 +258,14 @@ export default function OnlineLessonsPage() {
         {/* The comparison this page used to avoid. See the note above TRAVELS
             for the source and for why none of it may be softened. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             What comes through video, and what doesn&rsquo;t
-          </div>
+          </h2>
           <div className="split">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 14 }}>
+              <h3 className="eyebrow reveal" style={{ marginBottom: 14 }}>
                 Comes through
-              </div>
+              </h3>
               <ul className="plain-points" style={{ gridTemplateColumns: '1fr' }}>
                 {TRAVELS.map((t) => (
                   <li key={t}>{t}</li>
@@ -273,9 +273,9 @@ export default function OnlineLessonsPage() {
               </ul>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 14 }}>
+              <h3 className="eyebrow reveal" style={{ marginBottom: 14 }}>
                 Better in the room
-              </div>
+              </h3>
               <ul className="plain-points" style={{ gridTemplateColumns: '1fr' }}>
                 {NEEDS_ROOM.map((n) => (
                   <li key={n}>{n}</li>
@@ -338,9 +338,9 @@ export default function OnlineLessonsPage() {
         </section>
 
         <section id="rates" className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             Online rates
-          </div>
+          </h2>
           <PriceGrid mode="online" />
           <PurchaseFacts />
           <p className="lede-plain" style={{ marginTop: 26 }}>
@@ -354,9 +354,9 @@ export default function OnlineLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           {/* ALL FIVE, not three, and with the aggregate line the component
               renders for itself. lessonsServiceSchema('online') attaches
               aggregateRating with reviewCount 5 to this page; showing three

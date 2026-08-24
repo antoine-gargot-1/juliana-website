@@ -102,9 +102,9 @@ export default function OnlineSongwritingLessonsPage() {
         <section className="lp-proof">
           <div className="video-primary-flag">
             <span className="line" />
-            <span className="eyebrow">
+            <h2 className="eyebrow">
               Ten songs at Hotel Caf&eacute; &middot; seven of them hers
-            </span>
+            </h2>
           </div>
           <VideoFacade
             video={BOOKING_LIVE_VIDEO}
@@ -127,15 +127,15 @@ export default function OnlineSongwritingLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 60, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             What we usually fix first
-          </div>
+          </h2>
           <ul className="numbered">
             {PROBLEMS.map((p, i) => (
               <li key={p.t} className="reveal" style={{ '--rd': `${i * 50}ms` }}>
                 <span className="n">{String(i + 1).padStart(2, '0')}</span>
                 <span>
-                  <span className="t">{p.t}</span>
+                  <h3 className="t">{p.t}</h3>
                   {p.d}
                 </span>
               </li>
@@ -155,9 +155,9 @@ export default function OnlineSongwritingLessonsPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="lp-grid">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 10 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 10 }}>
                 What sessions cost
-              </div>
+              </h2>
               <p className="prose" style={{ marginBottom: 30 }}>
                 Same rate card as every other lesson: {formatUsd(perLessonCents(anchor))} a session
                 on a monthly plan. The price is for the hour rather than the subject, so a session
@@ -172,9 +172,9 @@ export default function OnlineSongwritingLessonsPage() {
               </div>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Bring one unfinished song
-              </div>
+              </h2>
               <p className="prose">
                 That&apos;s the entire preparation. A chorus with no verse, a verse with no chorus, a
                 voice note from a car — anything you&apos;ve stopped being able to hear.
@@ -198,9 +198,9 @@ export default function OnlineSongwritingLessonsPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           <div className="press-quotes-grid">
             {TESTIMONIALS.slice(2, 5).map((t, i) => (
               <div key={t.name} className="press-quote-card reveal" style={{ '--rd': `${i * 100}ms` }}>

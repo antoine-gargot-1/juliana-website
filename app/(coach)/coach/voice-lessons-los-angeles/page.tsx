@@ -107,9 +107,9 @@ export default function VoiceLessonsLosAngelesPage() {
         <section className="block" style={{ paddingTop: 40, paddingBottom: 40 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80 }} className="about-cols">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 How the lessons work
-              </div>
+              </h2>
               <p
                 className="reveal"
                 style={{
@@ -179,9 +179,9 @@ export default function VoiceLessonsLosAngelesPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80 }} className="about-cols">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 What we work on
-              </div>
+              </h2>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, borderTop: '1px solid var(--rule)' }}>
                 {FOCUS.map((f, i) => (
                   <li
@@ -215,9 +215,9 @@ export default function VoiceLessonsLosAngelesPage() {
               </ul>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 In person or online
-              </div>
+              </h2>
               <p
                 className="reveal"
                 style={{
@@ -255,9 +255,9 @@ export default function VoiceLessonsLosAngelesPage() {
                 Every other week is fine in a busy season. Group classes are available for friends,
                 siblings or a band that wants to work on harmony together.
               </p>
-              <div className="eyebrow reveal" style={{ marginBottom: 16 }}>
+              <h3 className="eyebrow reveal" style={{ marginBottom: 16 }}>
                 Students come from
-              </div>
+              </h3>
               <div className="press-strip reveal">
                 {NEIGHBOURHOODS.map((n) => (
                   <span key={n}>{n}</span>
@@ -268,9 +268,9 @@ export default function VoiceLessonsLosAngelesPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           {/*
             All five reviews, via the shared component, rather than the three
             hand-rolled cards that used to sit here. Three reasons, none cosmetic:
@@ -297,9 +297,9 @@ export default function VoiceLessonsLosAngelesPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             Starting out
-          </div>
+          </h2>
           <p
             className="reveal"
             style={{

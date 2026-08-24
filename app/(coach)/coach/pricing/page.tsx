@@ -149,6 +149,19 @@ export default function PricingPage() {
             Each card carries its own buy control — see PriceGrid's guards, which
             fail the build rather than render a price nobody can pay for. */}
         <section id="rates" className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
+          {/* A HEADING THAT IS DELIBERATELY NOT VISIBLE — one of only two on the
+              site, the other being the one above the accordion on /coach/faq.
+              This section carries the tier cards, and each card's name is an h3
+              (.tier-name in PriceGrid). With no h2 between them and the page h1
+              the outline jumped h1 → h3, which is a skipped level. Every other
+              page puts a visible .eyebrow label above its rate card — "Online
+              rates", "In-person rates" — but this page's h1 already says "What
+              lessons cost", so a visible label here would be the same sentence
+              twice and a change to what ships. .sr-only keeps the text in the
+              HTML and in the accessibility tree, which is all the outline needs.
+              Do not swap it for a visible heading, and do not delete it: the
+              h1 → h3 jump comes straight back. */}
+          <h2 className="sr-only">Lesson prices</h2>
           <ModeToggle
             online={<PriceGrid mode="online" />}
             inperson={<PriceGrid mode="inperson" footnote={<>{IN_PERSON_DAYS_SENTENCE}</>} />}
@@ -171,9 +184,9 @@ export default function PricingPage() {
             face: this is the plainest page on the site by design, and a review
             here is evidence rather than editorial. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 26 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 26 }}>
             Two students, in their own words
-          </div>
+          </h2>
           <div
             className="press-quotes-grid"
             /* Two cards, not three: auto-fit fills the row instead of leaving a
@@ -213,9 +226,9 @@ export default function PricingPage() {
           page of reading on a page of prices.
         */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 18 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 18 }}>
             Every lesson includes
-          </div>
+          </h2>
           <ul className="plain-points">
             <li>A held slot on a plan</li>
             <li>Live guitar or piano, not a backing track</li>

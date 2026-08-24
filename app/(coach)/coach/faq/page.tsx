@@ -41,6 +41,16 @@ export default function FaqPage() {
 
         <section className="block" style={{ paddingTop: 20 }}>
           <div style={{ maxWidth: 880 }}>
+            {/* The accordion's questions are h3 now (see FaqAccordion), which
+                needs an h2 above them or the outline jumps h1 → h3. There is no
+                visible label here and there should not be — the h1 is "Asked &
+                answered." and the accordion starts two lines below it, so a
+                visible section label would be a change to what ships. .sr-only
+                puts the text in the HTML and the accessibility tree without
+                moving a pixel. On /coach the same accordion sits under the
+                visible h2 "What people ask before they book.", so that route
+                needs nothing. */}
+            <h2 className="sr-only">Frequently asked questions</h2>
             <FaqAccordion faqs={FAQS} />
           </div>
         </section>

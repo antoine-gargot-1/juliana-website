@@ -540,8 +540,13 @@ footer {
   align-items: start;
 }
 /* Column headings — two or three words of set text at 22px, which is under the
-   display floor. Text face, 600. */
-.foot h4 {
+   display floor. Text face, 600.
+   h2 as well as h4 because the coach footer's columns are now h2: they were h4
+   directly under the page's last h2, which is a skipped level, and the pages
+   this footer sits on had no h3 in between to make it legal. The artist footer
+   is still h4 and is still styled by this same rule — the declarations are
+   identical for both, so neither side moves. */
+.foot h4, .foot h2 {
   font-family: var(--serif);
   font-weight: 600;
   font-size: var(--fs-lg);
@@ -2892,3 +2897,69 @@ form .submit-note {
      better than two half-width ones. Matches `form .row` at 920px. */
   .bform-optional-body .row { grid-template-columns: 1fr; }
 }
+
+/* ============================================================================
+   SEMANTIC HEADING RESET — §10.3 of docs/seo-audit.md
+   ----------------------------------------------------------------------------
+   Nine coaching pages shipped with exactly one <h1> and one <h2>, because every
+   section label on them was a <div className="eyebrow"> and every list-row
+   title a <span className="t">. Two of those pages are over 1,800 words. To a
+   crawler that is one undifferentiated block, and a screen-reader user cannot
+   navigate any of it by heading.
+
+   THE BLOCKER WAS THIS FILE. There was no heading margin reset anywhere in it,
+   so a div → h2 swap inherited the UA's 0.83em block margins and moved layout
+   on every page it touched. This section is that reset and nothing else.
+
+   IT CHANGES NO TYPE. No colour, no size, no family, no weight — .eyebrow and
+   .numbered .t already own all four and both already clear the floors this
+   stylesheet exists to enforce (.eyebrow is --sans 14px/600 in --ink-soft,
+   9.08:1; .numbered .t is 19px/500 in --ink). --display is not mentioned below,
+   so its 28px hard floor is untouched: the only element on these pages set in
+   Playfair is still the h1, still clamped by .svc-page-hero h1 / .lp-hero h1.
+
+   THE RULE IS: the class keeps owning the type, the element only carries the
+   outline. A promoted heading gets its UA margins zeroed and otherwise inherits
+   the exact box the div or span it replaced had — which in nearly every case is
+   an inline `marginBottom`, and an inline style beats this file, so the spacing
+   each page already shipped is the spacing it keeps.
+
+   Do not add type declarations here. A heading that needs a different size
+   needs a class, and that class has to honour the >=28px --display floor and
+   the >=19px body floor like every other rule above.
+   ============================================================================ */
+
+/* Section and sub-section labels. ~150 .eyebrow instances exist site-wide and
+   most are still divs or spans, correctly: a kicker above an h1, an attribution
+   under a quote, a rating next to a button, a tag. Only the instances that
+   genuinely label a section were promoted, so only those need the reset — and
+   .eyebrow itself is deliberately left alone, since it has callers on the
+   artist side that must not move. */
+h1.eyebrow,
+h2.eyebrow,
+h3.eyebrow,
+h4.eyebrow,
+h5.eyebrow,
+h6.eyebrow { margin: 0; }
+
+/* .video-primary-flag is `display: flex; align-items: center`, so its .eyebrow
+   is a flex item. A blockified block-level flex item and a blockified inline
+   one size and align identically, which is why the span → h2 swap inside that
+   flag is a no-op once the UA margins are gone. Nothing to add here; the rule
+   above already covers it. This comment exists so nobody "fixes" it later. */
+
+/* Row titles inside a .numbered list — the subsections under whichever section
+   label sits above the list. .numbered .t already sets display:block, 19px/500
+   in --ink and the 5px it wants underneath, so the UA's margin-block-start is
+   the only thing that is new when the span becomes a heading. */
+.numbered h2.t,
+.numbered h3.t,
+.numbered h4.t { margin-top: 0; }
+
+/* An accordion question is a heading with the disclosure button inside it,
+   which is the shape the ARIA authoring practices prescribe. The h3 is a box
+   only: .faq-q on the button still carries every type declaration, and the
+   button is already width:100%, so the row is pixel-identical. `font: inherit`
+   keeps the h3 from introducing a UA size that a future edit to .faq-q could
+   accidentally start inheriting. */
+.faq-item > h3 { margin: 0; font: inherit; color: inherit; }

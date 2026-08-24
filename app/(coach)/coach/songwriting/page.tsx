@@ -138,13 +138,35 @@ export default function SongwritingPage() {
           <RiskReversal />
         </section>
 
+        {/*
+          THE OUTLINE ON THIS PAGE IS LOAD-BEARING. DO NOT PUT THE DIVS BACK.
+          ---------------------------------------------------------------------
+          This is 1,830 words and until now it shipped one h1 and one h2, because
+          every section label below was a <div className="eyebrow"> and every row
+          title in the numbered lists a <span className="t">. To a crawler that
+          is one undifferentiated block; to a screen reader it is a page with no
+          landmarks. Finding #9 in docs/seo-audit.md, written up in its §10.3 as
+          the highest-value structural fix left on the site.
+
+          The outline is now: h1 (the page title, the only Playfair on the page)
+          → h2 per section → h3 per row inside a section's list, plus the h3s
+          PriceGrid emits for the tier names, which now nest under the "Songwriting
+          rates" h2 instead of jumping straight from the h1.
+
+          It is a semantics change and nothing else. .eyebrow and .numbered .t
+          still own every type declaration, and app/styles.css got a heading
+          margin reset — the SEMANTIC HEADING RESET section at the end of it — so
+          the UA's 0.83em block margins cannot reintroduce themselves. If you add
+          a section here, label it with an h2 carrying .eyebrow; if you add a row
+          to one of these lists, its title is an h3 carrying .t.
+        */}
         {/* The setlist is the proof, and it is the reason this component is used
             here with chapters on: seven of the ten songs in that set are hers.
             "I write songs" is an adjective; a tracklist is evidence. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="video-primary-flag reveal">
             <span className="line" />
-            <span className="eyebrow">A set of mostly my own songs</span>
+            <h2 className="eyebrow">A set of mostly my own songs</h2>
           </div>
           <div className="split">
             <VideoFacade
@@ -175,15 +197,15 @@ export default function SongwritingPage() {
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             How the work tends to go
-          </div>
+          </h2>
           <ul className="numbered">
             {ARC.map((a, i) => (
               <li key={a.t} className="reveal" style={{ '--rd': `${i * 50}ms` }}>
                 <span className="n">{String(i + 1).padStart(2, '0')}</span>
                 <span>
-                  <span className="t">{a.t}</span>
+                  <h3 className="t">{a.t}</h3>
                   {a.d}
                 </span>
               </li>
@@ -200,9 +222,9 @@ export default function SongwritingPage() {
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div className="split">
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Who this is for
-              </div>
+              </h2>
               <ul className="numbered">
                 {FOR_WHO.map((f, i) => (
                   <li key={f} className="reveal" style={{ '--rd': `${i * 50}ms` }}>
@@ -213,9 +235,9 @@ export default function SongwritingPage() {
               </ul>
             </div>
             <div>
-              <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+              <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Songwriting and voice together
-              </div>
+              </h2>
               <p className="prose">
                 Most students end up doing both, and the rate card doesn&rsquo;t care: a 60-minute lesson
                 costs the same whether we spend it on technique, on a lyric, or half on each. Writers
@@ -253,9 +275,9 @@ export default function SongwritingPage() {
         </section>
 
         <section id="rates" className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 24 }}>
             Songwriting rates
-          </div>
+          </h2>
           <p className="lede-plain" style={{ marginBottom: 26, marginTop: 0 }}>
             The price is for the lesson, not the subject.
           </p>
@@ -274,9 +296,9 @@ export default function SongwritingPage() {
             page. All five, with the aggregate line the component renders over
             the reviews it was actually given. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
+          <h2 className="eyebrow reveal" style={{ marginBottom: 30 }}>
             What students say
-          </div>
+          </h2>
           <TestimonialCarousel testimonials={TESTIMONIALS} />
         </section>
 
