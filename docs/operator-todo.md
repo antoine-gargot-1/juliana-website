@@ -9,10 +9,16 @@ Nothing here can be done from the codebase — that work is finished and deploye
 
 ## A. Before a single dollar of ad spend
 
+**Status: A1 and A2 done (2026-08-14). Remaining: A3–A8.**
+
+The measurement pipeline is now confirmed working end to end, and conversions are
+no longer being misattributed to Stripe. A3 is the next thing that becomes
+unrecoverable if skipped, because custom dimensions do not backfill.
+
 These are cheap and they gate everything. Spending before A is done buys traffic you
 cannot measure and trains Smart Bidding on nothing.
 
-### A1. Confirm GA4 actually receives a conversion ⏱ 5 min
+### A1. Confirm GA4 actually receives a conversion — ✅ DONE 2026-08-14
 **GA4 → Reports → Realtime.** Book a test assessment on the live site (use a real card;
 nothing is charged) and watch for `assessment_booked`.
 
@@ -22,7 +28,7 @@ nothing is charged) and watch for `assessment_booked`.
   wrong secret, so silence is indistinguishable from success. Without this you may spend a
   month reporting zero conversions and never know why.
 
-### A2. Add referral exclusions ⏱ 2 min — **launch blocker**
+### A2. Add referral exclusions — ✅ DONE 2026-08-14
 **GA4 → Admin → Data Streams → your web stream → Configure tag settings → List unwanted
 referrals.** Add all four:
 
