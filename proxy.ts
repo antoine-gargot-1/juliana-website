@@ -5,6 +5,48 @@ import { NextResponse, type NextRequest } from 'next/server';
  * live write in somebody else's system of record.
  *
  * ===========================================================================
+ * WHY THIS FILE IS CALLED proxy.ts
+ * ===========================================================================
+ * It was middleware.ts. Next 16.3 deprecated the `middleware` file convention in
+ * favour of `proxy`, and printed the warning on every build; this is the output of
+ * `@next/codemod middleware-to-proxy`, which renamed the file and the exported
+ * function and changed nothing else in it. Same position in the request path,
+ * same `config.matcher` contract, and — see RUNTIME below — a different runtime,
+ * which is the one thing the rename is not cosmetic about. DO NOT recreate
+ * middleware.ts alongside this file: two files claiming the same slot is
+ * undefined behaviour, and the one Next ignores is the one you will spend an
+ * afternoon debugging.
+ *
+ * WHERE IT SHOWS UP IN A BUILD, because this trips people up: `next build` prints
+ * `ƒ Proxy (Middleware)`, and the compiled matchers are in
+ * .next/server/functions-config-manifest.json under `/_middleware`. They are NOT
+ * in .next/server/middleware-manifest.json, which is now empty — that file only
+ * carries an edge-runtime layer. An empty middleware-manifest.json is expected
+ * here and is not evidence that this file stopped being wired up.
+ *
+ * ===========================================================================
+ * THE PRIMARY RATE LIMIT IS NOT HERE. IT IS AT CLOUDFLARE, AND IT IS LIVE.
+ * ===========================================================================
+ * Cloudflare sits in front of this site and now enforces, per IP, at the edge:
+ *
+ *   /api/stripe/checkout   5 requests / 10s
+ *   /api/stripe/plan       5 requests / 10s
+ *   /coach/book/hold       5 requests / 10s
+ *
+ * Both webhooks are excluded there for the same reason they are exempt below.
+ * That rule is the control that actually holds: it counts every request for a
+ * path in one place, before any function starts, so it is correct under
+ * concurrency and costs no compute.
+ *
+ * THIS FILE IS DEFENCE IN DEPTH BENEATH IT — a second, weaker, per-instance
+ * limiter, not the primary one. It stays for two reasons. (a) The edge rule lives
+ * in a dashboard and can be deleted or misconfigured by someone who never reads
+ * this repo. (b) A request that reaches Vercel directly — a preview deployment
+ * URL, or anything that bypasses Cloudflare — never passes through that rule at
+ * all. Read what follows as a circuit breaker, and never as the reason a path is
+ * considered protected.
+ *
+ * ===========================================================================
  * BE CLEAR ABOUT WHAT THIS DOES AND DOES NOT ACHIEVE
  * ===========================================================================
  * The counters below live in a module-level Map, which means they live in ONE
@@ -20,27 +62,20 @@ import { NextResponse, type NextRequest } from 'next/server';
  *              counter. There is no coordination and there cannot be without a
  *              shared datastore.
  *
- * THE DURABLE FIX IS AT THE EDGE, NOT HERE. A Vercel Firewall rule (or a
- * Cloudflare rate-limiting rule — Cloudflare is already in front of this site)
- * counts every request for a path in one place, before it reaches a function, so
- * it is both correct under concurrency and free of compute cost. That is where
- * the real limit belongs:
- *
- *   /api/stripe/*      5 requests / 60s / IP
- *   /coach/book/hold   10 requests / 60s / IP
- *
- * This file is defence in depth UNDERNEATH that rule, and it is deliberately not
- * a substitute for it. It exists because (a) the edge rule lives in a dashboard
- * and can be deleted or misconfigured by someone who never reads this repo, and
- * (b) a request that reaches Vercel directly — a preview deployment URL, or
- * anything that bypasses Cloudflare — never passes through the Cloudflare rule at
- * all. A per-instance window is a poor limiter and a decent circuit breaker.
+ * A per-instance window is a poor limiter and a decent circuit breaker. The
+ * Cloudflare rule above is the one that is correct under concurrency; this is the
+ * one that still applies when Cloudflare is out of the path.
  *
  * NO REDIS, NO KV, AND THAT IS A DELIBERATE OMISSION. A correct distributed
  * limiter needs a shared counter, which means provisioning and paying for
  * infrastructure. That is an operator's decision, not something a security fix
- * should quietly commit the project to, and the edge rule above solves the same
- * problem without any new service.
+ * should quietly commit the project to, and the edge rule already in place solves
+ * the same problem without any new service.
+ *
+ * The windows below are deliberately longer and looser than Cloudflare's 10s
+ * window. They are not trying to duplicate it — a burst that the edge rule sees
+ * never reaches here at all, so what is left for this file is the slow grind the
+ * short window misses, and the case where there is no edge rule in front.
  *
  * ===========================================================================
  * WHY THE STRIPE WEBHOOK IS EXEMPT
@@ -59,11 +94,26 @@ import { NextResponse, type NextRequest } from 'next/server';
  * costs one hash and nothing else. The same reasoning covers the Cal.com webhook.
  *
  * ===========================================================================
- * RUNTIME
+ * RUNTIME — NODE.JS NOW, AND NOT BY CHOICE
  * ===========================================================================
- * Edge, the middleware default. Nothing here touches `node:crypto`, the Stripe
- * SDK, or the filesystem, which is what keeps this cheap enough to sit in front
- * of the funnel.
+ * This used to run on the Edge runtime, which was middleware's default. Proxy
+ * defaults to the Node.js runtime instead, and there is no opting out: the
+ * `runtime` segment config is not available in a proxy file and setting it throws.
+ * The codemod strips it for that reason.
+ *
+ * What that changes, honestly:
+ *   - Cost and latency. This is now a Node.js function invocation in front of
+ *     every matched request rather than an edge invocation. Keeping this file
+ *     dependency-free is still the right instinct, but the reason has moved: it
+ *     is no longer "stay eligible for edge", it is "keep the cold start short",
+ *     because a cold start here is now in front of the checkout POST.
+ *   - The counters. Still a module-level Map, still one instance's memory, so
+ *     everything under "WHAT THIS DOES AND DOES NOT ACHIEVE" holds unchanged —
+ *     it is the same shape of limiter over a different instance pool.
+ *   - What is now *possible* here: `node:crypto`, the Stripe SDK, the filesystem.
+ *     Do not take the invitation. This file is on the critical path of every
+ *     payment; a signature check or a Stripe call belongs in the route handler
+ *     that already does it, where a failure has somewhere to be reported.
  */
 
 /** How a matched path is limited. `null` means deliberately exempt. */
@@ -203,7 +253,7 @@ function hit(key: string, limit: number, windowMs: number): { allowed: boolean; 
   return { allowed: true, retryAfter: 0 };
 }
 
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
   const rule = ruleFor(pathname);
   if (!rule) return NextResponse.next();
@@ -218,9 +268,9 @@ export function middleware(request: NextRequest): NextResponse {
    * that the Cloudflare dashboard does not already give in a better form.
    */
   console.warn(
-    `[middleware] rate limited ${rule.bucket} (>${rule.limit} req/${rule.windowMs / 1000}s from one ` +
-      'client on one instance). This is a per-instance window — if this is a real attack, add a ' +
-      'Vercel Firewall or Cloudflare rate-limit rule, which is the control that actually holds.',
+    `[proxy] rate limited ${rule.bucket} (>${rule.limit} req/${rule.windowMs / 1000}s from one ` +
+      'client on one instance). This is the weaker per-instance limiter, so a hit here means the ' +
+      'traffic got past the Cloudflare edge rule or never went through it — check that rule first.',
   );
 
   const headers = {
@@ -253,9 +303,14 @@ export function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   /*
-   * Only the write paths. Deliberately NOT a site-wide matcher: middleware runs
-   * on every matched request, and putting it in front of the marketing pages
-   * would add latency and an extra failure mode to routes that write nothing.
+   * Only the write paths. Deliberately NOT a site-wide matcher: this runs on
+   * every matched request, and putting it in front of the marketing pages would
+   * add latency and an extra failure mode to routes that write nothing.
+   *
+   * UNCHANGED BY THE middleware → proxy RENAME. `config.matcher` means the same
+   * thing under the proxy convention, and these three patterns are the same three
+   * the Cloudflare rule fronts. Both webhooks are matched here and then exempted
+   * in ruleFor() rather than excluded by pattern — see the header for why.
    *
    * /api/cron/review-requests is absent on purpose — it is bearer-authenticated
    * with CRON_SECRET and called by Vercel Cron, and a 429 there would silently

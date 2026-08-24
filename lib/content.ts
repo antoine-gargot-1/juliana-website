@@ -89,11 +89,45 @@ export type Service = {
   bullets: string[];
   lead: string;
 };
+/** How the lessons in a review were delivered. */
+export type DeliveryMode = 'online' | 'in-person';
+
+/** Who wrote the review — the student, or the parent of one. */
+export type ReviewerRole = 'student' | 'parent';
+
+/**
+ * One student review.
+ *
+ * THE FIRST FOUR FIELDS ARE VERBATIM AND LOAD-BEARING TWICE. lib/schema.ts emits
+ * each record as a schema.org `Review`, and AGGREGATE_RATING below derives its
+ * `count` from the length of the array. A reworded quote is a misquote in a rich
+ * result; a review added, removed or edited here changes what Google is told.
+ *
+ * EVERYTHING AFTER THEM IS OPTIONAL REVIEWER DETAIL, and today every one of the
+ * five records is missing all of it. That is deliberate and it is not a gap to
+ * tidy up: identity-descriptive detail ("Luis · songwriting · 8 months · online")
+ * measurably outperforms the same words unattributed, which is exactly why
+ * inventing any of it would be fabricating a testimonial. The fields exist so
+ * that the day Juliana supplies the real answers, adding them to
+ * content/coach.json is the whole job — no component, type or schema change.
+ * See `_testimonialsNote` and `_pendingFromOperator` in content/coach.json.
+ *
+ * components/coach/TestimonialCarousel.tsx renders whichever of these are
+ * present and omits the rest, so a record with none of them looks exactly as it
+ * does today. Partial detail is fine and expected — three of these may arrive
+ * for one review and one for another.
+ */
 export type Testimonial = {
   quote: string;
   name: string;
   rating: number;
   datePublished: string;
+  /** What they studied, lowercase, as a reader would say it: "voice", "songwriting". */
+  discipline?: string;
+  /** Whole months of lessons at the time of the review. Omitted, never guessed. */
+  monthsStudied?: number;
+  deliveryMode?: DeliveryMode;
+  reviewerRole?: ReviewerRole;
 };
 export type Faq = { q: string; a: string };
 export type Credit = { what: string; em: string };
@@ -272,7 +306,89 @@ export function watchUrl(video: Video, { start = 0 } = {}) {
 /* ---------------- coach ---------------- */
 
 export const SERVICES = coachJson.services as Service[];
-export const TESTIMONIALS = coachJson.testimonials as Testimonial[];
+
+/**
+ * A testimonial row as it sits in content/coach.json, before validation.
+ *
+ * The enum fields are typed `string` here rather than as their unions on purpose:
+ * JSON gives TypeScript `string`, not `'online' | 'in-person'`, so declaring the
+ * union at this boundary would make the cast below fail to compile the moment
+ * somebody adds a real value to the file — turning a content edit into a code
+ * edit, which is the one thing this shape exists to avoid. `monthsStudied`
+ * tolerates `"8"` as well as `8` for the same reason. Both are then checked, and
+ * a bad value is a build failure rather than a wrong string on the page.
+ */
+type RawTestimonial = {
+  quote: string;
+  name: string;
+  rating: number;
+  datePublished: string;
+  discipline?: string;
+  monthsStudied?: number | string;
+  deliveryMode?: string;
+  reviewerRole?: string;
+};
+
+const DELIVERY_MODES: readonly DeliveryMode[] = ['online', 'in-person'];
+const REVIEWER_ROLES: readonly ReviewerRole[] = ['student', 'parent'];
+
+/**
+ * Field-by-field pick and validate, same reasoning as `toVideo` above: this goes
+ * into the RSC payload and into JSON-LD, so a maintainer note added to a row
+ * (`_comment`, a consent record, an internal source) must not be published along
+ * with it. Only the contract's own keys survive.
+ *
+ * Absent stays absent. An empty string, a blank, a zero or a null is treated as
+ * absent too, because "" is what a spreadsheet export puts in a cell nobody
+ * filled in, and rendering it would produce the dangling separator this shape is
+ * meant to make impossible.
+ */
+function toTestimonial(raw: RawTestimonial, index: number): Testimonial {
+  const where = `content/coach.json testimonials[${index}] (${raw.name})`;
+
+  const discipline = raw.discipline?.trim();
+
+  const months = raw.monthsStudied == null ? null : Number(raw.monthsStudied);
+  if (months !== null && (!Number.isFinite(months) || months < 0)) {
+    throw new Error(
+      `${where}: monthsStudied is "${raw.monthsStudied}". It must be a whole number of ` +
+        'months, or absent. Do not put a range or a word here — the page renders it as ' +
+        '"8 months" and the number has to be one Juliana actually gave you.',
+    );
+  }
+
+  const deliveryMode = raw.deliveryMode?.trim() || undefined;
+  if (deliveryMode && !DELIVERY_MODES.includes(deliveryMode as DeliveryMode)) {
+    throw new Error(
+      `${where}: deliveryMode is "${deliveryMode}". It must be one of ` +
+        `${DELIVERY_MODES.join(' | ')}, or absent.`,
+    );
+  }
+
+  const reviewerRole = raw.reviewerRole?.trim() || undefined;
+  if (reviewerRole && !REVIEWER_ROLES.includes(reviewerRole as ReviewerRole)) {
+    throw new Error(
+      `${where}: reviewerRole is "${reviewerRole}". It must be one of ` +
+        `${REVIEWER_ROLES.join(' | ')}, or absent. "parent" means the parent of the ` +
+        'student wrote the review.',
+    );
+  }
+
+  return {
+    quote: raw.quote,
+    name: raw.name,
+    rating: raw.rating,
+    datePublished: raw.datePublished,
+    ...(discipline ? { discipline } : {}),
+    ...(months && months > 0 ? { monthsStudied: Math.round(months) } : {}),
+    ...(deliveryMode ? { deliveryMode: deliveryMode as DeliveryMode } : {}),
+    ...(reviewerRole ? { reviewerRole: reviewerRole as ReviewerRole } : {}),
+  };
+}
+
+export const TESTIMONIALS: Testimonial[] = (coachJson.testimonials as RawTestimonial[]).map(
+  toTestimonial,
+);
 export const FAQS = coachJson.faqs as Faq[];
 export const CREDITS = coachJson.credits as Credit[];
 

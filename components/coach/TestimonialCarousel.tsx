@@ -109,6 +109,25 @@ const DATE: CSSProperties = {
   color: 'var(--ink-soft)',
 };
 
+/**
+ * The reviewer-detail line: "songwriting · 8 months · online".
+ *
+ * Same size and colour as the date beneath it, deliberately — this is attribution
+ * rather than a claim of its own, and it should read as the quiet second line of
+ * a byline. `textTransform: 'none'` is defensive: NAME above uppercases the
+ * <cite>, and if that ever moves up to the <figcaption> this line must not
+ * follow it into SHOUTING ABOUT A STUDENT'S LESSON HISTORY.
+ */
+const DETAIL: CSSProperties = {
+  display: 'block',
+  marginTop: '0.375rem',
+  fontSize: '0.8125rem',
+  fontWeight: 400,
+  letterSpacing: 'normal',
+  textTransform: 'none',
+  color: 'var(--ink-soft)',
+};
+
 const SUMMARY: CSSProperties = {
   margin: '0 0 2rem',
   fontSize: '0.9375rem',
@@ -169,6 +188,43 @@ function StarGlyphs({ value }: { value: number }) {
 /** Quotes are stored wrapped in quotation marks; the markup supplies its own. */
 const stripQuotes = (s: string) => s.replace(/^["“]|["”]$/g, '').trim();
 
+/**
+ * "songwriting · 8 months · online · parent of a student", from whichever of the
+ * optional fields on the record actually exist — and `null` when none do.
+ *
+ * WHY THIS EXISTS AT ALL: a review that says who is speaking and what they
+ * studied is materially more persuasive than the same sentence unattributed, and
+ * that is the one testimonial variable with real quantitative support behind it.
+ * None of the five records in content/coach.json carries any of it yet, because
+ * none of it is known and guessing would be inventing a testimonial. This builds
+ * the line from what is there so that the day the real answers are added to the
+ * JSON they appear on the page with no code change at all. See
+ * `_pendingFromOperator` in content/coach.json for exactly what to ask her for.
+ *
+ * WHY A FILTERED JOIN RATHER THAN CONDITIONAL SEPARATORS: joining only the parts
+ * that survive the filter makes a dangling middot, a double middot, a leading
+ * separator and an "undefined" all unrepresentable, rather than four cases to
+ * remember. Absent fields are absent; there is nothing to lay out around them.
+ *
+ * ORDER IS FIXED, not source order: what they studied, then for how long, then
+ * how, then who is talking. It reads as a sentence in that order and it stays
+ * comparable across cards, which is the entire point of putting it on all of
+ * them. `reviewerRole` sits last because it qualifies the name, and 'student' is
+ * still rendered rather than assumed — a review that says it is from the student
+ * is doing work that a review silent on the question is not.
+ */
+function reviewerDetail(t: Testimonial): string | null {
+  const parts = [
+    t.discipline,
+    t.monthsStudied ? `${t.monthsStudied} ${t.monthsStudied === 1 ? 'month' : 'months'}` : null,
+    // 'in-person' is the data value; "in person" is the English one.
+    t.deliveryMode === 'in-person' ? 'in person' : t.deliveryMode,
+    t.reviewerRole === 'parent' ? 'parent of a student' : t.reviewerRole,
+  ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0);
+
+  return parts.length ? parts.join(' · ') : null;
+}
+
 export function TestimonialCarousel({ testimonials }: { testimonials: Testimonial[] }) {
   if (!testimonials.length) return null;
 
@@ -191,6 +247,7 @@ export function TestimonialCarousel({ testimonials }: { testimonials: Testimonia
       <ul style={GRID}>
         {testimonials.map((t) => {
           const when = monthYear(t.datePublished);
+          const detail = reviewerDetail(t);
           return (
             <li key={`${t.name}-${t.datePublished}`} style={CARD}>
               <figure style={FIGURE}>
@@ -203,6 +260,7 @@ export function TestimonialCarousel({ testimonials }: { testimonials: Testimonia
                 </blockquote>
                 <figcaption>
                   <cite style={NAME}>{t.name}</cite>
+                  {detail ? <span style={DETAIL}>{detail}</span> : null}
                   {when ? (
                     <time dateTime={t.datePublished} style={DATE}>
                       {when}
