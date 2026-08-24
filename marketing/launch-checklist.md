@@ -2,7 +2,16 @@
 
 Gated and ordered. **Nothing below gate 0 spends money until gate 0 passes.**
 
-Total committed budget: **$950/mo**, all Search, one campaign live at a time to start.
+**Launch budget: $400/mo — Campaign 1 only.** Operator decision, revised down from $500 on
+2026-08-23. All Search. Campaigns 2–4 stay paused; the $950/mo figure elsewhere in these docs
+is the scale-up scenario, not what the account will spend at launch.
+
+At $400/mo the honest goal of months 1–3 is **not** a working CPA. It is two measurements:
+what a click actually costs on these keywords, and what fraction of clicks book an
+assessment. Both are learnable at this budget. The assessment→plan rate — the 45% the whole
+LTV model rests on — is **not** learnable here: 8–16 assessments over three months puts the
+confidence interval on that rate at roughly ±28 points. Do not conclude anything about it
+from this test.
 
 ---
 
@@ -109,11 +118,20 @@ This is arithmetic on assumed inputs, not a forecast. **The CPCs and rates below
 placeholders to be replaced with real data after week 2.**
 
 ```
-$500/mo  = $16.44/day
-If CPC lands at $5.00  → ~3.3 clicks/day → ~100 clicks/month
-If 5% of those book    → ~5 booked assessments/month → ~$100 per booked assessment
-If 2% of those book    → ~2 booked assessments/month → ~$250 per booked assessment
+$400/mo  = $13.16/day, Maximize Clicks with a $3.00 CPC ceiling
+If CPC lands at $3.00  → ~4.4 clicks/day → ~133 clicks/month
+If 4% of those book    → ~5.3 booked assessments/month → ~$75 per booked assessment
+If 2% of those book    → ~2.7 booked assessments/month → ~$150 per booked assessment
 ```
+
+The $3.00 ceiling is the load-bearing assumption and it is unverified. If the first-page bid
+on `vocal coach los angeles` is above $3, impressions will be near zero rather than cheap —
+a starved campaign looks identical to a paused one in the first few days. **Check Keyword
+Planner before launch**, and if impression share is under ~10% after five days, raise the
+ceiling to $4.50 rather than waiting for the algorithm to solve it.
+
+Note the second line no longer breaches the $230 ceiling, which is the point of the bid cap:
+capping CPC moves the pessimistic case from failing the economics to merely being slow.
 
 Note what that second line now means: at a 2% booking rate the campaign lands at **$250,
 which is above the $230 ceiling.** That is the useful reading of this arithmetic — the

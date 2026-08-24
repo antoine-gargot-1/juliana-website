@@ -9,11 +9,21 @@ Nothing here can be done from the codebase — that work is finished and deploye
 
 ## A. Before a single dollar of ad spend
 
-**Status: A1 and A2 done (2026-08-14). Remaining: A3–A8.**
+**Status: A1–A4 done (A1/A2 2026-08-14, A3/A4 2026-08-23). Remaining: A5, A6, A8.**
 
-The measurement pipeline is now confirmed working end to end, and conversions are
-no longer being misattributed to Stripe. A3 is the next thing that becomes
-unrecoverable if skipped, because custom dimensions do not backfill.
+The measurement pipeline is confirmed working end to end, conversions are no longer
+misattributed to Stripe, and the property config is now correct. **A5 is next.**
+
+A3 and A4 were finished through the GA4 Admin API rather than the UI, against property
+`547188265` using the `ga4-admin@juliana-bot-2026.iam.gserviceaccount.com` service account
+(impersonated — no key file exists, and org policy forbids creating one). Two things were
+also fixed in passing that the UI would not have surfaced:
+
+- **Event data retention was `TWO_MONTHS`**, the GA4 default. Raised to `FOURTEEN_MONTHS`.
+  Average student lifetime is ~9 months, so at two months no cohort could ever be looked at.
+- **One dimension was registered against `first_field_id`**, but the code sends `first_field`
+  (`components/coach/BookingForm.tsx`). It would have read `(not set)` forever. `parameterName`
+  is immutable in GA4, so it was archived and recreated.
 
 These are cheap and they gate everything. Spending before A is done buys traffic you
 cannot measure and trains Smart Bidding on nothing.
@@ -44,26 +54,41 @@ session, so **every conversion is credited to "checkout.stripe.com / referral" i
 the ad click that paid for it.** Your campaign shows the click and none of the conversion.
 The failure looks like organic performing well, not like a bug.
 
-### A3. Register custom dimensions ⏱ 5 min — **not retroactive**
-**GA4 → Admin → Custom definitions → Create custom dimension** (event-scoped):
+### A3. Register custom dimensions — ✅ DONE 2026-08-23
+Seven event-scoped dimensions, all verified against the parameter names the code actually
+sends:
 
 | Parameter | Dimension name | Why |
 |---|---|---|
 | `mode` | Lesson mode | online LTV $2,520 vs in-person $3,240 — a blended CPA is a wrong number |
-| `lookup_key` | Tier | which plan actually sells |
+| `lookup_key` | Price lookup key | which plan actually sells |
 | `step` | Booking step | where people drop out of the 3-step form |
+| `step_name` | Booking step name | readable labels instead of 1/2/3 |
+| `furthest_step` | Furthest booking step | separates "never got past screen 1" from "reached the calendar and backed out" |
+| `first_field` | Blocked field | turns "drops on step 1" into "drops on guardian email" |
+| `is_minor` | Is minor | minors convert differently and the guardian is the buyer |
 
-⚠️ GA4 will not report on a custom parameter until it is registered, and **registration
-does not backfill.** Every day of spend before this is a day you cannot slice.
+⚠️ Registration **does not backfill**, which is why this had to precede spend. It now does.
 
-### A4. Mark key events, and mark the right ones ⏱ 5 min
-**GA4 → Admin → Events → mark as key event:** `assessment_booked`, `plan_started`,
-`pack_purchased`.
+### A4. Mark key events, and mark the right ones — ✅ DONE 2026-08-23
+`assessment_booked`, `plan_started`, `pack_purchased` — all `ONCE_PER_EVENT`, no default
+value so the real dollar amounts from `lib/ga-server.ts` come through unchanged.
 
-**Do NOT mark** `assessment_booked_client`, `pack_purchased_client`, `plan_started_client`.
-Those are browser-side mirrors that exist to measure how much tracking the browser loses.
-⚠️ Marking them double-counts every conversion, and Smart Bidding would bid on twice the
-real volume at twice the real value — which looks like success.
+Created through the Admin API, which sidesteps a UI limitation worth knowing about: GA4 now
+marks key events by starring a row in the Events list, and **an event only appears there once
+it has fired.** `plan_started` and `pack_purchased` had never fired in live, so they were
+unstarrable through the UI.
+
+**`assessment_booked_client`, `pack_purchased_client`, `plan_started_client` are NOT marked**,
+and must stay unmarked. They are browser-side mirrors that exist to measure how much tracking
+the browser loses. ⚠️ Marking them double-counts every conversion, and Smart Bidding would bid
+on twice the real volume at twice the real value — which looks like success.
+
+⚠️ **Three key events predate us and nothing in the codebase sends any of them:** `purchase`
+(a GA4 default, not deletable), `qualify_lead` and `close_convert_lead` (created by GA4's
+property-setup suggestions). They are inert in GA4 but not in Google Ads — they appear in the
+conversion import list looking legitimate, and importing one as Primary would leave Smart
+Bidding with zero conversions indefinitely. **Import only the three named above.**
 
 ### A5. Create the Google Ads account and link it ⏱ 30 min
 - Create the account. **Do not build campaigns by hand** — the CSVs are ready.
@@ -91,13 +116,17 @@ $600 CAC → $230 CPA maximum
 4.2× ratio; loosening it is how paid acquisition quietly stops working. Tell me which and I
 will make every document agree.
 
-### A8. Working capital ⏱ decision
-First bill lands ~1 month after the click. Zero churn → cumulative revenue passes
-cumulative ad spend in **month 4**. At a 25% plan rate → **month 6**. With realistic churn
-→ never.
+### A8. Working capital ⏱ decision — **revised for the $400/mo budget**
+First bill lands ~1 month after the click. Zero churn → cumulative revenue passes cumulative
+ad spend in **month 4**. At a 25% plan rate → **month 6**. With realistic churn → never.
 
-**Have $1,500–3,000 available before starting.** ⚠️ Otherwise you stop spending in month 2,
-right when the bidding has finally learned something, and lose the learning.
+**Have $1,200–1,600 available before starting** — four months of $400 plus the Cal.com seat.
+Down from the $1,500–3,000 figure, which was sized for $950/mo.
+
+⚠️ The failure mode is unchanged and is not about running out of money: it is stopping in
+month 2, right when the account has finally accumulated enough conversions to switch off the
+bid cap, and throwing that learning away. At $400/mo the learning is the entire return on the
+first three months — there will not be enough conversion volume for anything else.
 
 ---
 

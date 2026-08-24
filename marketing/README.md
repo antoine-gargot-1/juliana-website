@@ -141,16 +141,27 @@ Verified against the platform limits: sitelink link text ≤ 25, sitelink descri
 
 | Campaign | Budget | Geo | Landing page | Launch |
 |---|---|---|---|---|
-| `Search - LA Local` | $500/mo · $16.44/day | LA + 15 mi radius, Presence | `/vocal-coach-los-angeles` | **Now** |
+| `Search - LA Local` | **$400/mo · $13.16/day** | LA + 15 mi radius, Presence | `/vocal-coach-los-angeles` | **Now** |
 | `Search - Songwriting US` | $250/mo · $8.22/day | US, LA excluded | `/online-songwriting-lessons` | After gate 5 |
 | `Search - Online Voice US` | $150/mo · $4.93/day | US, LA excluded | `/online-singing-lessons` | After gate 5 |
 | `Search - Brand` | $50/mo · $1.64/day | US | `/` | After gate 5 |
 
-$16.44 + $8.22 + $4.93 + $1.64 = **$31.23/day × 30.4 = $949.39/mo**. Google Ads budgets are
-daily and monthly spend is capped at daily × 30.4, which is where those decimals come from.
+**Actual launch spend is $13.16/day — $400/mo — because only Campaign 1 is enabled.** The
+$949.39/mo total ($13.16 + $8.22 + $4.93 + $1.64 = $28.95/day × 30.4) is the fully-unpaused
+scale-up figure and is not what the account will spend. Google Ads budgets are daily and
+monthly spend is capped at daily × 30.4, which is where the decimals come from.
 
-Ad groups: `LA Vocal Coach` (12 kw) · `LA Singing Lessons` (10) · `LA Clases de Canto ES` (9)
-· `Songwriting` (11) · `Online Voice` (11) · `Brand` (9).
+Campaign 1 runs **Maximize Clicks with a $3.00 CPC ceiling**, not Maximize Conversions.
+Maximize Conversions accepts no bid cap, and at $13.16/day a single $12 click is most of the
+day's budget — one click a day teaches nothing. The keyword list is exact + phrase only, so
+intent is bounded by the keywords rather than by the bid, which is what makes a cheap-click
+strategy safe here. Move to Maximize Conversions at roughly 15 accumulated conversions.
+Target CPA needs 30 conversions in 30 days and at this budget will probably never be
+reachable — treat tCPA as out of scope until the budget grows.
+
+Ad groups: `LA Vocal Coach` (12 kw) · `LA Singing Lessons` (10) · `LA Clases de Canto ES`
+(9, **paused at launch** — English landing page) · `Songwriting` (11) · `Online Voice` (11) ·
+`Brand` (9).
 
 **Search only. No Display, no Discovery, no Performance Max.** At $16/day PMax would spend
 the whole budget on cheap Display and YouTube placements before it accumulated enough

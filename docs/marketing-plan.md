@@ -180,15 +180,23 @@ and YouTube before it learned anything, so you would fund the education and neve
 the GBP to the ads account.** A location asset publishes an address, a map pin, or a
 distance-to-you. Lessons happen in a private residence.
 
-### Gate E — first spend. Campaign 1 only, $500/mo.
+### Gate E — first spend. Campaign 1 only, $400/mo.
 
-`Search - LA Local` at $16.44/day. Maximize Conversions, no target, weeks 1–4, untouched. Check
-ad approvals within 24 hours — the headlines naming **Amanda Miguel** can trip the trademark
-filter even though the credit is factual (`content/coach.json`); `Toured With a Latin Star` is
-already in the rotation as the drop-in replacement.
+`Search - LA Local` at **$13.16/day, Maximize Clicks with a $3.00 CPC ceiling**, untouched for
+six weeks. Check ad approvals within 24 hours — the headlines naming **Amanda Miguel** can trip
+the trademark filter even though the credit is factual (`content/coach.json`); `Toured With a
+Latin Star` is already in the rotation as the drop-in replacement. The Spanish ad group is
+paused: its landing page is English.
 
-Note the cash reality: for the first ~6 weeks the account spends **$500/mo, not $950**. The full
-$950 only arrives once gate 5 of `launch-checklist.md` opens Campaigns 2–4.
+**Revised 2026-08-23, operator decision: $400/mo, down from $500.** That change forced the bid
+strategy too. Maximize Conversions accepts no bid cap, and at $13.16/day one $12 click is most
+of the day — a campaign buying a single click a day generates no learnable signal at all. The
+cap converts the same money into ~4 clicks/day. It is safe here only because the keyword list
+is exact + phrase, so intent comes from the keywords rather than from the bid.
+
+Note the cash reality: the account spends **$400/mo, not $950**. The $950 figure throughout this
+document is the fully-unpaused scale-up scenario and arrives only once gate 5 of
+`launch-checklist.md` opens Campaigns 2–4.
 
 ### Gate F — Campaigns 2–4, one at a time, two weeks apart.
 
@@ -533,7 +541,7 @@ they are correct — do not rewrite them, do them. This adds the site and proof 
 
 | Order | Item | Owner | Time |
 |---|---|---|---|
-| 1 | **Search terms, last 7 days, by cost. Read every term.** At $16.44/day one junk term at $6 a click is a third of the day's budget | O | 8 min |
+| 1 | **Search terms, last 7 days, by cost. Read every term.** At $13.16/day one junk term at the $3 ceiling is nearly a quarter of the day's budget | O | 8 min |
 | 2 | Add negatives aggressively. When unsure, exclude — a wrongly excluded term costs one keyword you can add back; a wrongly kept term costs money every week | O | 3 min |
 | 3 | Any converting search term not already a keyword → add as exact | O | 2 min |
 | 4 | Geographic report. Any spend outside the radius means Presence is set wrong | O | 2 min |
@@ -656,7 +664,7 @@ the assumptions are labelled as assumptions.
 | `LTV_USD.inperson` | **$3,240** | `lib/pricing.ts` | **Assumption** = 9 × $360 |
 | `ASSESSMENT_TO_PLAN_RATE` | **0.45** | `lib/pricing.ts` | **Assumption**. Zero observations |
 | `ASSESSMENT_VALUE_USD` | **$1,150 / $1,450** | derived | **Product of two assumptions** |
-| Budget | **$950/mo** committed; **$500/mo** until Gate F | `campaigns.csv` | Real |
+| Budget | **$400/mo** at launch; $950/mo is the scale-up scenario, not a commitment | `campaigns.csv` | Real |
 | Target cost per booked assessment | **< $250** | `launch-checklist.md` | Target |
 | Target all-in CAC | **< $600** | `launch-checklist.md` | Target |
 | Breakeven | **~2 months of retention** | `lib/pricing.ts` | See below |
