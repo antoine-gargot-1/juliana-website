@@ -2,6 +2,7 @@ import artistJson from '@/content/artist.json';
 import coachJson from '@/content/coach.json';
 import showsJson from '@/content/shows.json';
 import videosJson from '@/content/videos.json';
+import { SITE_URL } from '@/lib/site';
 
 /* ---------------- types ---------------- */
 
@@ -38,6 +39,12 @@ export type Show = {
   price: string | number | null;
   priceCurrency: string;
   place: Place;
+  /** Event name, when the show is more than "Juliana at <venue>". */
+  title?: string;
+  /** 1200x630 landscape share image. Falls back to the site default. */
+  image?: string;
+  /** videos.json slug embedded on the show page. */
+  videoSlug?: string | null;
 };
 
 /**
@@ -465,6 +472,22 @@ export function showTime(show: Show) {
     minute: '2-digit',
     timeZone: LA_TZ,
   });
+}
+
+/**
+ * Google Calendar "add event" link. No .ics: the ticket page (Partiful) offers
+ * its own calendar add for Apple/Outlook users.
+ */
+export function googleCalendarUrl(show: Show) {
+  const utc = (iso: string) => new Date(iso).toISOString().replace(/[-:]|\.\d{3}/g, '');
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `${show.title ?? 'Juliana Beltran'} at ${show.venue}`,
+    dates: `${utc(show.start)}/${utc(show.end)}`,
+    location: [show.place.name, show.place.streetAddress, show.city].filter(Boolean).join(', '),
+    details: [show.note, `${SITE_URL}/artist/live/${show.slug}`].filter(Boolean).join('\n'),
+  });
+  return `https://calendar.google.com/calendar/render?${q}`;
 }
 
 export function showYear(show: Show) {

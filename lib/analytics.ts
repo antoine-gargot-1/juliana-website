@@ -99,6 +99,13 @@ export type ConversionEvent =
   /** Outbound click to open.spotify.com. */
   | 'spotify_click'
   /**
+   * Outbound click on a show's ticket link (any `a[data-ticket]`). Tickets sell
+   * off-site on Partiful, which takes no tag, so this click is the last step the
+   * site can measure. Partiful's RSVP count is the ground truth for sales. Mirrored
+   * to Meta as InitiateCheckout for ad optimisation and retargeting exclusions.
+   */
+  | 'ticket_click'
+  /**
    * A free vocal assessment was booked and the $0 card hold succeeded.
    *
    * THE PRIMARY CONVERSION. This is the one Google Ads bids on, valued at
@@ -579,6 +586,8 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    /** Meta Pixel. Artist pages only — see components/artist/MetaPixel.tsx. */
+    fbq?: (...args: unknown[]) => void;
   }
 }
 

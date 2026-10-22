@@ -95,6 +95,16 @@ export function SiteAnalytics({ disabled = false }: Props) {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
+
+      // Show ticket links, marked with data-ticket so a ticket host can change
+      // (Partiful today) without touching this selector.
+      const ticket = target?.closest?.('a[data-ticket]') as HTMLAnchorElement | null;
+      if (ticket) {
+        track('ticket_click', { href: ticket.href, page: window.location.pathname });
+        window.fbq?.('track', 'InitiateCheckout');
+        return;
+      }
+
       const link = target?.closest?.('a[href*="open.spotify.com"]') as HTMLAnchorElement | null;
       if (!link) return;
 

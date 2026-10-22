@@ -12,6 +12,7 @@ code and nothing here runs — these are files you import or follow.
 | `google-ads/negatives.txt` | The shared negative keyword list, grouped by why each term is excluded. |
 | `gbp-setup.md` | Google Business Profile as a service-area business with the address hidden, plus the review engine. |
 | `launch-checklist.md` | The gate sequence. Gate 0 blocks all spend. Read this first. |
+| `meta-ads-seras-tu.md` | Facebook/Instagram ads for the Nov 5 2026 Serás Tú release show. Own ~$300 budget, separate from Google. |
 
 **Read `launch-checklist.md` before importing anything.** It contains two blockers that must
 be cleared first: a Consent Mode setting in `components/SiteAnalytics.tsx` that currently

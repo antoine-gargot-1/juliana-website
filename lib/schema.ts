@@ -199,13 +199,13 @@ export function musicEventSchema(show: Show, { withContext = true } = {}) {
     ...(withContext ? { '@context': 'https://schema.org' } : {}),
     '@type': 'MusicEvent',
     '@id': abs(`/artist/live/${show.slug}`),
-    name: `Juliana Beltran at ${show.venue}`,
+    name: show.title ? `${show.title} — Juliana Beltran` : `Juliana Beltran at ${show.venue}`,
     url: abs(`/artist/live/${show.slug}`),
     startDate: show.start,
     endDate: show.end,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    image: [abs(OG_IMAGE)],
+    image: [abs(show.image ?? OG_IMAGE)],
     description: show.note
       ? `${show.note} — Juliana Beltran performs live at ${show.venue}, ${show.city}.`
       : `Juliana Beltran performs live at ${show.venue}, ${show.city}.`,

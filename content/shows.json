@@ -1,6 +1,29 @@
 {
-  "_note": "Single source of truth for live dates. `start`/`end` are full ISO 8601 datetimes with the America/Los_Angeles UTC offset in effect on that date (PST -08:00, PDT -07:00). Upcoming vs. past is derived at build time by comparing `end` to now — never by array membership. `tickets` and `price` are optional; a MusicEvent `offers` block is only emitted when `tickets` is set.",
+  "_note": "Single source of truth for live dates. `start`/`end` are full ISO 8601 datetimes with the America/Los_Angeles UTC offset in effect on that date (PST -08:00, PDT -07:00). Upcoming vs. past is derived at build time by comparing `end` to now — never by array membership. `tickets` and `price` are optional; a MusicEvent `offers` block is only emitted when `tickets` is set. Optional per-show extras: `title` (event name, used in the page title and MusicEvent name), `image` (a 1200x630 landscape share image — the default portrait crops badly in Facebook previews), `videoSlug` (a videos.json slug embedded on the show page; the build fails if it matches nothing).",
   "shows": [
+    {
+      "slug": "seras-tu-release-show-dragonfly-2026-11-05",
+      "title": "Serás Tú Single Release Show",
+      "date": "2026-11-05",
+      "start": "2026-11-05T21:00:00-08:00",
+      "end": "2026-11-05T23:59:00-08:00",
+      "venue": "Dragonfly",
+      "city": "Los Angeles, CA",
+      "note": "With The Divas · $15 advance, $20 at the door · 21+",
+      "tickets": null,
+      "price": 15,
+      "priceCurrency": "USD",
+      "image": "/img/seras-tu-og.jpg",
+      "videoSlug": null,
+      "place": {
+        "name": "Dragonfly",
+        "streetAddress": "6510 Santa Monica Blvd",
+        "addressLocality": "Los Angeles",
+        "addressRegion": "CA",
+        "postalCode": "90038",
+        "addressCountry": "US"
+      }
+    },
     {
       "slug": "harvard-and-stone-los-angeles-2026-09-01",
       "date": "2026-09-01",

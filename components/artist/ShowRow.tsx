@@ -47,7 +47,13 @@ export function ShowRow({
         {past ? (
           <span className="eyebrow">Past</span>
         ) : show.tickets ? (
-          <a href={show.tickets} target="_blank" rel="noopener noreferrer" className="btn">
+          <a
+            href={show.tickets}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn"
+            data-ticket={show.slug}
+          >
             {ticketLabel}
           </a>
         ) : (

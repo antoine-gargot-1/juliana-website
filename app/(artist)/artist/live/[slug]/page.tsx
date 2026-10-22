@@ -5,9 +5,12 @@ import { notFound } from 'next/navigation';
 import { JsonLd } from '@/components/JsonLd';
 import { Reveal } from '@/components/Reveal';
 import { ShowRow } from '@/components/artist/ShowRow';
+import { VideoFacade } from '@/components/artist/VideoFacade';
 import {
   ALL_SHOWS,
+  ALL_VIDEOS,
   getShow,
+  googleCalendarUrl,
   isPast,
   partitionShows,
   showLongDate,
@@ -35,7 +38,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const when = showLongDate(show);
 
   return pageMeta({
-    title: `Juliana Beltran ${past ? 'played' : 'live at'} ${show.venue} — ${when}`,
+    title: show.title
+      ? `${show.title} — ${show.venue}, ${when}`
+      : `Juliana Beltran ${past ? 'played' : 'live at'} ${show.venue} — ${when}`,
     description: past
       ? `Juliana Beltran performed at ${show.venue}, ${show.city} on ${when}${
           show.note ? ` (${show.note})` : ''
@@ -45,6 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }. Latin pop and indie pop, live.`,
     path: `/artist/live/${show.slug}`,
     type: 'article',
+    ...(show.image ? { image: show.image, imageWidth: 1200, imageHeight: 630 } : {}),
   });
 }
 
@@ -56,6 +62,13 @@ export default async function ShowPage({ params }: Props) {
   const past = isPast(show);
   const { upcoming } = partitionShows();
   const others = upcoming.filter((s) => s.slug !== show.slug).slice(0, 3);
+
+  // Build-time failure, same as the BOOKING_LIVE_VIDEO guard: a show page that
+  // silently drops its video is worse than a failed deploy.
+  const video = show.videoSlug ? ALL_VIDEOS.find((v) => v.slug === show.videoSlug) : undefined;
+  if (show.videoSlug && !video) {
+    throw new Error(`content/shows.json: videoSlug "${show.videoSlug}" matches no video slug.`);
+  }
 
   const addressLine = [
     show.place.streetAddress,
@@ -71,7 +84,7 @@ export default async function ShowPage({ params }: Props) {
       <div className="wrap">
         <section className="svc-page-hero">
           <div className="eyebrow">
-            {past ? 'Past show' : 'Upcoming show'} &middot; {showYear(show)}
+            {show.title ?? (past ? 'Past show' : 'Upcoming show')} &middot; {showYear(show)}
           </div>
           <h1>
             {show.venue}
@@ -92,7 +105,32 @@ export default async function ShowPage({ params }: Props) {
             {showLongDate(show)}, {showTime(show)}.{show.note ? ` ${show.note}.` : ''} A set of
             original Latin pop, indie pop and singer-songwriter material, in English and Spanish.
           </p>
+          {!past && (
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 32 }}>
+              {show.tickets && (
+                <a
+                  className="btn btn--solid"
+                  href={show.tickets}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-ticket={show.slug}
+                >
+                  Get tickets{show.price ? ` — $${show.price}` : ''}{' '}
+                  <span className="arrow">&rarr;</span>
+                </a>
+              )}
+              <a className="btn" href={googleCalendarUrl(show)} target="_blank" rel="noopener noreferrer">
+                Add to calendar
+              </a>
+            </div>
+          )}
         </section>
+
+        {video && (
+          <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
+            <VideoFacade video={video} placement="show-page" primary />
+          </section>
+        )}
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80 }} className="about-cols">
@@ -170,7 +208,12 @@ export default async function ShowPage({ params }: Props) {
                     }}
                   >
                     {show.tickets ? (
-                      <a href={show.tickets} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={show.tickets}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-ticket={show.slug}
+                      >
                         Buy tickets ↗{show.price ? ` — $${show.price}` : ''}
                       </a>
                     ) : past ? (

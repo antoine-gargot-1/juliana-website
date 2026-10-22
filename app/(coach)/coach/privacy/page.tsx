@@ -78,6 +78,8 @@ import { EMAIL } from '@/lib/site';
  *   billing page is a signed     lib/booking-token.ts, lib/portal.ts
  *     expiring link, no password
  *   youtube-nocookie facade      components/artist/VideoFacade.tsx
+ *   Meta Pixel, music pages only components/artist/MetaPixel.tsx (app/(artist)/layout.tsx)
+ *     + skipped in Europe/* tz   InitiateCheckout on ticket clicks: SiteAnalytics.tsx
  *   review request email         lib/email.ts (reviewRequestEmail)
  *
  * NO PREMISES. This page may not name a street, a neighbourhood or a venue.
@@ -309,6 +311,16 @@ export default function PrivacyPage() {
                 out of that hash; it can only compare it to hashes it already has.
               </dd>
 
+              <dt>Meta &mdash; show advertising, music pages only</dt>
+              <dd>
+                The Meta Pixel (Facebook and Instagram) loads on the music side of the site, the
+                pages under <code>/artist</code>, so ads for shows can be measured and shown again to
+                people who visited. It tells Meta which page you viewed and when you click a ticket
+                link, along with whatever Meta already knows about your browser. It never loads on
+                the coaching pages, it never sees a booking or a payment, and it doesn&apos;t load at
+                all if your browser is set to a European time zone.
+              </dd>
+
               <dt>Formspree &mdash; the two inquiry forms</dt>
               <dd>Whatever you typed into the studio-inquiry or event-booking form.</dd>
 
@@ -356,7 +368,8 @@ export default function PrivacyPage() {
             <div className="legal-note">
               <p>
                 Yes. Other companies can collect information about what you do on this site and
-                connect it to what you do on other websites. That company is Google.
+                connect it to what you do on other websites. Those companies are Google and, on the
+                music pages only, Meta.
               </p>
             </div>
             <p>
@@ -386,8 +399,16 @@ export default function PrivacyPage() {
               student. It identifies the click, not you by name.
             </p>
             <p>
-              Nothing else on this site does cross-site tracking. There is no advertising network,
-              no data broker, no social pixel, no Meta or TikTok tag, and no chat widget.
+              On the music pages (anything under <code>/artist</code>) there&apos;s also a Meta
+              Pixel, so Facebook and Instagram ads for shows can be measured and shown again to
+              people who visited. Meta can connect that visit to your Facebook or Instagram account
+              and to other sites that use its pixel. It doesn&apos;t load for browsers set to a
+              European time zone, and it never loads on the coaching pages, so nothing about lessons,
+              bookings or payments reaches Meta.
+            </p>
+            <p>
+              Nothing else on this site does cross-site tracking. There is no other advertising
+              network, no data broker, no TikTok tag, and no chat widget.
             </p>
 
             {/* ---------------- DNT, §22575(b)(5) ---------------- */}
@@ -400,9 +421,9 @@ export default function PrivacyPage() {
             </p>
             <p>
               The honest reason is that there was never an agreed standard for what responding should
-              actually do, browsers largely stopped sending it, and the tracking on this page is
-              Google&apos;s &mdash; controlled through Google&apos;s own consent settings, which is
-              what the section above describes, rather than through that header.
+              actually do, browsers largely stopped sending it, and the tracking on this site is
+              Google&apos;s and, on the music pages, Meta&apos;s &mdash; controlled through the
+              settings the section above describes, rather than through that header.
             </p>
             <p>
               What I do instead: advertising signals are off by default for visitors in Europe, the
@@ -421,6 +442,12 @@ export default function PrivacyPage() {
                 <code>_ga</code>{' '}and related Google Analytics cookies, so a second visit is
                 recognised as the same browser rather than a new person. Only set where analytics
                 storage is allowed, which excludes the EEA, the UK and Switzerland.
+              </li>
+              <li>
+                <code>_fbp</code>{' '}and <code>_fbc</code>, Meta&apos;s cookies, set only on the
+                music pages and only outside European time zones. <code>_fbp</code>{' '}recognises
+                the browser; <code>_fbc</code>{' '}records the Facebook or Instagram ad click you
+                arrived from, if any.
               </li>
               <li>
                 <code>jb:attribution</code>, in your browser&apos;s session storage: the campaign
@@ -583,9 +610,19 @@ export default function PrivacyPage() {
             </p>
             <p>
               A change won&apos;t be applied backwards to information already collected under an
-              earlier version of this page. Nothing has changed since{' '}
-              {legal.privacy.effectiveDate}, which is the first version.
+              earlier version of this page.
             </p>
+            <ul>
+              <li>
+                <strong>{legal.privacy.effectiveDate}:</strong>{' '}added the Meta Pixel to the music
+                pages (under <code>/artist</code>) to measure and retarget advertising for shows. It
+                doesn&apos;t load on the coaching pages. See &ldquo;Which companies see it&rdquo; and
+                &ldquo;Tracking that follows you off this site&rdquo; above.
+              </li>
+              <li>
+                <strong>August 13, 2026:</strong>{' '}first version.
+              </li>
+            </ul>
 
             {/* ---------------- California ---------------- */}
             <h2 id="california">California, specifically</h2>
