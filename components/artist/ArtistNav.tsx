@@ -10,7 +10,6 @@ const links: [string, string][] = [
   ['/artist/live-video', 'Video'],
   ['/artist/live', 'Live'],
   ['/artist/press', 'Press'],
-  ['/artist/booking', 'Booking'],
 ];
 
 export function ArtistNav() {
@@ -55,7 +54,7 @@ export function ArtistNav() {
                 {label}
               </Link>
             ))}
-            <button className="nav-link" onClick={switchToCoach} style={{ opacity: 0.5 }}>
+            <button className="nav-link" onClick={switchToCoach}>
               Lessons &rarr;
             </button>
           </div>
@@ -84,6 +83,14 @@ export function ArtistNav() {
             {label}
           </Link>
         ))}
+        {/* The Book Now button is hidden on mobile, so the menu carries it. */}
+        <Link
+          className={pathname === '/artist/booking' ? 'active' : ''}
+          href="/artist/booking"
+          onClick={() => setMenuOpen(false)}
+        >
+          Booking
+        </Link>
         <button
           onClick={switchToCoach}
           style={{ fontFamily: 'var(--display)', fontSize: 36, color: 'var(--gold)' }}

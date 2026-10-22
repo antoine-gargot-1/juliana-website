@@ -51,18 +51,10 @@ export default function LiveVideoPage() {
         </section>
 
         {/* The booking pin: an editorial choice, held above the chronological
-            listing on purpose. Newer uploads exist (the 2026 release videos) but
-            they are studio productions, and a talent buyer follows this page to
-            judge live performance. The copy says so out loud so the pin does not
-            read as a broken sort. The pitch sentence comes from the pin's own
-            `bookingPitch` so it cannot drift out of sync when the pin moves —
-            it used to be hard-coded prose describing a single song, which went
-            stale the moment a full show took the pin. */}
+            listing on purpose — a talent buyer follows this page to judge live
+            performance. The pitch comes from the pin's own `bookingPitch` so it
+            can't drift out of sync when the pin moves. */}
         <section className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
-          <div className="video-primary-flag reveal">
-            <span className="line" />
-            <span className="eyebrow">Watch this one &mdash; live</span>
-          </div>
           <div className="reveal" style={{ '--rd': '80ms' }}>
             <VideoFacade
               video={BOOKING_LIVE_VIDEO}
@@ -88,22 +80,6 @@ export default function LiveVideoPage() {
             {BOOKING_LIVE_VIDEO.bookingPitch ??
               `${videoLength(BOOKING_LIVE_VIDEO)} of live performance — live vocal over a live band, no overdubs. If you only have time for one, make it this one.`}
           </p>
-          <p
-            className="reveal"
-            style={{
-              '--rd': '280ms',
-              fontFamily: 'var(--serif)',
-              fontSize: 15,
-              fontStyle: 'italic',
-              color: 'var(--muted)',
-              fontWeight: 400,
-              maxWidth: 720,
-              margin: '14px 0 0',
-            }}
-          >
-            Hand-picked for bookers as the strongest live footage &mdash; not the newest upload.
-            Jump to any song in the setlist above. Everything below is listed newest first.
-          </p>
         </section>
 
         {/* Everything else, strictly newest-upload-first. The release videos are
@@ -114,22 +90,9 @@ export default function LiveVideoPage() {
             className="block"
             style={{ paddingTop: 20, paddingBottom: 60, borderTop: '1px solid var(--rule)' }}
           >
-            <div className="eyebrow reveal" style={{ marginBottom: 8 }}>
+            <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
               Latest release videos
             </div>
-            <p
-              className="reveal"
-              style={{
-                fontFamily: 'var(--serif)',
-                fontSize: 15,
-                fontStyle: 'italic',
-                color: 'var(--muted)',
-                fontWeight: 400,
-                margin: '0 0 30px',
-              }}
-            >
-              Studio productions, not live footage &mdash; included for current repertoire.
-            </p>
             <div className="video-grid">
               {RELEASE_VIDEOS.map((video, i) => (
                 <div key={video.slug} className="reveal" style={{ '--rd': `${i * 90}ms` }}>
@@ -145,22 +108,9 @@ export default function LiveVideoPage() {
             className="block"
             style={{ paddingTop: 20, paddingBottom: 60, borderTop: '1px solid var(--rule)' }}
           >
-            <div className="eyebrow reveal" style={{ marginBottom: 8 }}>
+            <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
               More live sessions
             </div>
-            <p
-              className="reveal"
-              style={{
-                fontFamily: 'var(--serif)',
-                fontSize: 15,
-                fontStyle: 'italic',
-                color: 'var(--muted)',
-                fontWeight: 400,
-                margin: '0 0 30px',
-              }}
-            >
-              Live band performances &mdash; full song, live vocal, no overdubs.
-            </p>
             <div className="video-grid">
               {OTHER_LIVE_VIDEOS.map((video, i) => (
                 <div key={video.slug} className="reveal" style={{ '--rd': `${i * 90}ms` }}>
@@ -172,17 +122,12 @@ export default function LiveVideoPage() {
         )}
 
         <section className="cta">
-          <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
-            &mdash; Booking
-          </div>
-          <h2 className="reveal" style={{ '--rd': '120ms' }}>
-            Sound <span className="it">right?</span>
+          <h2>
+            Book <span className="it">Juliana.</span>
           </h2>
-          <p className="reveal" style={{ '--rd': '240ms' }}>
-            Bars, venues, festivals, private events. Tell me about the room.
-          </p>
-          <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/artist/booking">
-            Book Juliana <span className="arrow">&rarr;</span>
+          <p>Bars, venues, festivals and private events.</p>
+          <Link className="btn btn--solid" href="/artist/booking">
+            Booking inquiry <span className="arrow">&rarr;</span>
           </Link>
         </section>
       </div>

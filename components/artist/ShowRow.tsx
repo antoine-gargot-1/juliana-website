@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { showDay, showMonth, type Show } from '@/lib/content';
+import { showDay, showMonth, showYear, type Show } from '@/lib/content';
 
 /**
  * One row of the live list. The venue name links through to the show's own
@@ -23,6 +23,8 @@ export function ShowRow({
       <div className="show-date">
         <span className="show-month">{showMonth(show)}</span>
         <span className="show-day">{showDay(show)}</span>
+        {/* Past lists span years; without it two "Apr 15"s read as unsorted. */}
+        {past && <span className="show-month">{showYear(show)}</span>}
       </div>
       <div className="show-info">
         <div className="show-venue">
@@ -44,9 +46,8 @@ export function ShowRow({
         )}
       </div>
       <div className="show-action">
-        {past ? (
-          <span className="eyebrow">Past</span>
-        ) : show.tickets ? (
+        {/* Past rows: nothing. The section heading and the fade already say so. */}
+        {past ? null : show.tickets ? (
           <a
             href={show.tickets}
             target="_blank"

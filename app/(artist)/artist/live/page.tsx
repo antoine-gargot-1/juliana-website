@@ -44,7 +44,6 @@ export default function LivePage() {
                     show={show}
                     index={i}
                     ticketLabel="Tickets ↗"
-                    emptyLabel="Details coming"
                   />
                 ))}
               </div>
@@ -93,9 +92,9 @@ export default function LivePage() {
 
         <section className="cta">
           <h2>
-            Book a <span className="it">show.</span>
+            Book <span className="it">Juliana.</span>
           </h2>
-          <p>Interested in having Juliana perform at your venue or event?</p>
+          <p>Bars, venues, festivals and private events.</p>
           <Link className="btn btn--solid" href="/artist/booking">
             Booking inquiry <span className="arrow">&rarr;</span>
           </Link>

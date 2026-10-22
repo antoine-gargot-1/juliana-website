@@ -55,10 +55,6 @@ export default function BookPage() {
             or in LA &mdash; then the calendar &mdash; then a card to hold the slot, which
             isn&apos;t charged. Under 18 books with a parent or guardian.
           </p>
-          <p className="prose" style={{ fontSize: 20, marginTop: 18, maxWidth: 640 }}>
-            Then you sing for half an hour, I tell you honestly what&apos;s in the way and what a
-            few months would change, and you decide afterwards whether to carry on.
-          </p>
         </section>
 
         <section className="block" style={{ paddingTop: 10, paddingBottom: 60 }}>
@@ -74,11 +70,6 @@ export default function BookPage() {
               <dl>
                 <dt>What it costs</dt>
                 <dd>Nothing.</dd>
-                {/* Specific on purpose. "It only takes a minute" is what every
-                    form says; naming the three steps and the card is what makes
-                    the estimate believable. */}
-                <dt>Booking takes</dt>
-                <dd>About two minutes &middot; three steps &middot; card on the last one</dd>
                 <dt>About the card</dt>
                 <dd
                   style={{
@@ -90,14 +81,10 @@ export default function BookPage() {
                 >
                   {ASSESSMENT_CARD_COPY}
                 </dd>
-                <dt>How long</dt>
-                <dd>{ASSESSMENT.durationMinutes} minutes</dd>
                 <dt>Online</dt>
                 <dd>Most days, early and late. Times shown in your own timezone.</dd>
                 <dt>In person in LA</dt>
                 <dd>{IN_PERSON_DAYS.join('s and ')}s</dd>
-                <dt>Languages</dt>
-                <dd>English or Spanish</dd>
                 <dt>Ages</dt>
                 <dd>5 to 70+ &middot; under 18 books with a parent or guardian</dd>
               </dl>

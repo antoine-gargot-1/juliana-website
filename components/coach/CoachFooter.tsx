@@ -41,10 +41,9 @@ export function CoachFooter() {
         {/* Order is by how much of the buying decision a page can settle, not
             alphabetically and not by site depth: the two pages that carry proof,
             mechanics, rates and a buy button come first, then the price page,
-            then everything else. /coach/services is the disciplines menu — it is
-            indexed and it is linked, but it settles nothing, so it is not the
-            first thing in this column any more and no longer holds the word
-            "Lessons" on its own. */}
+            then FAQ and About. Capped at five: the discipline pages (services,
+            songwriting, voice in LA) are reached from the nav and the lesson
+            pages, and settle nothing a reader is still deciding here. */}
         <div>
           <h2>Studio</h2>
           <ul>
@@ -58,22 +57,10 @@ export function CoachFooter() {
               <Link href="/coach/pricing">Pricing</Link>
             </li>
             <li>
-              <Link href="/coach/songwriting">Songwriting Lessons</Link>
-            </li>
-            <li>
-              <Link href="/coach/voice-lessons-los-angeles">Voice Lessons in LA</Link>
-            </li>
-            <li>
-              <Link href="/coach/services">What I teach</Link>
-            </li>
-            <li>
               <Link href="/coach/faq">FAQ</Link>
             </li>
             <li>
               <Link href="/coach/about">About</Link>
-            </li>
-            <li>
-              <Link href="/coach">Home</Link>
             </li>
           </ul>
         </div>
@@ -88,14 +75,6 @@ export function CoachFooter() {
             </li>
             <li>
               <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
-            </li>
-            <li>
-              <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer">
-                @juliana.beltran
-              </a>
-            </li>
-            <li>
-              <span>Los Angeles, CA</span>
             </li>
           </ul>
         </div>

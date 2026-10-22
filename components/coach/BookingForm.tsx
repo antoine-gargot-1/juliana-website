@@ -867,14 +867,10 @@ export function BookingForm() {
       <input type="hidden" name="landing_page" value={attribution.landing_page ?? ''} readOnly />
       <input type="hidden" name="landed_at" value={attribution.landed_at ?? ''} readOnly />
 
-      {/* The shape of the whole thing, before anyone commits a keystroke to it:
-          three steps, how long, and the card named as the third. Anxiety on a
-          booking form is mostly about not knowing how long the corridor is. */}
+      {/* The shape of the whole thing, before anyone commits a keystroke to it.
+          The step count, time and card are already in the /coach/book hero
+          sentence directly above, so there is no paragraph repeating them here. */}
       <StepRail current={1} />
-      <p className="bform-flow">
-        Three steps, about two minutes. Four things here, then the calendar, then a card to hold the
-        slot &mdash; which isn&rsquo;t charged for this.
-      </p>
 
       {submitted && errorList.length > 0 && (
         <div className="bform-summary" role="alert">

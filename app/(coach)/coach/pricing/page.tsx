@@ -8,12 +8,8 @@ import {
   AssessmentCta,
   IN_PERSON_DAYS_SENTENCE,
   PriceGrid,
-  PurchaseCta,
-  PurchaseCtaLink,
   PurchaseFacts,
-  RiskReversal,
 } from '@/components/coach/PriceGrid';
-import { PURCHASE_NOTE } from '@/components/coach/Purchase';
 import { CREDITS, TESTIMONIALS } from '@/lib/content';
 import { formatUsd, monthlyPlans, monthlySavingVs, perLessonCents } from '@/lib/pricing';
 import { assessmentOfferSchema, pricingOfferCatalogSchema } from '@/lib/schema';
@@ -57,9 +53,10 @@ export const metadata: Metadata = pageMeta({
  * and what you pay obvious in under ten seconds, and every extra sentence works
  * against that.
  *
- * So: one sentence of intro, the tier cards, the three questions that actually
- * stop a purchase, a short list of what a lesson includes, and one repeat of the
- * CTA. Everything else lives on /coach/faq. The editorial voice stays in the
+ * So: one sentence of intro, the tier cards, the questions that actually stop
+ * a purchase, and two reviews. No hero button and no closing purchase CTA:
+ * PURCHASE_NOTE ("Paid in full now") sits on each card, at the point of sale,
+ * and is not repeated. Everything else lives on /coach/faq. The editorial voice stays in the
  * heading and the nav; it does not get between a reader and a number.
  *
  * ---------------------------------------------------------------------------
@@ -136,15 +133,11 @@ export default function PricingPage() {
               : 'Every price is on this page.'}{' '}
             Pick a plan below and choose your lesson times straight after paying.
           </p>
-          <div style={{ marginTop: 30 }}>
-            <PurchaseCtaLink />
-          </div>
-          <p className="lp-hero-note">{PURCHASE_NOTE}</p>
-          {/* Adjacent to the note about being charged, which until now was the
-              only thing this page said about money before the cards. */}
-          <RiskReversal />
+          {/* No button, no purchase note and no RiskReversal here: the cards are
+              directly below and carry the buy controls and PURCHASE_NOTE at the
+              point of sale. Anything between this sentence and the prices
+              pushed them out of the first screen. */}
         </section>
-
         {/* The tier cards, and the destination of every purchase CTA on the page.
             Each card carries its own buy control — see PriceGrid's guards, which
             fail the build rather than render a price nobody can pay for. */}
@@ -178,7 +171,6 @@ export default function PricingPage() {
               because there the card is charged. */}
           <AssessmentCta tone="secondary" />
         </section>
-
         {/* PROOF, under the cards. Two of her students, named, and one line of
             credit. Quotes are set in the sans rather than the display
             face: this is the plainest page on the site by design, and a review
@@ -219,46 +211,20 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/*
-          Short phrases, not sentences. This block earned its place because "what
-          do I actually get for $70" is a fair question and the cards cannot hold
-          the answer — but it was six items of two sentences each, which is a
-          page of reading on a page of prices.
-        */}
-        <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
-          <h2 className="eyebrow reveal" style={{ marginBottom: 18 }}>
-            Every lesson includes
-          </h2>
-          <ul className="plain-points">
-            <li>A held slot on a plan</li>
-            <li>Live guitar or piano, not a backing track</li>
-            <li>A recording of your own exercises</li>
-            <li>Written notes to work from</li>
-            <li>English or Spanish</li>
-            <li>Voice, guitar, piano or songwriting</li>
-          </ul>
-          <p className="lede-plain" style={{ marginTop: 24 }}>
-            Anything else is on the{' '}
-            <Link href="/coach/faq" style={{ color: 'var(--accent)' }}>
-              FAQ
-            </Link>
-            , and you can{' '}
-            <Link href="/coach/account" style={{ color: 'var(--accent)' }}>
-              manage billing
-            </Link>{' '}
-            yourself at any time.
-          </p>
-        </section>
-
-        {/* Second and last appearance of the primary CTA. The full
-            AssessmentOffer block deliberately does NOT close this page: it is the
-            biggest, loudest block in the design language, and ending a price page
-            on it would make the free session look like the offer and the plans
-            look like the small print. It closes the landing pages instead, where
-            the assessment genuinely is primary. */}
-        <div className="block" style={{ paddingTop: 20, paddingBottom: 60 }}>
-          <PurchaseCta />
-        </div>
+        {/* The "every lesson includes" list was cut — the cards and /coach say
+            it. This line stays: it is the only pre-purchase link on the site to
+            the billing page where a plan is cancelled. */}
+        <p className="lede-plain" style={{ paddingBottom: 60 }}>
+          Anything else is on the{' '}
+          <Link href="/coach/faq" style={{ color: 'var(--accent)' }}>
+            FAQ
+          </Link>
+          , and you can{' '}
+          <Link href="/coach/account" style={{ color: 'var(--accent)' }}>
+            manage billing
+          </Link>{' '}
+          yourself at any time.
+        </p>
       </div>
 
       <JsonLd

@@ -228,9 +228,10 @@ export function VideoFacade({
                   >
                     <span className="video-setlist-time">{timecode(chapter.at)}</span>
                     <span className="video-setlist-title">{chapter.title}</span>
-                    <span className="video-setlist-tag">
-                      {chapter.cover ? `${chapter.cover} cover` : 'Original'}
-                    </span>
+                    {/* Originals are the default; only covers need saying. */}
+                    {chapter.cover && (
+                      <span className="video-setlist-tag">{chapter.cover} cover</span>
+                    )}
                   </a>
                 </li>
               ))}

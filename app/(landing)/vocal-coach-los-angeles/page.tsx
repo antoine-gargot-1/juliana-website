@@ -8,7 +8,6 @@ import { ModeToggle } from '@/components/coach/ModeToggle';
 import {
   ASSESSMENT_CARD_COPY,
   ASSESSMENT_CTA_LABEL,
-  AssessmentCta,
   AssessmentOffer,
   IN_PERSON_DAYS_SENTENCE,
   PackagesAside,
@@ -226,11 +225,6 @@ export default function VocalCoachLosAngelesPage() {
             }
             label="Lesson format"
           />
-
-          {/* Mid-page repeat of the PRIMARY action, with the card promise. */}
-          <div style={{ marginTop: 40 }}>
-            <AssessmentCta mode="inperson" tone="primary" />
-          </div>
         </section>
 
         <section className="block" style={{ paddingTop: 20, paddingBottom: 40 }}>
@@ -260,7 +254,7 @@ export default function VocalCoachLosAngelesPage() {
         </section>
 
         <div className="block" style={{ paddingTop: 0, paddingBottom: 20 }}>
-          {/* PRIMARY, third appearance. The secondary purchase path is nested
+          {/* PRIMARY, second and last appearance. The secondary purchase path is nested
               inside the block so it is unmistakably the smaller of the two — and
               it carries no card-hold copy, because a purchase does charge. */}
           <AssessmentOffer mode="inperson">

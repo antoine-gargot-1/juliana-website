@@ -180,14 +180,9 @@ export default function AboutPage() {
               <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Styles I Specialize In
               </div>
-              <div className="styles-grid">
-                {STYLES.map((s, i) => (
-                  <div className="style-card reveal" style={{ '--rd': `${i * 60}ms` }} key={s}>
-                    <div className="n">No. {String(i + 1).padStart(2, '0')}</div>
-                    <div className="name">{s}</div>
-                  </div>
-                ))}
-              </div>
+              <p className="prose reveal" style={{ margin: 0 }}>
+                {STYLES.join(', ')}.
+              </p>
             </div>
           </div>
         </section>

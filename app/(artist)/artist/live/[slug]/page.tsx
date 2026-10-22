@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -26,6 +27,17 @@ export const dynamicParams = false;
 export function generateStaticParams() {
   return ALL_SHOWS.map((s) => ({ slug: s.slug }));
 }
+
+const lede = {
+  fontFamily: 'var(--serif)',
+  fontSize: 20,
+  lineHeight: 1.55,
+  color: 'var(--ink-soft)',
+  fontWeight: 400,
+  maxWidth: 640,
+} as const;
+const detailRow = { padding: '18px 0', borderTop: '1px solid var(--rule)' } as const;
+const detailValue = { margin: '8px 0 0', fontFamily: 'var(--serif)', fontSize: 19, fontWeight: 400 } as const;
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -78,33 +90,23 @@ export default async function ShowPage({ params }: Props) {
     .filter(Boolean)
     .join(' · ');
 
+  // Year sits in the eyebrow, so the facts line drops it.
+  const facts = [showLongDate(show).replace(/, \d{4}$/, ''), showTime(show), show.venue].join(' · ');
+
   return (
     <div className="page-fade artist-theme">
       <Reveal />
       <div className="wrap">
         <section className="svc-page-hero">
           <div className="eyebrow">
-            {show.title ?? (past ? 'Past show' : 'Upcoming show')} &middot; {showYear(show)}
+            {show.title ? show.venue : past ? 'Past show' : 'Upcoming show'} &middot; {showYear(show)}
           </div>
           <h1>
-            {show.venue}
+            {show.title ?? show.venue}
             <span className="it">.</span>
           </h1>
-          <p
-            style={{
-              fontFamily: 'var(--serif)',
-              fontSize: 20,
-              lineHeight: 1.55,
-              color: 'var(--ink-soft)',
-              maxWidth: 640,
-              marginTop: 24,
-              fontWeight: 400,
-            }}
-          >
-            Juliana Beltran {past ? 'performed' : 'performs'} live at {show.venue} in {show.city} on{' '}
-            {showLongDate(show)}, {showTime(show)}.{show.note ? ` ${show.note}.` : ''} A set of
-            original Latin pop, indie pop and singer-songwriter material, in English and Spanish.
-          </p>
+          <p style={{ ...lede, marginTop: 24 }}>{facts}</p>
+          {show.note && <p style={{ ...lede, marginTop: 6 }}>{show.note}</p>}
           {!past && (
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 32 }}>
               {show.tickets && (
@@ -119,10 +121,26 @@ export default async function ShowPage({ params }: Props) {
                   <span className="arrow">&rarr;</span>
                 </a>
               )}
-              <a className="btn" href={googleCalendarUrl(show)} target="_blank" rel="noopener noreferrer">
+              <a
+                className={show.tickets ? 'btn' : 'btn btn--solid'}
+                href={googleCalendarUrl(show)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Add to calendar
               </a>
             </div>
+          )}
+          {show.image && (
+            <Image
+              src={show.image}
+              alt={`${show.title ?? 'Juliana Beltran'} at ${show.venue}, ${showLongDate(show)}`}
+              width={1200}
+              height={630}
+              priority
+              sizes="(max-width: 1100px) 100vw, 1100px"
+              style={{ display: 'block', width: '100%', height: 'auto', marginTop: 40 }}
+            />
           )}
         </section>
 
@@ -138,75 +156,26 @@ export default async function ShowPage({ params }: Props) {
               <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 Details
               </div>
-              <dl className="show-detail-list" style={{ margin: 0 }}>
-                <div
-                  className="reveal"
-                  style={{ padding: '18px 0', borderTop: '1px solid var(--rule)' }}
-                >
+              <dl className="show-detail-list reveal" style={{ margin: 0, borderBottom: '1px solid var(--rule)' }}>
+                <div style={detailRow}>
                   <dt className="eyebrow">Date</dt>
-                  <dd
-                    style={{
-                      margin: '8px 0 0',
-                      fontFamily: 'var(--serif)',
-                      fontSize: 19,
-                      fontWeight: 400,
-                    }}
-                  >
-                    {showLongDate(show)}
-                  </dd>
+                  <dd style={detailValue}>{showLongDate(show)}</dd>
                 </div>
-                <div
-                  className="reveal"
-                  style={{ '--rd': '60ms', padding: '18px 0', borderTop: '1px solid var(--rule)' }}
-                >
+                <div style={detailRow}>
                   <dt className="eyebrow">Doors / set</dt>
-                  <dd
-                    style={{
-                      margin: '8px 0 0',
-                      fontFamily: 'var(--serif)',
-                      fontSize: 19,
-                      fontWeight: 400,
-                    }}
-                  >
-                    {showTime(show)} &middot; Pacific Time
-                  </dd>
+                  <dd style={detailValue}>{showTime(show)} &middot; Pacific Time</dd>
                 </div>
-                <div
-                  className="reveal"
-                  style={{ '--rd': '120ms', padding: '18px 0', borderTop: '1px solid var(--rule)' }}
-                >
+                <div style={detailRow}>
                   <dt className="eyebrow">Venue</dt>
-                  <dd
-                    style={{
-                      margin: '8px 0 0',
-                      fontFamily: 'var(--serif)',
-                      fontSize: 19,
-                      fontWeight: 400,
-                    }}
-                  >
+                  <dd style={detailValue}>
                     {show.place.name}
                     <br />
                     <span style={{ color: 'var(--ink-soft)', fontSize: 16 }}>{addressLine}</span>
                   </dd>
                 </div>
-                <div
-                  className="reveal"
-                  style={{
-                    '--rd': '180ms',
-                    padding: '18px 0',
-                    borderTop: '1px solid var(--rule)',
-                    borderBottom: '1px solid var(--rule)',
-                  }}
-                >
+                <div style={detailRow}>
                   <dt className="eyebrow">Tickets</dt>
-                  <dd
-                    style={{
-                      margin: '8px 0 0',
-                      fontFamily: 'var(--serif)',
-                      fontSize: 19,
-                      fontWeight: 400,
-                    }}
-                  >
+                  <dd style={detailValue}>
                     {show.tickets ? (
                       <a
                         href={show.tickets}
@@ -230,39 +199,11 @@ export default async function ShowPage({ params }: Props) {
               <div className="eyebrow reveal" style={{ marginBottom: 24 }}>
                 About the set
               </div>
-              <p
-                className="reveal"
-                style={{
-                  fontFamily: 'var(--serif)',
-                  fontSize: 19,
-                  lineHeight: 1.65,
-                  color: 'var(--ink-soft)',
-                  fontWeight: 400,
-                  margin: '0 0 22px',
-                }}
-              >
+              <p className="reveal" style={{ ...lede, fontSize: 19, lineHeight: 1.65, margin: 0 }}>
                 Juliana is a Colombian singer-songwriter based in Los Angeles. Her live sets move
                 between stripped-back voice-and-guitar arrangements and fuller band material,
                 drawing on Latin pop, indie pop and acoustic singer-songwriter writing.
               </p>
-              <p
-                className="reveal"
-                style={{
-                  '--rd': '120ms',
-                  fontFamily: 'var(--serif)',
-                  fontSize: 19,
-                  lineHeight: 1.65,
-                  color: 'var(--ink-soft)',
-                  fontWeight: 400,
-                  margin: '0 0 30px',
-                }}
-              >
-                Booking a similar night at your venue, or private music for an event? The booking
-                form takes two minutes.
-              </p>
-              <Link className="btn btn--solid reveal" style={{ '--rd': '200ms' }} href="/artist/booking">
-                Booking inquiry <span className="arrow">&rarr;</span>
-              </Link>
             </div>
           </div>
         </section>
@@ -274,21 +215,15 @@ export default async function ShowPage({ params }: Props) {
             </div>
             <div className="shows-list">
               {others.map((s, i) => (
-                <ShowRow key={s.slug} show={s} index={i} emptyLabel="Details coming" />
+                <ShowRow key={s.slug} show={s} index={i} />
               ))}
             </div>
           </section>
         )}
 
-        <section className="cta">
-          <h2>
-            All <span className="it">dates.</span>
-          </h2>
-          <p>Every past and upcoming Juliana Beltran show in one place.</p>
-          <Link className="btn btn--solid" href="/artist/live">
-            View live dates <span className="arrow">&rarr;</span>
-          </Link>
-        </section>
+        <p style={{ padding: '20px 0 80px' }}>
+          <Link href="/artist/live">&larr; All dates</Link>
+        </p>
       </div>
 
       <JsonLd

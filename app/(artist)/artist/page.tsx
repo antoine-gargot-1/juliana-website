@@ -71,6 +71,43 @@ export default function ArtistHomePage() {
         </div>
       </ParallaxHero>
 
+      {/* Upcoming shows */}
+      <section className="block" style={{ paddingTop: 60, paddingBottom: 60 }}>
+        <div className="wrap">
+          <div style={{ marginBottom: 40 }}>
+            <div>
+              <div className="eyebrow reveal">&mdash; Live</div>
+              <h2
+                className="reveal"
+                style={{
+                  '--rd': '80ms',
+                  fontFamily: 'var(--display)',
+                  fontSize: 'clamp(38px, 5vw, 68px)',
+                  lineHeight: 1,
+                  margin: '12px 0 0',
+                  fontWeight: 400,
+                }}
+              >
+                {showingUpcoming ? (
+                  <>
+                    Upcoming <span className="it">shows.</span>
+                  </>
+                ) : (
+                  <>
+                    Recent <span className="it">shows.</span>
+                  </>
+                )}
+              </h2>
+            </div>
+          </div>
+          <div className="shows-list">
+            {nextShows.map((show, i) => (
+              <ShowRow key={show.slug} show={show} index={i} past={!showingUpcoming} />
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Stats */}
       <section className="artist-stats">
         <div className="wrap">
@@ -140,16 +177,7 @@ export default function ArtistHomePage() {
       {/* Live video */}
       <section className="block" style={{ paddingTop: 60, paddingBottom: 60 }}>
         <div className="wrap">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              flexWrap: 'wrap',
-              gap: 20,
-              marginBottom: 40,
-            }}
-          >
+          <div style={{ marginBottom: 40 }}>
             <div>
               <div className="eyebrow reveal">&mdash; Watch</div>
               <h2
@@ -166,61 +194,9 @@ export default function ArtistHomePage() {
                 Live <span className="it">video.</span>
               </h2>
             </div>
-            <Link className="btn reveal" href="/artist/live-video" style={{ '--rd': '160ms' }}>
-              All video <span className="arrow">&rarr;</span>
-            </Link>
           </div>
           <div className="reveal" style={{ '--rd': '200ms' }}>
             <VideoFacade video={BOOKING_LIVE_VIDEO} placement="artist-home" primary />
-          </div>
-        </div>
-      </section>
-
-      {/* Upcoming shows */}
-      <section className="block" style={{ paddingTop: 60, paddingBottom: 60 }}>
-        <div className="wrap">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'baseline',
-              flexWrap: 'wrap',
-              gap: 20,
-              marginBottom: 40,
-            }}
-          >
-            <div>
-              <div className="eyebrow reveal">&mdash; Live</div>
-              <h2
-                className="reveal"
-                style={{
-                  '--rd': '80ms',
-                  fontFamily: 'var(--display)',
-                  fontSize: 'clamp(38px, 5vw, 68px)',
-                  lineHeight: 1,
-                  margin: '12px 0 0',
-                  fontWeight: 400,
-                }}
-              >
-                {showingUpcoming ? (
-                  <>
-                    Upcoming <span className="it">shows.</span>
-                  </>
-                ) : (
-                  <>
-                    Recent <span className="it">shows.</span>
-                  </>
-                )}
-              </h2>
-            </div>
-            <Link className="btn reveal" href="/artist/live" style={{ '--rd': '160ms' }}>
-              All dates <span className="arrow">&rarr;</span>
-            </Link>
-          </div>
-          <div className="shows-list">
-            {nextShows.map((show, i) => (
-              <ShowRow key={show.slug} show={show} index={i} past={!showingUpcoming} />
-            ))}
           </div>
         </div>
       </section>
@@ -259,17 +235,12 @@ export default function ArtistHomePage() {
 
       {/* CTA */}
       <section className="cta">
-        <div className="eyebrow reveal" style={{ marginBottom: 30 }}>
-          &mdash; Booking
-        </div>
-        <h2 className="reveal" style={{ '--rd': '120ms' }}>
-          Let&apos;s <span className="it">play.</span>
+        <h2>
+          Book <span className="it">Juliana.</span>
         </h2>
-        <p className="reveal" style={{ '--rd': '240ms' }}>
-          Bars, venues, festivals, private events. Get in touch.
-        </p>
-        <Link className="btn btn--solid reveal" style={{ '--rd': '320ms' }} href="/artist/booking">
-          Book Juliana <span className="arrow">&rarr;</span>
+        <p>Bars, venues, festivals and private events.</p>
+        <Link className="btn btn--solid" href="/artist/booking">
+          Booking inquiry <span className="arrow">&rarr;</span>
         </Link>
       </section>
 

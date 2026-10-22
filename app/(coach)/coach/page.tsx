@@ -3,7 +3,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { JsonLd } from '@/components/JsonLd';
-import { Marquee } from '@/components/Marquee';
 import { ParallaxHero } from '@/components/ParallaxHero';
 import { Reveal } from '@/components/Reveal';
 import { VideoFacade } from '@/components/artist/VideoFacade';
@@ -18,13 +17,11 @@ import {
 import {
   AGGREGATE_RATING,
   BOOKING_LIVE_VIDEO,
-  CREDITS,
   PLAYLISTS,
   SERVICES,
   TESTIMONIALS,
   monthYear,
 } from '@/lib/content';
-import { RESCHEDULE_NOTICE_HOURS } from '@/lib/policy';
 import {
   ASSESSMENT,
   IN_PERSON_DAYS,
@@ -54,7 +51,7 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
  * deciding what a lesson is, what it costs, and what happens if it does not
  * work out. So the order is now: what it is and what it costs → hear it →
  * what a lesson contains → the two buyers, each in their own order → every
- * price → what you get before you commit → reviews → credits → the objections
+ * price → reviews → credits → the objections
  * → one CTA.
  *
  * Three rules this file has to keep:
@@ -69,8 +66,8 @@ import { breadcrumbList, pageMeta } from '@/lib/seo';
  *   `_inPersonNote`.
  *
  *   THE CARD SENTENCE TRAVELS WITH THE FREE ASSESSMENT AND NOWHERE ELSE.
- *   ASSESSMENT_CARD_COPY appears in the hero, in the risk block and in the
- *   close — the three places this page offers the assessment. It must never sit
+ *   ASSESSMENT_CARD_COPY appears in the hero and in the close — the two places
+ *   this page offers the assessment. It must never sit
  *   beside a paid purchase control, which is also why the rate cards here are
  *   `buy={false}`: the money is taken on /coach/pricing.
  */
@@ -92,7 +89,6 @@ function quoted(price: Price | undefined, what: string): Price {
 
 /** The lesson everything else is measured against: the full-hour online plan. */
 const ONLINE_PLAN = quoted(monthlyPlans('online')[0], 'online monthly plan');
-const IN_PERSON_PLAN = quoted(monthlyPlans('inperson')[0], 'in-person monthly plan');
 const ONLINE_SINGLE = quoted(singleLesson('online'), 'online single lesson');
 
 /** "$70" — the price floor, per lesson, on the cheapest full-hour commitment. */
@@ -262,12 +258,6 @@ export default function CoachHomePage() {
             sizes="100vw"
           />
         }
-        corner={
-          <div className="hero-corner">
-            <div className="mark">music</div>
-            <span>Los Angeles &middot; Online &amp; In-Person</span>
-          </div>
-        }
       >
         <div className="hero-text">
           <div className="hero-eyebrow reveal">
@@ -320,8 +310,6 @@ export default function CoachHomePage() {
           </p>
         </div>
       </ParallaxHero>
-
-      <Marquee />
 
       {/* ---------------------------------------------------------------- */}
       {/* 2 · Playable proof, immediately                                   */}
@@ -435,8 +423,9 @@ export default function CoachHomePage() {
         before price on purpose — someone who is not sure they are allowed to
         want this does not care what it costs yet.
 
-        Parent: price and logistics first, then proof, then safeguarding, then
-        whether it will suit their particular child, then how to leave.
+        Parent: proof, then safeguarding, then whether it will suit their
+        particular child. Prices and cancellation are in the rate cards and the
+        objections below, so this column does not repeat them.
       */}
       <section className="block" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <div className="wrap">
@@ -499,11 +488,6 @@ export default function CoachHomePage() {
               </h3>
               <ul className="plain-points" style={{ gridTemplateColumns: '1fr' }}>
                 <li>
-                  {LESSONS_PER_MONTH} lessons a month: {formatUsd(ONLINE_PLAN.amountCents)} online,{' '}
-                  {formatUsd(IN_PERSON_PLAN.amountCents)} in person in Los Angeles. Same price
-                  whatever we work on. {IN_PERSON_DAYS_SENTENCE}
-                </li>
-                <li>
                   {AGGREGATE_RATING.count} reviews on this site, averaging {AGGREGATE_RATING.value}{' '}
                   out of {AGGREGATE_RATING.best}, with names and dates. They&apos;re all further
                   down the page.
@@ -516,10 +500,6 @@ export default function CoachHomePage() {
                 <li>
                   Mine have started as young as five. Some settle faster with a parent in the room
                   and some without, and we&apos;ll work out which yours is.
-                </li>
-                <li>
-                  Cancel any time from your billing page. No notice period, no contract to see out,
-                  and you keep the lessons you&apos;ve already paid for.
                 </li>
               </ul>
               <div style={{ marginTop: 28 }}>
@@ -562,69 +542,6 @@ export default function CoachHomePage() {
             }
             label="Lesson format"
           />
-        </div>
-      </section>
-
-      {/* ---------------------------------------------------------------- */}
-      {/* 6 · What you get before you commit                                */}
-      {/* ---------------------------------------------------------------- */}
-      {/*
-        Five facts, all of them already true, all of them previously buried in
-        the FAQ accordion. Framed as what you get rather than as what happens if
-        you dislike it: the two strongest — the free month-long pause and the
-        first bill landing a week AFTER the assessment — read as generosity, and
-        hiding them behind a click was costing more than any headline.
-      */}
-      <section className="block" style={{ paddingTop: 40, paddingBottom: 40 }}>
-        <div className="wrap">
-          <div className="eyebrow reveal">
-            &mdash; Before you commit
-          </div>
-          <h2 className="display" style={H2_STYLE}>
-            Five things that are true <span className="it">before you pay anything.</span>
-          </h2>
-          <dl className="facts">
-            <div className="fact">
-              <dt>The first {ASSESSMENT.durationMinutes} minutes are free</dt>
-              <dd>
-                You sing, I listen, and you leave with two exercises whether or not you book
-                anything else.
-              </dd>
-            </div>
-            <div className="fact">
-              <dt>Your first bill lands a week later</dt>
-              <dd>
-                A week after the assessment, so the first payment comes after you&apos;ve had a
-                proper lesson and know whether this is for you.
-              </dd>
-            </div>
-            <div className="fact">
-              <dt>Cancel from your own billing page</dt>
-              <dd>
-                Any time, with no notice period and no contract to see out. You keep the lessons
-                you&apos;ve already paid for.
-              </dd>
-            </div>
-            <div className="fact">
-              <dt>Pause a month, once a year, at no charge</dt>
-              <dd>
-                No billing that month, and your slot is still yours when you come back. Just tell me
-                before the next billing date.
-              </dd>
-            </div>
-            <div className="fact">
-              <dt>A day&apos;s notice moves a lesson</dt>
-              <dd>
-                Tell me {RESCHEDULE_NOTICE_HOURS} hours ahead and we&apos;ll move it, at no cost.
-                Later than that we can usually still do it online, so you keep the lesson rather
-                than lose it.
-              </dd>
-            </div>
-          </dl>
-          {/* Required beside the free assessment, verbatim, at reading size. */}
-          <strong className="assess-card-note" style={{ marginTop: 26 }}>
-            {ASSESSMENT_CARD_COPY}
-          </strong>
         </div>
       </section>
 
@@ -711,46 +628,15 @@ export default function CoachHomePage() {
         This was two sections: a ruled credits gallery, and a 420px Spotify
         iframe whose "Open in Spotify" was the only solid button between the
         hero and the close — a link OFF the page, at the exact point a reader is
-        deciding. Her performing work is the credential, so it is a badge line,
-        and her music is a credit with a text link rather than an embed.
+        deciding. Her credentials are stated beside the video, so they are not
+        repeated here; her music is a credit with a text link rather than an embed.
       */}
       <section className="block" style={{ paddingTop: 40, paddingBottom: 40 }}>
         <div className="wrap">
           <div className="eyebrow reveal">
             &mdash; Who is teaching
           </div>
-          <ul
-            className="reveal"
-            style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: '20px 0 0',
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 10,
-            }}
-          >
-            {CREDITS.map((c) => (
-              <li
-                key={c.what}
-                style={{
-                  border: '1px solid var(--rule)',
-                  borderRadius: 999,
-                  padding: '10px 18px',
-                  fontFamily: 'var(--sans)',
-                  /* 16px, not a 13px pill: this line is a credential and the
-                     readers it is for are presbyopic. */
-                  fontSize: 'var(--fs-ui)',
-                  lineHeight: 1.35,
-                  fontWeight: 400,
-                  color: 'var(--ink)',
-                }}
-              >
-                {c.what} <span style={{ color: 'var(--ink-soft)' }}>&middot; {c.em}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="prose" style={{ marginTop: 26, maxWidth: '62ch' }}>
+          <p className="prose" style={{ marginTop: 20, maxWidth: '62ch' }}>
             I write, record and release my own music — Latin pop, indie pop, singer-songwriter. It
             lives on{' '}
             <a

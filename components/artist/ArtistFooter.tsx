@@ -18,10 +18,10 @@ export function ArtistFooter() {
           <h4>Navigate</h4>
           <ul>
             <li>
-              <Link href="/artist">Home</Link>
+              <Link href="/artist/music">Music</Link>
             </li>
             <li>
-              <Link href="/artist/music">Music</Link>
+              <Link href="/artist/live-video">Video</Link>
             </li>
             <li>
               <Link href="/artist/live">Live</Link>
@@ -42,9 +42,6 @@ export function ArtistFooter() {
             </li>
             <li>
               <Link href="/artist/booking">Booking Inquiry</Link>
-            </li>
-            <li>
-              <span>Los Angeles, CA</span>
             </li>
           </ul>
         </div>

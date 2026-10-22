@@ -337,7 +337,7 @@ export function PriceGrid({ mode, footnote, buy = true, purchaseHref }: PriceGri
               ))}
             </ul>
 
-            {buy ? (
+            {buy && (
               <BuyButton
                 lookupKey={price.lookupKey}
                 label={BUY_CTA_LABEL}
@@ -351,10 +351,6 @@ export function PriceGrid({ mode, footnote, buy = true, purchaseHref }: PriceGri
                    frighten people out of a purchase that never repeats. */
                 recurring={price.interval ? { disclosure: renewalDisclosure(price) } : undefined}
               />
-            ) : (
-              <Link className="btn tier-btn" href={purchaseHref as string}>
-                {PRICING_CTA_LABEL}
-              </Link>
             )}
           </article>
         );
@@ -377,6 +373,14 @@ export function PriceGrid({ mode, footnote, buy = true, purchaseHref }: PriceGri
         dollars.
         {footnote ? <> {footnote}</> : null}
       </p>
+
+      {/* Display-only grid: one route to checkout, not one identical button
+          per card. */}
+      {!buy && (
+        <Link className="btn" href={purchaseHref as string}>
+          {PRICING_CTA_LABEL} <span className="arrow">&rarr;</span>
+        </Link>
+      )}
     </div>
   );
 }

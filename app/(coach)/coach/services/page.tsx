@@ -86,8 +86,8 @@ export default function ServicesPage() {
           </p>
         </section>
 
-        {SERVICES.map((s, i) => (
-          <section key={s.n} className={`svc-detail${i % 2 === 1 ? ' alt' : ''}`}>
+        {SERVICES.map((s) => (
+          <section key={s.n} className="svc-detail">
             <div>
               <div className="n">No. {s.n}</div>
             </div>

@@ -12,7 +12,6 @@ import {
   NOTABLE_VENUES,
   PRESS_ARTICLES,
   PRESS_QUOTES,
-  STATS,
   monthYear,
   videoLength,
 } from '@/lib/content';
@@ -51,17 +50,12 @@ export default function PressPage() {
                 placement="epk"
                 primary
                 posterPriority
-                showSetlist
               />
             </div>
             <div className="reveal" style={{ '--rd': '140ms' }}>
               {/* The booking pin, not the newest upload — see the `_ordering`
                   note in content/videos.json. An EPK link has to land on live
                   footage. */}
-              <div className="video-primary-flag">
-                <span className="line" />
-                <span className="eyebrow">Watch this one &mdash; live</span>
-              </div>
               <p
                 style={{
                   fontFamily: 'var(--serif)',
@@ -155,20 +149,6 @@ export default function PressPage() {
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="artist-stats" style={{ margin: '40px 0' }}>
-          <div className="wrap">
-            <div className="stats-grid reveal">
-              {STATS.map((s) => (
-                <div key={s.label} className="stat-cell">
-                  <div className="stat-value">{s.value}</div>
-                  <div className="stat-label">{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Press quotes */}
         <section className="block" style={{ paddingTop: 40, paddingBottom: 40 }}>
           <div className="wrap">
@@ -240,18 +220,6 @@ export default function PressPage() {
                     >
                       {a.title}
                     </div>
-                    <p
-                      style={{
-                        fontFamily: 'var(--serif)',
-                        fontSize: 15,
-                        color: 'var(--ink-soft)',
-                        fontWeight: 400,
-                        margin: 0,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {a.excerpt}
-                    </p>
                   </div>
                   <div className="article-arrow">↗</div>
                 </a>
@@ -280,48 +248,23 @@ export default function PressPage() {
           style={{ paddingTop: 20, paddingBottom: 40, borderTop: '1px solid var(--rule)' }}
         >
           <div className="wrap">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60 }} className="about-cols">
-              <div>
-                <div className="eyebrow reveal" style={{ marginBottom: 16 }}>
-                  Technical rider
-                </div>
-                <p
-                  className="reveal"
-                  style={{
-                    fontFamily: 'var(--serif)',
-                    fontSize: 18,
-                    color: 'var(--ink-soft)',
-                    fontWeight: 400,
-                  }}
-                >
-                  Available on request. Please include event details in your booking inquiry.
-                </p>
-              </div>
-              <div>
-                <div className="eyebrow reveal" style={{ marginBottom: 16 }}>
-                  Stage plot
-                </div>
-                <p
-                  className="reveal"
-                  style={{
-                    fontFamily: 'var(--serif)',
-                    fontSize: 18,
-                    color: 'var(--ink-soft)',
-                    fontWeight: 400,
-                  }}
-                >
-                  Available on request. Configurations for solo, duo, and full band.
-                </p>
-              </div>
+            <div className="eyebrow reveal" style={{ marginBottom: 16 }}>
+              Technical rider &amp; stage plot
             </div>
+            <p
+              className="reveal"
+              style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--ink-soft)', fontWeight: 400 }}
+            >
+              Available on request, for solo, duo or full band. Include event details in your booking inquiry.
+            </p>
           </div>
         </section>
 
         <section className="cta">
           <h2>
-            Ready to <span className="it">book?</span>
+            Book <span className="it">Juliana.</span>
           </h2>
-          <p>Get in touch with details about your event.</p>
+          <p>Bars, venues, festivals and private events.</p>
           <Link className="btn btn--solid" href="/artist/booking">
             Booking inquiry <span className="arrow">&rarr;</span>
           </Link>
