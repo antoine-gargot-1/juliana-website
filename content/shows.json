@@ -10,11 +10,11 @@
       "venue": "Dragonfly",
       "city": "Los Angeles, CA",
       "note": "With The Divas · $15 advance, $20 at the door · 21+",
-      "tickets": null,
+      "tickets": "https://partiful.com/e/gJpY5xCjiuMCxANodxAQ",
       "price": 15,
       "priceCurrency": "USD",
       "image": "/img/seras-tu-og.jpg",
-      "videoSlug": null,
+      "videoSlug": "seras-tu-official-video",
       "place": {
         "name": "Dragonfly",
         "streetAddress": "6510 Santa Monica Blvd",

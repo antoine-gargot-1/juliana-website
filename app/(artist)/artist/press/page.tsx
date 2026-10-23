@@ -13,6 +13,8 @@ import {
   PRESS_ARTICLES,
   PRESS_QUOTES,
   monthYear,
+  partitionShows,
+  showLongDate,
   videoLength,
 } from '@/lib/content';
 import { musicGroupSchema, videoObjectSchema } from '@/lib/schema';
@@ -25,7 +27,12 @@ export const metadata: Metadata = pageMeta({
   path: '/artist/press',
 });
 
+// Daily, like /artist/live, so the "Next show" line drops off once the date passes.
+export const revalidate = 86400;
+
 export default function PressPage() {
+  // Managers and press reach this page from show invites; point them at the room.
+  const next = partitionShows().upcoming[0];
   return (
     <div className="page-fade artist-theme">
       <link rel="preconnect" href="https://i.ytimg.com" />
@@ -37,6 +44,15 @@ export default function PressPage() {
         <section className="svc-page-hero">
           <div className="eyebrow">Electronic press kit</div>
           <h1>Press.</h1>
+          {next && (
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 20, marginTop: 24 }}>
+              Next show:{' '}
+              <Link href={`/artist/live/${next.slug}`}>
+                {next.title ?? next.venue}, {showLongDate(next)}
+              </Link>
+              . Guest list for industry and press on request.
+            </p>
+          )}
         </section>
 
         {/* Live video, first thing on the page. This is the EPK a booking email

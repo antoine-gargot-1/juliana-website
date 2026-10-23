@@ -20,6 +20,7 @@ import {
 } from '@/lib/content';
 import { musicEventSchema } from '@/lib/schema';
 import { breadcrumbList, pageMeta } from '@/lib/seo';
+import { EMAIL } from '@/lib/site';
 
 export const revalidate = 86400;
 export const dynamicParams = false;
@@ -77,6 +78,10 @@ export default async function ShowPage({ params }: Props) {
 
   // Build-time failure, same as the BOOKING_LIVE_VIDEO guard: a show page that
   // silently drops its video is worse than a failed deploy.
+  const guestListMailto = `mailto:${EMAIL}?subject=${encodeURIComponent(
+    `Guest list: ${show.title ?? show.venue}, ${showLongDate(show)}`,
+  )}`;
+
   const video = show.videoSlug ? ALL_VIDEOS.find((v) => v.slug === show.videoSlug) : undefined;
   if (show.videoSlug && !video) {
     throw new Error(`content/shows.json: videoSlug "${show.videoSlug}" matches no video slug.`);
@@ -204,6 +209,17 @@ export default async function ShowPage({ params }: Props) {
                 between stripped-back voice-and-guitar arrangements and fuller band material,
                 drawing on Latin pop, indie pop and acoustic singer-songwriter writing.
               </p>
+              {!past && (
+                // Industry invites go out by email (marketing/meta-ads-seras-tu.md);
+                // this is the self-serve route for managers, agents and press who
+                // land here from elsewhere. A mailto, not a form: it only has to
+                // reach an inbox someone reads daily.
+                <p className="reveal" style={{ ...lede, fontSize: 17, margin: '28px 0 0' }}>
+                  <strong>Industry and press:</strong> there&apos;s a guest list.{' '}
+                  <a href={guestListMailto}>Email {EMAIL}</a> with your name and company, and
+                  see the <Link href="/artist/press">press kit</Link>.
+                </p>
+              )}
             </div>
           </div>
         </section>

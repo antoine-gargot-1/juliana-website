@@ -7,6 +7,21 @@
   "bookingLiveVideoSlug": "hotel-cafe-full-show",
   "videos": [
     {
+      "slug": "seras-tu-official-video",
+      "youtubeId": "wBa79q9rT2I",
+      "title": "Serás tú",
+      "subtitle": "Official Video",
+      "kind": "music-video",
+      "uploadDate": "2026-10-22",
+      "durationSeconds": 194,
+      "thumbnail": "https://i.ytimg.com/vi/wBa79q9rT2I/maxresdefault.jpg",
+      "thumbnailWidth": 1280,
+      "thumbnailHeight": 720,
+      "description": "Official music video for \"Serás tú\", Juliana Beltran's 2026 single.",
+      "credits": null,
+      "_comment": "Read off the watch page and oEmbed on 2026-10-22 (lengthSeconds 194, uploadDate 2026-10-22, maxresdefault 200). Embedded on the Nov 5 release show page via shows.json videoSlug. Studio video: never the booking pin."
+    },
+    {
       "slug": "ay-tu-official-video",
       "youtubeId": "PDcg-ap_wzU",
       "title": "Ay tú",
