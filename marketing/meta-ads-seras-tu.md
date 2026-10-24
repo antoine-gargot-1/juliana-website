@@ -303,6 +303,27 @@ Cold targeting: 18 mi around Dragonfly, 21–44, interests Natalia Lafourcade, M
 Julieta Venegas, rock en español, Latin pop, Indie pop. Carla Morrison and Ximena Sariñana
 were merged away by Meta and are not available. Advantage+ audience off.
 
-Still to add once the Page is assigned to the system user: the ads themselves (need a
-Page), video-viewer and IG-engager audiences for P3, and the $50 Event-responses ads once
-the FB Event exists.
+Audiences added to both P3 ad sets: IG engagers 60d (120250517647700553), Page engagers 60d
+(120250517647750553), video viewers 50% 30d (120250517648640553). Ad identity: Page 110266958308844 +
+IG @juliana.beltran (17841404276201029). Copy per phase as in §5.
+
+| Ad (all PAUSED) | ID |
+|---|---|
+| p1-vid-916-hook-a | 120250517669340553 |
+| p1-vid-916-hook-b | 120250517670010553 |
+| p1-vid-916-hook-c | 120250517671150553 |
+| p2-vid-916-hook-a | 120250517672050553 |
+| p2-vid-916-hook-b | 120250517672560553 |
+| p2-vid-916-hook-c | 120250517672880553 |
+| p3-vid-916-hook-a | 120250517673040553 |
+| p3-vid-916-hook-b | 120250517673210553 |
+| p3-vid-916-hook-c | 120250517673450553 |
+| p3r-vid-916-hook-a | 120250517673790553 |
+| p3r-vid-916-hook-b | 120250517674150553 |
+| p3r-vid-916-hook-c | 120250517674610553 |
+
+Facebook: full official video (final_v18, = YouTube cut) posted to the Page Oct 24 as
+video 1435112397966462. Old Reel 1324716976327907 (Oct 22, 2:55, wrong cut) to be deleted
+once confirmed.
+
+Still to add: the $50 Event-responses ads once the FB Event exists.
