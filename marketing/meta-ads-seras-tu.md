@@ -280,3 +280,29 @@ Sources: [CD Baby](https://diymusician.cdbaby.com/music-career/top-tips-for-book
 | Nov 5, 6 PM | **Stop all ads.** |
 | Nov 6 | Write the result here: spend per phase, `ticket_click`, Partiful total, door count, industry who came. Start industry follow-ups (done by Nov 7). |
 | Nov 6–10 | Optional ~$30 live-clip ad, on top of the $300, only if budget allows. |
+
+## 10. Built in Meta (Oct 24) — everything created PAUSED
+
+Ad account `act_404919904776859` ("Juliana Beltran ADS", USD, America/Los_Angeles).
+Site pixel `250433990668051` (linked to that ad account).
+
+| What | ID | Budget | Window (PT) |
+|---|---|---|---|
+| Campaign P1 Video views (Engagement) | 120250517619380553 | | |
+| ↳ Ad set: Cold LA 21–44, ThruPlay | 120250517621120553 | $50 lifetime | Oct 24 6 PM → Oct 26 |
+| Campaign P2 Traffic (show page) | 120250517619730553 | | |
+| ↳ Ad set: Cold LA 21–44, landing page views | 120250517621480553 | $90 lifetime | Oct 27 → Oct 30 |
+| Campaign P3 Retarget + reminder (Traffic) | 120250517627290553 | | |
+| ↳ Ad set: site visitors, excl. ticket clickers | 120250517627390553 | $60 lifetime | Oct 31 → Nov 3 |
+| ↳ Ad set: reminder, visitors + ticket clickers | 120250517627620553 | $50 lifetime | Nov 4 → **Nov 5 6 PM** |
+| Audience: site visitors /artist 30d | 120250517626950553 | | |
+| Audience: ticket clickers (InitiateCheckout) 14d | 120250517626980553 | | |
+| Ad videos p1-vid-916-hook-a / b / c | 1993163431340625 / 1850474392631747 / 946176204954246 | | |
+
+Cold targeting: 18 mi around Dragonfly, 21–44, interests Natalia Lafourcade, Mon Laferte,
+Julieta Venegas, rock en español, Latin pop, Indie pop. Carla Morrison and Ximena Sariñana
+were merged away by Meta and are not available. Advantage+ audience off.
+
+Still to add once the Page is assigned to the system user: the ads themselves (need a
+Page), video-viewer and IG-engager audiences for P3, and the $50 Event-responses ads once
+the FB Event exists.
