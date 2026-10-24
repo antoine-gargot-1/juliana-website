@@ -323,7 +323,6 @@ IG @juliana.beltran (17841404276201029). Copy per phase as in §5.
 | p3r-vid-916-hook-c | 120250517674610553 |
 
 Facebook: full official video (final_v18, = YouTube cut) posted to the Page Oct 24 as
-video 1435112397966462. Old Reel 1324716976327907 (Oct 22, 2:55, wrong cut) to be deleted
-once confirmed.
+video 1435112397966462. Old Reel 1324716976327907 (Oct 22, 2:55, wrong cut) deleted Oct 24.
 
 Still to add: the $50 Event-responses ads once the FB Event exists.

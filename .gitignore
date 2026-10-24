@@ -58,3 +58,6 @@ CLAUDE.md
 exports/
 *.csv
 !marketing/google-ads/*.csv
+
+# Outreach contact lists: names and emails of real people, never committed.
+marketing/*contacts*.csv
