@@ -203,6 +203,7 @@ export function musicEventSchema(show: Show, { withContext = true } = {}) {
     url: abs(`/artist/live/${show.slug}`),
     startDate: show.start,
     endDate: show.end,
+    ...(show.doors ? { doorTime: show.doors } : {}),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
     image: [abs(show.image ?? OG_IMAGE)],

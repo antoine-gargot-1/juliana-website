@@ -1,5 +1,5 @@
 {
-  "_note": "Single source of truth for live dates. `start`/`end` are full ISO 8601 datetimes with the America/Los_Angeles UTC offset in effect on that date (PST -08:00, PDT -07:00). Upcoming vs. past is derived at build time by comparing `end` to now — never by array membership. `tickets` and `price` are optional; a MusicEvent `offers` block is only emitted when `tickets` is set. Optional per-show extras: `title` (event name, used in the page title and MusicEvent name), `image` (a 1200x630 landscape share image — the default portrait crops badly in Facebook previews), `videoSlug` (a videos.json slug embedded on the show page; the build fails if it matches nothing).",
+  "_note": "Single source of truth for live dates. `start`/`end` are full ISO 8601 datetimes with the America/Los_Angeles UTC offset in effect on that date (PST -08:00, PDT -07:00). Upcoming vs. past is derived at build time by comparing `end` to now — never by array membership. `tickets` and `price` are optional; a MusicEvent `offers` block is only emitted when `tickets` is set. Optional per-show extras: `title` (event name, used in the page title and MusicEvent name), `image` (a 1200x630 landscape share image — the default portrait crops badly in Facebook previews), `videoSlug` (a videos.json slug embedded on the show page; the build fails if it matches nothing), `doors` (ISO datetime doors open, when it differs from `start`, which is her set time; emitted as MusicEvent doorTime), `area` (neighbourhood shown in the eyebrow and facts line, e.g. \"Hollywood\").",
   "shows": [
     {
       "slug": "seras-tu-release-show-dragonfly-2026-11-05",
@@ -7,9 +7,11 @@
       "date": "2026-11-05",
       "start": "2026-11-05T21:00:00-08:00",
       "end": "2026-11-05T23:59:00-08:00",
+      "doors": "2026-11-05T20:45:00-08:00",
       "venue": "Dragonfly",
+      "area": "Hollywood",
       "city": "Los Angeles, CA",
-      "note": "With The Divas · $15 advance, $20 at the door · 21+",
+      "note": "With The Divas · $15 until Wed Nov 4, $20 at the door · 21+",
       "tickets": "https://partiful.com/e/gJpY5xCjiuMCxANodxAQ",
       "price": 15,
       "priceCurrency": "USD",

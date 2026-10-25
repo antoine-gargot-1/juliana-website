@@ -45,6 +45,10 @@ export type Show = {
   image?: string;
   /** videos.json slug embedded on the show page. */
   videoSlug?: string | null;
+  /** ISO datetime doors open. `start` stays her set time. */
+  doors?: string;
+  /** Neighbourhood ("Hollywood") — tells an LA visitor more than the city does. */
+  area?: string;
 };
 
 /**
@@ -465,13 +469,35 @@ export function showLongDate(show: Show) {
   });
 }
 
-/** "8:00 PM" */
-export function showTime(show: Show) {
-  return new Date(show.start).toLocaleTimeString('en-US', {
+/** "8:00 PM" — any ISO datetime, in LA time. */
+function laTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     timeZone: LA_TZ,
   });
+}
+
+/** "8:00 PM" */
+export function showTime(show: Show) {
+  return laTime(show.start);
+}
+
+/** "8:45 PM", or undefined when the show lists no separate doors time. */
+export function showDoors(show: Show) {
+  return show.doors ? laTime(show.doors) : undefined;
+}
+
+/** "Thu Nov 5" */
+export function showShortDate(show: Show) {
+  return new Date(show.start)
+    .toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      timeZone: LA_TZ,
+    })
+    .replace(',', '');
 }
 
 /**

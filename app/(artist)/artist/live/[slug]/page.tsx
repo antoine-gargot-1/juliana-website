@@ -14,7 +14,9 @@ import {
   googleCalendarUrl,
   isPast,
   partitionShows,
+  showDoors,
   showLongDate,
+  showShortDate,
   showTime,
   showYear,
 } from '@/lib/content';
@@ -95,17 +97,27 @@ export default async function ShowPage({ params }: Props) {
     .filter(Boolean)
     .join(' · ');
 
-  // Year sits in the eyebrow, so the facts line drops it.
-  const facts = [showLongDate(show).replace(/, \d{4}$/, ''), showTime(show), show.venue].join(' · ');
+  // Year sits in the eyebrow (or is obvious for an upcoming show), so the facts line drops it.
+  const facts = [
+    showLongDate(show).replace(/, \d{4}$/, ''),
+    showTime(show),
+    show.area ? `${show.venue}, ${show.area}` : show.venue,
+  ].join(' · ');
+  const doors = showDoors(show);
+
+  // An upcoming titled show is an ad landing: lead with when and where, not the
+  // venue name the h1 facts already carry. Past shows keep venue · year.
+  const eyebrow =
+    show.title && !past
+      ? `${showShortDate(show)} · ${show.area ?? show.place.addressLocality}`
+      : `${show.title ? show.venue : past ? 'Past show' : 'Upcoming show'} · ${showYear(show)}`;
 
   return (
     <div className="page-fade artist-theme">
       <Reveal />
       <div className="wrap">
         <section className="svc-page-hero">
-          <div className="eyebrow">
-            {show.title ? show.venue : past ? 'Past show' : 'Upcoming show'} &middot; {showYear(show)}
-          </div>
+          <div className="eyebrow">{eyebrow}</div>
           <h1>
             {show.title ?? show.venue}
             <span className="it">.</span>
@@ -168,7 +180,10 @@ export default async function ShowPage({ params }: Props) {
                 </div>
                 <div style={detailRow}>
                   <dt className="eyebrow">Doors / set</dt>
-                  <dd style={detailValue}>{showTime(show)} &middot; Pacific Time</dd>
+                  <dd style={detailValue}>
+                    {doors && `Doors ${doors} · Set `}
+                    {showTime(show)} &middot; Pacific Time
+                  </dd>
                 </div>
                 <div style={detailRow}>
                   <dt className="eyebrow">Venue</dt>
@@ -209,17 +224,6 @@ export default async function ShowPage({ params }: Props) {
                 between stripped-back voice-and-guitar arrangements and fuller band material,
                 drawing on Latin pop, indie pop and acoustic singer-songwriter writing.
               </p>
-              {!past && (
-                // Industry invites go out by email (marketing/meta-ads-seras-tu.md);
-                // this is the self-serve route for managers, agents and press who
-                // land here from elsewhere. A mailto, not a form: it only has to
-                // reach an inbox someone reads daily.
-                <p className="reveal" style={{ ...lede, fontSize: 17, margin: '28px 0 0' }}>
-                  <strong>Industry and press:</strong> there&apos;s a guest list.{' '}
-                  <a href={guestListMailto}>Email {EMAIL}</a> with your name and company, and
-                  see the <Link href="/artist/press">press kit</Link>.
-                </p>
-              )}
             </div>
           </div>
         </section>
@@ -237,9 +241,22 @@ export default async function ShowPage({ params }: Props) {
           </section>
         )}
 
-        <p style={{ padding: '20px 0 80px' }}>
+        <p style={{ padding: past ? '20px 0 80px' : '20px 0 24px' }}>
           <Link href="/artist/live">&larr; All dates</Link>
         </p>
+
+        {!past && (
+          // Industry invites go out by email (marketing/meta-ads-seras-tu.md);
+          // this is the self-serve route for managers, agents and press who
+          // land here from elsewhere. A mailto, not a form: it only has to
+          // reach an inbox someone reads daily. Last and muted so ticket buyers
+          // from the ads don't read "guest list" as a free way in.
+          <p style={{ fontSize: 15, color: 'var(--ink-soft)', margin: 0, paddingBottom: 80 }}>
+            <strong>Industry and press:</strong> there&apos;s a guest list.{' '}
+            <a href={guestListMailto}>Email {EMAIL}</a> with your name and company, and
+            see the <Link href="/artist/press">press kit</Link>.
+          </p>
+        )}
       </div>
 
       <JsonLd

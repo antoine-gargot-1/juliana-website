@@ -328,3 +328,21 @@ video 1435112397966462. Old Reel 1324716976327907 (Oct 22, 2:55, wrong cut) dele
 FB Event 29305227702446034 ("Single Release Show - Serás tú"). Event-responses campaign
 120250518798290553, ad set 120250518799700553 ($50 lifetime, Oct 25 8 AM → Oct 31, Facebook feed +
 stories, cold LA 21–44), ads 120250518801050553, 120250518801640553, 120250518802810553 — all PAUSED.
+
+### Oct 24 evening revision (after full review)
+
+- **Instagram only** (Stories + Reels for P1/P2; Feed + Stories + Reels for P3/P3r). FB
+  Event ads **paused** — the audience doesn't use FB events; its $50 moved to P2.
+- Budget, still $300: P1 $50 (Oct 24 6 PM → 26) · P2 **$120** (Oct 27 → **Nov 2**) · P3
+  **$70** (**Nov 1** → 3) · P3r **$60** (Nov 4 → **8:30 PM Nov 5**, door sales count).
+- Warm audiences now include IG engagers 365d (120250519559190553); ticket-clicker
+  exclusion removed (with Venmo chip-in a click isn't a purchase).
+- **v2 creatives**: "SERÁS TÚ · LIVE THU NOV 5 · HOLLYWOOD" lower third from 0:00, end card
+  at 11 s; Spanish-first copy; v1 ads paused. Videos 4672024279789483, 1714868866879260, 1784003786162651.
+- P3r has one ad straight to Partiful (p3r-v2-partiful-direct-a): skips a page load at the
+  last moment; pixel can't see it, judge it by Partiful's count.
+- Video-viewer audience from the ad videos can't be built until they've run (Meta needs a
+  Page association). Retry Oct 26; until then P3 relies on site visitors + IG/Page engagers.
+- Venmo chip-in is honor-system and against Venmo's personal-account terms for ticket
+  sales. Switch Partiful to its card/Apple Pay ticketing (same URL) before Oct 27.
+- Doors 8:45 PM, music 9 PM (site, schema doorTime). Partiful must say the same.
