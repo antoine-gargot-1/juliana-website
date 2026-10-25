@@ -325,4 +325,6 @@ IG @juliana.beltran (17841404276201029). Copy per phase as in §5.
 Facebook: full official video (final_v18, = YouTube cut) posted to the Page Oct 24 as
 video 1435112397966462. Old Reel 1324716976327907 (Oct 22, 2:55, wrong cut) deleted Oct 24.
 
-Still to add: the $50 Event-responses ads once the FB Event exists.
+FB Event 29305227702446034 ("Single Release Show - Serás tú"). Event-responses campaign
+120250518798290553, ad set 120250518799700553 ($50 lifetime, Oct 25 8 AM → Oct 31, Facebook feed +
+stories, cold LA 21–44), ads 120250518801050553, 120250518801640553, 120250518802810553 — all PAUSED.
