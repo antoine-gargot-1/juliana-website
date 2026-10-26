@@ -346,3 +346,17 @@ stories, cold LA 21–44), ads 120250518801050553, 120250518801640553, 120250518
 - Venmo chip-in is honor-system and against Venmo's personal-account terms for ticket
   sales. Switch Partiful to its card/Apple Pay ticketing (same URL) before Oct 27.
 - Doors 8:45 PM, music 9 PM (site, schema doorTime). Partiful must say the same.
+
+### Oct 26 — tickets move to DICE
+
+- Tickets: **DICE**, $17 all-in (fees included), $20 at the door. Public URL
+  `https://dice.fm/event/6dyoqq-single-release-show-sers-t-5th-nov-dragonfly-hollywood-los-angeles-tickets`.
+  Source tags in DICE's dashboard: `dice_tags=website` (site button), `dice_tags=meta_ads`
+  (direct ad). Partiful stays as a free RSVP page (Venmo chip-in removed).
+- Every price in ads and on the site is now $17. The FTC's 2025 live-event rule requires the
+  advertised price to be the total; the $15 end card and copy are retired.
+- **v3 creatives** (A and C only; B underperformed): end card "TICKETS $17 ON DICE · 21+",
+  copy mentions DICE. v2 ads and the Partiful-direct ad paused; P3r has a DICE-direct ad
+  (`p3r-v3-dice-direct-a`).
+- Ground truth for sales is now the DICE dashboard (by tag), not Partiful.
+- To do after v3 has run: add the v3 ad posts' page videos to the ad-video viewer audience.
