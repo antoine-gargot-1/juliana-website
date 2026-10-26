@@ -97,7 +97,7 @@ export function SiteAnalytics({ disabled = false }: Props) {
       const target = e.target as HTMLElement | null;
 
       // Show ticket links, marked with data-ticket so a ticket host can change
-      // (Partiful today) without touching this selector.
+      // (DICE today) without touching this selector.
       const ticket = target?.closest?.('a[data-ticket]') as HTMLAnchorElement | null;
       if (ticket) {
         track('ticket_click', { href: ticket.href, page: window.location.pathname });

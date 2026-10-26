@@ -501,8 +501,8 @@ export function showShortDate(show: Show) {
 }
 
 /**
- * Google Calendar "add event" link. No .ics: the ticket page (Partiful) offers
- * its own calendar add for Apple/Outlook users.
+ * Google Calendar "add event" link. No .ics: buyers get the ticket (and its
+ * date) in the DICE app, so the calendar link only serves people still deciding.
  */
 export function googleCalendarUrl(show: Show) {
   const utc = (iso: string) => new Date(iso).toISOString().replace(/[-:]|\.\d{3}/g, '');

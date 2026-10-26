@@ -100,8 +100,8 @@ export type ConversionEvent =
   | 'spotify_click'
   /**
    * Outbound click on a show's ticket link (any `a[data-ticket]`). Tickets sell
-   * off-site on Partiful, which takes no tag, so this click is the last step the
-   * site can measure. Partiful's RSVP count is the ground truth for sales. Mirrored
+   * off-site (DICE for the Nov 2026 release show), so this click is the last step
+   * the site can measure; the ticketing dashboard is the ground truth. Mirrored
    * to Meta as InitiateCheckout for ad optimisation and retargeting exclusions.
    */
   | 'ticket_click'
