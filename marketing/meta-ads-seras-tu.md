@@ -360,3 +360,10 @@ stories, cold LA 21–44), ads 120250518801050553, 120250518801640553, 120250518
   (`p3r-v3-dice-direct-a`).
 - Ground truth for sales is now the DICE dashboard (by tag), not Partiful.
 - To do after v3 has run: add the v3 ad posts' page videos to the ad-video viewer audience.
+
+### Oct 26 evening — traffic phase narrowed to 21–34
+
+P1 data: Meta put 46% of impressions on 35–44 (cheapest views) although 25–34 watch more
+(46% to the end vs 30%) and 21–24 most (63%). P2 (cold traffic, $120, from Oct 27) now
+targets **21–34**; estimated audience ~650–770K (was ~1.0–1.2M). P3 and P3r stay 21+ — they
+only reach people who already watched, visited or engaged.
