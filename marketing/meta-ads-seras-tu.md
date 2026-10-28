@@ -382,3 +382,9 @@ into a new ad set in the same campaign:
 Same audience (LA 18 mi, 21–34, same interests, IG Stories + Reels), same v3 video A and copy.
 Total budget unchanged at $300. Read the result in DICE's dashboard by tag around Oct 31;
 the Pixel can't see P2b visitors.
+
+**Oct 28, 4 PM — budget moved to the direct route.** First read: straight-to-DICE 5.77% CTR at
+$0.29/click (6 clicks) vs show page 1.26% at $0.90 (27 clicks, none since the morning, 0 ticket
+clicks). On the operator's call, P2 $90 → **$50** (keeps ~$25 of site visits to feed the
+retargeting audiences) and P2b $30 → **$70**. Total still $300. Small sample: confirm against
+DICE sales by tag (`meta_ads_traffic` vs `website`) before Nov 1.
