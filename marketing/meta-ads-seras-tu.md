@@ -367,3 +367,18 @@ P1 data: Meta put 46% of impressions on 35–44 (cheapest views) although 25–3
 (46% to the end vs 30%) and 21–24 most (63%). P2 (cold traffic, $120, from Oct 27) now
 targets **21–34**; estimated audience ~650–770K (was ~1.0–1.2M). P3 and P3r stay 21+ — they
 only reach people who already watched, visited or engaged.
+
+### Oct 28 — straight-to-DICE test in the traffic phase
+
+26 show-page visits from P2 produced 0 "Get tickets" clicks (the site overall: 172 page views,
+7 ticket clicks since Oct 24). To test whether the extra hop costs sales, $30 of P2 moved
+into a new ad set in the same campaign:
+
+| Ad set | Destination | Optimises for | Budget | Tag in DICE |
+|---|---|---|---|---|
+| P2 (120250517621480553) | show page → DICE button | landing page views | $90 (was $120) | `website` |
+| P2b (120250571474440553) | **DICE directly** | link clicks | $30, Oct 28 → Nov 2 | `meta_ads_traffic` |
+
+Same audience (LA 18 mi, 21–34, same interests, IG Stories + Reels), same v3 video A and copy.
+Total budget unchanged at $300. Read the result in DICE's dashboard by tag around Oct 31;
+the Pixel can't see P2b visitors.
