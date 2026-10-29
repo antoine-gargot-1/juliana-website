@@ -393,3 +393,9 @@ DICE sales by tag (`meta_ads_traffic` vs `website`) before Nov 1.
 3.40% CTR, $0.39/click, Reels best ($0.24/click). P2 (show page): 3 clicks for $10.08 on Oct 28
 (0.32% CTR, $3.36/click), still 0 ticket clicks. P2 $50 → **$35** (~$10 left, keeps a trickle of
 site visitors for retargeting), P2b $70 → **$85**. Traffic total still $120; plan total $300.
+
+**Oct 29 — mostly DICE from here.** Retargeting (P3, Nov 1–3, $70) and reminder (P3r, Nov 4–5,
+$60) now link straight to DICE; their show-page ads are paused. DICE tags: `meta_ads_retarget`
+(P3), `meta_ads` (P3r), `meta_ads_traffic` (P2b). Only P2 (~$10 left) still sends people to the
+show page, kept so the Pixel keeps feeding the site-visitor audience. Of the $215 left on Oct 29,
+~95% now goes straight to DICE (was ~44%).
