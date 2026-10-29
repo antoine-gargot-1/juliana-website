@@ -388,3 +388,8 @@ $0.29/click (6 clicks) vs show page 1.26% at $0.90 (27 clicks, none since the mo
 clicks). On the operator's call, P2 $90 → **$50** (keeps ~$25 of site visits to feed the
 retargeting audiences) and P2b $30 → **$70**. Total still $300. Small sample: confirm against
 DICE sales by tag (`meta_ads_traffic` vs `website`) before Nov 1.
+
+**Oct 29, 5 AM — direct route confirmed, more budget moved.** P2b (straight to DICE): 24 clicks,
+3.40% CTR, $0.39/click, Reels best ($0.24/click). P2 (show page): 3 clicks for $10.08 on Oct 28
+(0.32% CTR, $3.36/click), still 0 ticket clicks. P2 $50 → **$35** (~$10 left, keeps a trickle of
+site visitors for retargeting), P2b $70 → **$85**. Traffic total still $120; plan total $300.
